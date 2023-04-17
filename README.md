@@ -1,3 +1,5 @@
+![Maven Build](https://github.com/codeforamerica/messaging/actions/workflows/build.yml/badge.svg)
+
 # Description
 A messaging backend providing a REST API for sending text messages and email.
 It supports both transactional messages and bulk sending.
