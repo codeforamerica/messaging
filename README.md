@@ -25,5 +25,9 @@ IntelliJ and store all the secrets in a `.env` file that is not managed in versi
 ## Non-secrets
 All other configuration will be maintained in conventional Spring Boot `application.properties`. These will also have profile-specific variations.
 
+## Code Style
 
+Open IntelliJ Settings/Preferences and go to `Editor > Code Style > Java` and next to Scheme hit the
+cogwheel and `Import Scheme > IntelliJ IDEA code style XML` with
+[intellij-settings/CfaFlavoredGoogleStyle.xml](intellij-settings/CfaFlavoredGoogleStyle.xml)
 
