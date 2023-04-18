@@ -74,6 +74,8 @@
     </dependencies>
     <properties>
         <java.version>17</java.version>
+        <!-- Avoid security concerns in earlier versions -->
+        <snakeyaml.version>2.0</snakeyaml.version>
     </properties>
 
     <build>
