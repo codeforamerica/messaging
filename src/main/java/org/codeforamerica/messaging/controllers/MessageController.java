@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.controllers;
 
 import jakarta.validation.Valid;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.services.SmsService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,8 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createMessage(@Valid @RequestBody Message message) {
-        Message sentMessage = this.smsService.sendSmsMessage(message.getTo(), message.getBody());
+    public ResponseEntity<String> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
+        Message sentMessage = this.smsService.sendSmsMessage(messageRequest.getTo(), messageRequest.getBody());
         return ResponseEntity.ok("Sent " + sentMessage);
 
     }

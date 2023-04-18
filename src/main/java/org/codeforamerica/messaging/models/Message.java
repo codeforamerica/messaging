@@ -16,10 +16,12 @@ public class Message {
 
     @Id
     Long id;
+    @NotBlank
     @Pattern(regexp = "\\A1?\\d{10}\\z")
     String to;
     @NotBlank
     String body;
+    @NotBlank
     @Pattern(regexp = "\\A1?\\d{10}\\z")
     String from;
     String status;
