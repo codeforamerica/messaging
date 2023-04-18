@@ -23,11 +23,27 @@ In the development environment, you can use the [EnvFile](https://plugins.jetbra
 IntelliJ and store all the secrets in a `.env` file that is not managed in version control.
 
 ## Non-secrets
-All other configuration will be maintained in conventional Spring Boot `application.properties`. These will also have profile-specific variations.
+
+All other configuration will be maintained in conventional Spring Boot `application.properties`.
+These will also have profile-specific variations.
 
 ## Code Style
 
 Open IntelliJ Settings/Preferences and go to `Editor > Code Style > Java` and next to Scheme hit the
 cogwheel and `Import Scheme > IntelliJ IDEA code style XML` with
 [intellij-settings/CfaFlavoredGoogleStyle.xml](intellij-settings/CfaFlavoredGoogleStyle.xml)
+
+# Documentation
+
+We use [Springdoc-openapi](https://springdoc.org/v2), which helps automate the generation of API
+documentation
+in Spring Boot projects. It works by examining an application at runtime to infer API semantics
+based
+on spring configurations, class structure and various annotations. Springdoc is an alternative to
+Springfox,
+which the latter has grown stale.
+
+This project has configured a custom docs location
+in [application.properties](src/main/resources/application.properties)
+and a Swagger UI can be found at http://localhost:8080/api/v1/docs when the app is running locally.
 
