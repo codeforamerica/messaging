@@ -36,14 +36,11 @@ cogwheel and `Import Scheme > IntelliJ IDEA code style XML` with
 # Documentation
 
 We use [Springdoc-openapi](https://springdoc.org/v2), which helps automate the generation of API
-documentation
-in Spring Boot projects. It works by examining an application at runtime to infer API semantics
-based
-on spring configurations, class structure and various annotations. Springdoc is an alternative to
-Springfox,
-which the latter has grown stale.
+documentation in Spring Boot projects. It works by examining an application at runtime to infer API
+semantics based on spring configurations, class structure, and various annotations. Springdoc is a
+better supported and more recently updated alternative to Springfox.
 
-This project has configured a custom docs location
-in [application.properties](src/main/resources/application.properties)
-and a Swagger UI can be found at http://localhost:8080/api/v1/docs when the app is running locally.
+This project has configured a custom docs location in
+[application.properties](src/main/resources/application.properties) and a Swagger UI can be found at
+http://localhost:8080/api/v1/docs when the app is running locally.
 
