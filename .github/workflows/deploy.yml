@@ -1,0 +1,28 @@
+name: Deploy to Aptible
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs: { }
+
+env:
+  APTIBLE_ENVIRONMENT: ${{ secrets.APTIBLE_ENVIRONMENT }}
+  APTIBLE_APP: ${{ secrets.APTIBLE_APP }}
+
+jobs:
+  deploy:
+    name: Deploy to aptible-staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+        fetch-depth: 0
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.APTIBLE_GIT_SSH_KEY }}
+      - name: Deploy to Aptible
+        run: |
+          ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
+          git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+          git push aptible ${GITHUB_SHA}:master
