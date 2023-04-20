@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.providers.twilio;
 
+import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.junit.jupiter.api.Test;
@@ -7,6 +8,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -15,6 +17,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(TwilioCallbackController.class)
+@Import(SecurityConfiguration.class)
 public class TwilioCallbackControllerTest {
 
     @MockBean
@@ -23,7 +26,7 @@ public class TwilioCallbackControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void postSmsStatusSuccess() throws Exception {
+    public void postSmsStatusSuccessUnauthenticated() throws Exception {
         Mockito.when(messageRepository.findFirstByProviderMessageId(any()))
                 .thenReturn(Message.builder().providerMessageId("message_id").build());
 
