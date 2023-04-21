@@ -2,7 +2,7 @@ name: Deploy to Aptible
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, continuous-deployment-staging-185002331 ]
   workflow_dispatch:
     inputs: { }
 
