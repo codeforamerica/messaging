@@ -21,8 +21,23 @@ jobs:
       - uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.APTIBLE_GIT_SSH_KEY }}
-      - name: Deploy to Aptible
+
+      - name: Push to Aptible remote branch
         run: |
           ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
-          git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
-          git push aptible ${GITHUB_SHA}:master
+          git remote add aptible ${{ vars.APTIBLE_REMOTE_URL }}
+          git push --force ${{ vars.APTIBLE_REMOTE_URL }} ${GITHUB_SHA}:${{ vars.APTIBLE_REMOTE_BRANCH }}
+
+      - name: Set Aptible environment variables and deploy
+        run: |
+          wget -O aptible-package https://omnibus-aptible-toolbelt.s3.amazonaws.com/aptible/omnibus-aptible-toolbelt/master/206/pkg/aptible-toolbelt_0.16.5%2B20200508143656~ubuntu.16.04-1_amd64.deb
+          sudo dpkg -i aptible-package
+          aptible login --email=${{ secrets.APTIBLE_USERNAME }} --password=${{ secrets.APTIBLE_PASSWORD}}
+          aptible deploy --app aptible --git-commitish $${{ vars.APTIBLE_REMOTE_BRANCH }} \
+          'SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}' \
+          'SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}' \
+          'SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}' \
+          'TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}' \
+          'TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}' \
+          'TWILIO_MESSAGING_SERVICE_SID=${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}'
+      
