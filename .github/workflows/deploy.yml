@@ -7,8 +7,8 @@ on:
     inputs: { }
 
 env:
-  APTIBLE_ENVIRONMENT: ${{ secrets.APTIBLE_ENVIRONMENT }}
-  APTIBLE_APP: ${{ secrets.APTIBLE_APP }}
+  APTIBLE_REMOTE_URL: git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+  APTIBLE_REMOTE_BRANCH: master
 
 jobs:
   deploy:
