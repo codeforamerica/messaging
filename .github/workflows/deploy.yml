@@ -28,8 +28,8 @@ jobs:
       - name: Push to Aptible remote branch
         run: |
           ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
-          git remote add aptible ${{ vars.APTIBLE_REMOTE_URL }}
-          git push --force ${{ vars.APTIBLE_REMOTE_URL }} ${GITHUB_SHA}:${{ vars.APTIBLE_REMOTE_BRANCH }}
+          git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+          git push --force git@beta.aptible.com:innovation-lab-staging/messaging-staging.git ${GITHUB_SHA}:master
 
       - name: Set Aptible environment variables and deploy
         run: |
