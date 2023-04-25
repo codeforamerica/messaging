@@ -1,6 +1,6 @@
 package org.codeforamerica.messaging.services;
 
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +35,7 @@ public class SmsServiceTest {
         String body = "Hello";
         String providerMessageId = "ABCD";
 
-        Message message = Message.builder()
+        SmsMessage smsMessage = SmsMessage.builder()
                 .toNumber(to)
                 .fromNumber("from")
                 .body(body)
@@ -44,14 +44,14 @@ public class SmsServiceTest {
                 .createdAt(OffsetDateTime.now())
                 .build();
 
-        Mockito.when(twilioGateway.sendMessage(to, body)).thenReturn(message);
-        Mockito.when(messageRepository.save(message)).thenReturn(message);
+        Mockito.when(twilioGateway.sendMessage(to, body)).thenReturn(smsMessage);
+        Mockito.when(messageRepository.save(smsMessage)).thenReturn(smsMessage);
 
-        message = smsService.sendSmsMessage(to, body);
+        smsMessage = smsService.sendSmsMessage(to, body);
 
-        Assertions.assertEquals(providerMessageId, message.getProviderMessageId());
-        Assertions.assertEquals(to, message.getToNumber());
-        Assertions.assertEquals(body, message.getBody());
+        Assertions.assertEquals(providerMessageId, smsMessage.getProviderMessageId());
+        Assertions.assertEquals(to, smsMessage.getToNumber());
+        Assertions.assertEquals(body, smsMessage.getBody());
     }
 
 }

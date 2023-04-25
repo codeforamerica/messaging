@@ -1,7 +1,7 @@
 package org.codeforamerica.messaging.providers.twilio;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,7 +28,7 @@ public class TwilioCallbackControllerTest {
     @Test
     public void postSmsStatusSuccessUnauthenticated() throws Exception {
         Mockito.when(messageRepository.findFirstByProviderMessageId(any()))
-                .thenReturn(Message.builder().providerMessageId("message_id").build());
+                .thenReturn(SmsMessage.builder().providerMessageId("message_id").build());
 
         mockMvc.perform(post("/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)

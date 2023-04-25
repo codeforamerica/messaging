@@ -1,12 +1,12 @@
 package org.codeforamerica.messaging.repositories;
 
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MessageRepository extends CrudRepository<Message, Long> {
+public interface MessageRepository extends CrudRepository<SmsMessage, Long> {
 
-    Message findFirstByProviderMessageId(String providerMessageId);
+    SmsMessage findFirstByProviderMessageId(String providerMessageId);
 
 }
