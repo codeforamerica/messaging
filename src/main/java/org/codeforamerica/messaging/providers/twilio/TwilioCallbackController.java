@@ -28,7 +28,7 @@ public class TwilioCallbackController {
         log.info("Received twilio callback: " + twilioStatusMessage);
         Message message = messageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
         Message updatedMessage = message.toBuilder()
-                .from(twilioStatusMessage.get("From"))
+                .fromNumber(twilioStatusMessage.get("From"))
                 .status(twilioStatusMessage.get("MessageStatus"))
                 .build();
         messageRepository.save(updatedMessage);

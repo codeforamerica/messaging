@@ -36,8 +36,8 @@ public class SmsServiceTest {
         String providerMessageId = "ABCD";
 
         Message message = Message.builder()
-                .to(to)
-                .from("from")
+                .toNumber(to)
+                .fromNumber("from")
                 .body(body)
                 .status("fixme")
                 .providerMessageId(providerMessageId)
@@ -50,7 +50,7 @@ public class SmsServiceTest {
         message = smsService.sendSmsMessage(to, body);
 
         Assertions.assertEquals(providerMessageId, message.getProviderMessageId());
-        Assertions.assertEquals(to, message.getTo());
+        Assertions.assertEquals(to, message.getToNumber());
         Assertions.assertEquals(body, message.getBody());
     }
 
