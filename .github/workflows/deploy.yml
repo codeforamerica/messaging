@@ -6,9 +6,6 @@ on:
   workflow_dispatch:
     inputs: { }
 
-env:
-  APTIBLE_REMOTE_URL: git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
-  APTIBLE_REMOTE_BRANCH: master
 
 jobs:
   deploy:
@@ -18,29 +15,59 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
-      - name: Install SSH Key
-        uses: shimataro/ssh-key-action@v2.5.1
+      - uses: webfactory/ssh-agent@v0.5.4
         with:
-          key: ${{ secrets.APTIBLE_GIT_SSH_KEY }}
-          known_hosts: ${{ secrets.APTIBLE_KNOWN_HOSTS }}
-
-      - name: Push to Aptible remote branch
+          ssh-private-key: ${{ secrets.APTIBLE_GIT_SSH_KEY }}
+      - name: Deploy to Aptible
         run: |
           ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
           git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
-          git push --force git@beta.aptible.com:innovation-lab-staging/messaging-staging.git ${GITHUB_SHA}:master
+          git push aptible ${GITHUB_SHA}:deploy-${GITHUB_SHA}
+          aptible deploy 
+            --app messaging-staging 
+            --git-commitish deploy-${GITHUB_SHA} \
+            'SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}' \
+            'SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}' \
+            'SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}' \
+            'TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}' \
+            'TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}' \
+            'TWILIO_MESSAGING_SERVICE_SID=${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}'
 
-      - name: Set Aptible environment variables and deploy
-        run: |
-          wget -O aptible-package https://omnibus-aptible-toolbelt.s3.amazonaws.com/aptible/omnibus-aptible-toolbelt/master/206/pkg/aptible-toolbelt_0.16.5%2B20200508143656~ubuntu.16.04-1_amd64.deb
-          sudo dpkg -i aptible-package
-          aptible login --email=${{ secrets.APTIBLE_USERNAME }} --password=${{ secrets.APTIBLE_PASSWORD }}
-          aptible deploy --app aptible --git-commitish ${GITHUB_SHA} \
-          'SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}' \
-          'SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}' \
-          'SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}' \
-          'TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}' \
-          'TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}' \
-          'TWILIO_MESSAGING_SERVICE_SID=${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}'
+
+#env:
+#  APTIBLE_REMOTE_URL: git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+#  APTIBLE_REMOTE_BRANCH: master
+#jobs:
+#  deploy:
+#    name: Deploy to aptible-staging
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Install SSH Key
+#        uses: shimataro/ssh-key-action@v2.5.1
+#        with:
+#          key: ${{ secrets.APTIBLE_GIT_SSH_KEY }}
+#          known_hosts: ${{ secrets.APTIBLE_KNOWN_HOSTS }}
+#
+#      - name: Push to Aptible remote branch
+#        run: |
+#          ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
+#          git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+#          git push --force git@beta.aptible.com:innovation-lab-staging/messaging-staging.git ${GITHUB_SHA}:master
+#
+#      - name: Set Aptible environment variables and deploy
+#        run: |
+#          wget -O aptible-package https://omnibus-aptible-toolbelt.s3.amazonaws.com/aptible/omnibus-aptible-toolbelt/master/206/pkg/aptible-toolbelt_0.16.5%2B20200508143656~ubuntu.16.04-1_amd64.deb
+#          sudo dpkg -i aptible-package
+#          aptible login --email=${{ secrets.APTIBLE_USERNAME }} --password=${{ secrets.APTIBLE_PASSWORD }}
+#          aptible deploy --app aptible --git-commitish ${GITHUB_SHA} \
+#          'SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}' \
+#          'SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}' \
+#          'SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}' \
+#          'TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}' \
+#          'TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}' \
+#          'TWILIO_MESSAGING_SERVICE_SID=${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}'
       
