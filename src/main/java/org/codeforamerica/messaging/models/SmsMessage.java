@@ -13,12 +13,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name="messages")
+@Table(name="sms_messages")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
-public class Message {
+public class SmsMessage {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;

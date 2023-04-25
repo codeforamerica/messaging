@@ -1,7 +1,7 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.springframework.stereotype.Service;
@@ -21,14 +21,14 @@ public class SmsService {
         this.messageRepository = messageRepository;
     }
 
-    public Message sendSmsMessage(String to, String body) {
-        Message message = twilioGateway.sendMessage(to, body);
-        log.info("Message sent, Twilio response: " + message);
-        message = messageRepository.save(message);
-        return message;
+    public SmsMessage sendSmsMessage(String to, String body) {
+        SmsMessage smsMessage = twilioGateway.sendMessage(to, body);
+        log.info("Message sent, Twilio response: " + smsMessage);
+        smsMessage = messageRepository.save(smsMessage);
+        return smsMessage;
     }
 
-    public Optional<Message> getMessage(Long id) {
+    public Optional<SmsMessage> getMessage(Long id) {
         return messageRepository.findById(id);
     }
 

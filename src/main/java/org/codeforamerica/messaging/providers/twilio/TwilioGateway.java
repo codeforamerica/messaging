@@ -2,7 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import com.twilio.Twilio;
 import lombok.extern.slf4j.Slf4j;
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class TwilioGateway {
         return zonedDateTime == null ? null : zonedDateTime.toOffsetDateTime();
     }
 
-    public Message sendMessage(String to, String body) {
+    public SmsMessage sendMessage(String to, String body) {
         Twilio.init(twilioAccountSid, twilioAuthToken);
         com.twilio.rest.api.v2010.account.Message twilioMessage =
                 com.twilio.rest.api.v2010.account.Message.creator(
@@ -34,7 +34,7 @@ public class TwilioGateway {
                                 body)
                         .create();
 
-        return Message.builder()
+        return SmsMessage.builder()
                 .fromNumber(DEFAULT_NUMBER)
                 .toNumber(twilioMessage.getTo())
                 .body(twilioMessage.getBody())

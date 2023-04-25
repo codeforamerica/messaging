@@ -1,7 +1,7 @@
 package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
-import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.services.SmsService;
 import org.junit.jupiter.api.Test;
@@ -44,7 +44,7 @@ public class MessageControllerTest {
     @WithMockUser
     public void getMessageAuthenticated() throws Exception {
         Mockito.when(smsService.getMessage(any()))
-                .thenReturn(Optional.of(Message.builder().providerMessageId("message_id").build()));
+                .thenReturn(Optional.of(SmsMessage.builder().providerMessageId("message_id").build()));
 
         mockMvc.perform(get("/api/v1/messages/1")
                         .with(httpBasic("user", "password")))
@@ -62,7 +62,7 @@ public class MessageControllerTest {
                 """;
 
         Mockito.when(smsService.sendSmsMessage("1234567890", "This is a test"))
-                .thenReturn(Message.builder().providerMessageId("message_id").build());
+                .thenReturn(SmsMessage.builder().providerMessageId("message_id").build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)

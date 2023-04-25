@@ -1,4 +1,4 @@
-create table messages
+create table sms_messages
 (
     id                  bigserial                not null,
     to_number                text                     not null,
