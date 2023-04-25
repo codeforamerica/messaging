@@ -35,14 +35,12 @@ public class TwilioGateway {
                         .create();
 
         return Message.builder()
-                .from(DEFAULT_NUMBER)
-                .to(twilioMessage.getTo())
+                .fromNumber(DEFAULT_NUMBER)
+                .toNumber(twilioMessage.getTo())
                 .body(twilioMessage.getBody())
                 .providerMessageId(twilioMessage.getSid())
                 .status(String.valueOf(twilioMessage.getStatus()))
                 .providerCreatedAt(toOffsetDateTime(twilioMessage.getDateCreated()))
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
     }
 

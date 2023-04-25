@@ -23,8 +23,8 @@ public class SmsService {
 
     public Message sendSmsMessage(String to, String body) {
         Message message = twilioGateway.sendMessage(to, body);
-        message = messageRepository.save(message);
         log.info("Message sent, Twilio response: " + message);
+        message = messageRepository.save(message);
         return message;
     }
 
