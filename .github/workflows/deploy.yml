@@ -21,8 +21,8 @@ jobs:
       - name: Deploy to Aptible
         run: |
           ssh-keyscan beta.aptible.com >> ~/.ssh/known_hosts
-          git remote add aptible-staging git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
-          git push aptible-staging ${GITHUB_SHA}:refs/heads/deploy-${GITHUB_SHA}
+          git remote add aptible git@beta.aptible.com:innovation-lab-staging/messaging-staging.git
+          git push aptible ${GITHUB_SHA}:refs/heads/deploy-${GITHUB_SHA}
           aptible deploy \
             --app messaging-staging \
             --git-commitish deploy-${GITHUB_SHA} \
