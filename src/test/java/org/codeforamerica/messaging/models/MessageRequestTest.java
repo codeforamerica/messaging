@@ -21,7 +21,11 @@ class MessageRequestTest {
     @ParameterizedTest
     @ValueSource(strings = { "1234567890", "11234567890", "+11234567890" })
     public void acceptsValidPhoneNumbers(String candidate) {
-        MessageRequest mr = new MessageRequest(candidate, "some body");
+        MessageRequest mr = MessageRequest.builder()
+                .toPhone(candidate)
+                .toEmail("sender@example.com")
+                .body("some body")
+                .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(mr);
         assertTrue(violations.isEmpty());
     }
@@ -30,7 +34,11 @@ class MessageRequestTest {
     @ParameterizedTest
     @ValueSource(strings = { "123456A7890", "123456789012" })
     public void rejectsInValidPhoneNumbers(String candidate) {
-        MessageRequest mr = new MessageRequest(candidate, "some body");
+        MessageRequest mr = MessageRequest.builder()
+                .toPhone(candidate)
+                .toEmail("sender@example.com")
+                .body("some body")
+                .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(mr);
         assertFalse(violations.isEmpty());
     }
