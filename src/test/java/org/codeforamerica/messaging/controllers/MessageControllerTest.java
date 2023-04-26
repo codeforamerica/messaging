@@ -2,7 +2,6 @@ package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.services.SmsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -31,8 +30,6 @@ public class MessageControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private SmsService smsService;
-    @MockBean
-    private MessageRepository messageRepository;
 
     @Test
     public void getMessageUnauthenticated() throws Exception {
