@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.SmsMessage;
+import org.codeforamerica.messaging.services.EmailService;
 import org.codeforamerica.messaging.services.SmsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,6 +31,8 @@ public class MessageControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private SmsService smsService;
+    @MockBean
+    private EmailService emailService;
 
     @Test
     public void getMessageUnauthenticated() throws Exception {
@@ -53,7 +56,7 @@ public class MessageControllerTest {
     public void createMessageSuccess() throws Exception {
         String requestBody = """
                         {
-                        "to": "1234567890",
+                        "toPhone": "1234567890",
                         "body": "This is a test"
                         }
                 """;
@@ -65,7 +68,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string(containsString("message_id")));
+                .andExpect(MockMvcResultMatchers.content().string(containsString("Sent message(s)")));
     }
 
     @Test
@@ -83,7 +86,7 @@ public class MessageControllerTest {
     public void createMessageBadPhoneNumber() throws Exception {
         String requestBody = """
                         {
-                        "to": "A1234567890",
+                        "toPhone": "A1234567890",
                         "body": "This is a test"
                         }
                 """;
