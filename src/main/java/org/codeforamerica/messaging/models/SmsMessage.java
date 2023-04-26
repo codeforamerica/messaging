@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -19,16 +20,17 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class SmsMessage {
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @NotBlank
-    @Pattern(regexp = "\\A\\+?1?\\d{10}\\z")
+    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     private String toNumber;
     @NotBlank
     private String body;
     @NotBlank
-    @Pattern(regexp = "\\A\\+?1?\\d{10}\\z")
+    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     private String fromNumber;
     private String status;
     private String providerMessageId;
