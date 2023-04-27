@@ -27,11 +27,9 @@ public class TwilioCallbackController {
     public ResponseEntity<Object> updateStatus(@RequestParam Map<String, String> twilioStatusMessage) {
         log.info("Received twilio callback: " + twilioStatusMessage);
         SmsMessage smsMessage = messageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
-        SmsMessage updatedSmsMessage = smsMessage.toBuilder()
-                .fromNumber(twilioStatusMessage.get("From"))
-                .status(twilioStatusMessage.get("MessageStatus"))
-                .build();
-        messageRepository.save(updatedSmsMessage);
+        smsMessage.setStatus(twilioStatusMessage.get("MessageStatus"));
+        smsMessage.setFromNumber(twilioStatusMessage.get("From"));
+        messageRepository.save(smsMessage);
         return ResponseEntity.ok().build();
     }
 }
