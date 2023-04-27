@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -38,6 +39,10 @@ public class SmsMessage {
     private OffsetDateTime createdAt;
     @UpdateTimestamp
     private OffsetDateTime updatedAt;
+
+    @JsonIgnore
+    @OneToOne(mappedBy = "smsMessage")
+    private Message message;
 }
 
 

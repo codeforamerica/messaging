@@ -3,7 +3,8 @@ package org.codeforamerica.messaging.controllers;
 import jakarta.validation.Valid;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.models.EmailMessage;
-import org.codeforamerica.messaging.models.MessageRequest;
+import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.services.EmailService;
 import org.codeforamerica.messaging.services.SmsService;
 import org.springframework.http.ResponseEntity;
@@ -17,29 +18,36 @@ public class MessageController {
 
     private final SmsService smsService;
     private final EmailService emailService;
+    private final MessageRepository messageRepository;
 
-    public MessageController(SmsService smsService, EmailService emailService) {
+    public MessageController(SmsService smsService, EmailService emailService, MessageRepository messageRepository) {
         this.smsService = smsService;
         this.emailService = emailService;
+        this.messageRepository = messageRepository;
     }
 
     @PostMapping
-    public ResponseEntity<String> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
+    public ResponseEntity<String> createMessage(@Valid @RequestBody Message message) {
         SmsMessage sentSmsMessage;
         EmailMessage sentEmailMessage;
-        if (messageRequest.getToPhone() != null) {
-            sentSmsMessage = this.smsService.sendSmsMessage(messageRequest.getToPhone(), messageRequest.getBody());
+        if (message.getToPhone() != null) {
+            sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
+            message.setSmsMessage(sentSmsMessage);
         }
-        if (messageRequest.getToEmail() != null) {
-            sentEmailMessage = this.emailService.sendEmailMessage(messageRequest.getToEmail(), messageRequest.getBody(), messageRequest.getSubject());
+        if (message.getToEmail() != null) {
+            sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
+            message.setEmailMessage(sentEmailMessage);
         }
+
+        messageRepository.save(message);
+
 
         return ResponseEntity.ok("Sent message(s)");
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<SmsMessage>> getMessage(@PathVariable Long id) {
-        Optional<SmsMessage> message = this.smsService.getMessage(id);
+    public ResponseEntity<Optional<Message>> getMessage(@PathVariable Long id) {
+        Optional<Message> message = messageRepository.findById(id);
         if (message.isPresent()) {
             return ResponseEntity.ok(message);
         }
