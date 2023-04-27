@@ -17,6 +17,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/**").authenticated()
+                        .requestMatchers("/mailgun_callbacks/**").permitAll()
                         .requestMatchers("/twilio_callbacks/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
                         .requestMatchers("/v3/**").permitAll()

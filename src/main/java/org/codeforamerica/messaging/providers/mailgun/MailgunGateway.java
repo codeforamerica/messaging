@@ -40,12 +40,14 @@ public class MailgunGateway {
                 .toEmail(toEmail)
                 .subject(subject)
                 .body(body)
-                .providerMessageId(response.getId())
-                .status(response.getMessage()) // [sic]
+                .providerMessageId(cleanupProviderId(response.getId()))
+                .status("accepted")
                 .providerCreatedAt(OffsetDateTime.now())
-                .createdAt(OffsetDateTime.now())
-                .updatedAt(OffsetDateTime.now())
                 .build();
+    }
+
+    private String cleanupProviderId(String providerId) {
+        return providerId.replace("<", "").replace(">", "");
     }
 
 }
