@@ -28,7 +28,7 @@ public class TwilioCallbackController {
         log.info("Received twilio callback: " + twilioStatusMessage);
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
         smsMessage.setStatus(twilioStatusMessage.get("MessageStatus"));
-        smsMessage.setFromNumber(twilioStatusMessage.get("From"));
+        smsMessage.setFromPhone(twilioStatusMessage.get("From"));
         smsMessageRepository.save(smsMessage);
         return ResponseEntity.ok().build();
     }
