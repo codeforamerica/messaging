@@ -14,7 +14,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name="sms_messages")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,12 +25,12 @@ public class SmsMessage {
     private Long id;
     @NotBlank
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    private String toNumber;
+    private String toPhone;
     @NotBlank
     private String body;
     @NotBlank
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    private String fromNumber;
+    private String fromPhone;
     private String status;
     private String providerMessageId;
     private OffsetDateTime providerCreatedAt;

@@ -35,8 +35,8 @@ public class TwilioGateway {
                         .create();
 
         return SmsMessage.builder()
-                .fromNumber(DEFAULT_NUMBER)
-                .toNumber(twilioMessage.getTo())
+                .fromPhone(DEFAULT_NUMBER)
+                .toPhone(twilioMessage.getTo())
                 .body(twilioMessage.getBody())
                 .providerMessageId(twilioMessage.getSid())
                 .status(String.valueOf(twilioMessage.getStatus()))

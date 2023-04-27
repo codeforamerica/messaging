@@ -13,7 +13,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "email_messages")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
