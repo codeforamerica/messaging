@@ -2,7 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.repositories.MessageRepository;
+import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +21,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 public class TwilioCallbackControllerTest {
 
     @MockBean
-    MessageRepository messageRepository;
+    SmsMessageRepository smsMessageRepository;
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     public void postSmsStatusSuccessUnauthenticated() throws Exception {
-        Mockito.when(messageRepository.findFirstByProviderMessageId(any()))
+        Mockito.when(smsMessageRepository.findFirstByProviderMessageId(any()))
                 .thenReturn(SmsMessage.builder().providerMessageId("message_id").build());
 
         mockMvc.perform(post("/twilio_callbacks/status")

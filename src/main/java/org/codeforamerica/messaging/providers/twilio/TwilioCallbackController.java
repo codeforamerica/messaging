@@ -2,7 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.repositories.MessageRepository;
+import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,19 +17,19 @@ import java.util.Map;
 @Slf4j
 public class TwilioCallbackController {
 
-    private final MessageRepository messageRepository;
+    private final SmsMessageRepository smsMessageRepository;
 
-    public TwilioCallbackController(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
+    public TwilioCallbackController(SmsMessageRepository smsMessageRepository) {
+        this.smsMessageRepository = smsMessageRepository;
     }
 
     @PostMapping(path = "/status", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public ResponseEntity<Object> updateStatus(@RequestParam Map<String, String> twilioStatusMessage) {
         log.info("Received twilio callback: " + twilioStatusMessage);
-        SmsMessage smsMessage = messageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
+        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
         smsMessage.setStatus(twilioStatusMessage.get("MessageStatus"));
         smsMessage.setFromNumber(twilioStatusMessage.get("From"));
-        messageRepository.save(smsMessage);
+        smsMessageRepository.save(smsMessage);
         return ResponseEntity.ok().build();
     }
 }

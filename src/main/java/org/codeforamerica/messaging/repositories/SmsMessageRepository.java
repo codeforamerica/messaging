@@ -5,7 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface MessageRepository extends CrudRepository<SmsMessage, Long> {
+public interface SmsMessageRepository extends CrudRepository<SmsMessage, Long> {
 
     SmsMessage findFirstByProviderMessageId(String providerMessageId);
 
