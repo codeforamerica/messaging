@@ -1,7 +1,9 @@
 package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
+import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.SmsMessage;
+import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.services.EmailService;
 import org.codeforamerica.messaging.services.SmsService;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,8 @@ public class MessageControllerTest {
     private SmsService smsService;
     @MockBean
     private EmailService emailService;
+    @MockBean
+    private MessageRepository messageRepository;
 
     @Test
     public void getMessageUnauthenticated() throws Exception {
@@ -43,8 +47,8 @@ public class MessageControllerTest {
     @Test
     @WithMockUser
     public void getMessageAuthenticated() throws Exception {
-        Mockito.when(smsService.getMessage(any()))
-                .thenReturn(Optional.of(SmsMessage.builder().providerMessageId("message_id").build()));
+        Mockito.when(messageRepository.findById(any()))
+                .thenReturn(Optional.of(Message.builder().id(1L).build()));
 
         mockMvc.perform(get("/api/v1/messages/1")
                         .with(httpBasic("user", "password")))
