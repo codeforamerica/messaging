@@ -2,7 +2,7 @@ package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
-import org.codeforamerica.messaging.repositories.MessageRepository;
+import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -20,13 +20,13 @@ public class SmsServiceTest {
     @MockBean
     TwilioGateway twilioGateway;
     @MockBean
-    MessageRepository messageRepository;
+    SmsMessageRepository smsMessageRepository;
     @Autowired
     SmsService smsService;
 
     @AfterEach
     void teardown() {
-        messageRepository.deleteAll();
+        smsMessageRepository.deleteAll();
     }
 
     @Test
@@ -45,7 +45,7 @@ public class SmsServiceTest {
                 .build();
 
         Mockito.when(twilioGateway.sendMessage(to, body)).thenReturn(smsMessage);
-        Mockito.when(messageRepository.save(smsMessage)).thenReturn(smsMessage);
+        Mockito.when(smsMessageRepository.save(smsMessage)).thenReturn(smsMessage);
 
         smsMessage = smsService.sendSmsMessage(to, body);
 
