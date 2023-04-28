@@ -8,7 +8,7 @@ import lombok.*;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
+import lombok.Builder;
 import java.time.OffsetDateTime;
 
 @Entity

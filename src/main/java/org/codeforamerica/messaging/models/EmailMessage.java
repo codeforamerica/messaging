@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.OffsetDateTime;
 
 @Entity
@@ -19,7 +18,6 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @Builder(toBuilder = true)
 public class EmailMessage {
-
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
