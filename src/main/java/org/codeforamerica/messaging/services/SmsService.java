@@ -6,8 +6,6 @@ import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 public class SmsService {
@@ -27,9 +25,4 @@ public class SmsService {
         smsMessage = smsMessageRepository.save(smsMessage);
         return smsMessage;
     }
-
-    public Optional<SmsMessage> getMessage(Long id) {
-        return smsMessageRepository.findById(id);
-    }
-
 }
