@@ -30,6 +30,7 @@ public class MailgunCallbackController {
         log.info(mailgunCallback.at("/event-data/event").textValue());
         emailMessage.setStatus(mailgunCallback.at("/event-data/event").textValue());
         emailMessageRepository.save(emailMessage);
+
         return ResponseEntity.ok().build();
     }
 }
