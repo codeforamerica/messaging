@@ -3,9 +3,13 @@ package org.codeforamerica.messaging.controllers;
 import jakarta.validation.Valid;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.services.MessageService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.Optional;
 
 @RestController
@@ -18,10 +22,15 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createMessage(@Valid @RequestBody Message message) {
-        messageService.sendMessage(message);
+    public ResponseEntity<Message> createMessage(@Valid @RequestBody Message message) {
+        Message sentMessage = messageService.sendMessage(message);
 
-        return ResponseEntity.ok("Sent message(s)");
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(
+                "/{id}").buildAndExpand(sentMessage.getId()).toUri();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        return new ResponseEntity<>(sentMessage, responseHeaders, HttpStatus.CREATED);
+
     }
 
 
