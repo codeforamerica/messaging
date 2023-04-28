@@ -6,8 +6,6 @@ import org.codeforamerica.messaging.providers.mailgun.MailgunGateway;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 public class EmailService {
@@ -27,9 +25,4 @@ public class EmailService {
         log.info("Message sent, Mailgun response: " + message);
         return message;
     }
-
-    public Optional<EmailMessage> getMessage(Long id) {
-        return emailMessageRepository.findById(id);
-    }
-
 }

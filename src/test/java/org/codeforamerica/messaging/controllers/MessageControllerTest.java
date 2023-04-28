@@ -2,10 +2,7 @@ package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
-import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.repositories.MessageRepository;
-import org.codeforamerica.messaging.services.EmailService;
-import org.codeforamerica.messaging.services.SmsService;
+import org.codeforamerica.messaging.services.MessageService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +29,7 @@ public class MessageControllerTest {
     @Autowired
     private MockMvc mockMvc;
     @MockBean
-    private SmsService smsService;
-    @MockBean
-    private EmailService emailService;
-    @MockBean
-    private MessageRepository messageRepository;
+    private MessageService messageService;
 
     @Test
     public void getMessageUnauthenticated() throws Exception {
@@ -47,8 +40,8 @@ public class MessageControllerTest {
     @Test
     @WithMockUser
     public void getMessageAuthenticated() throws Exception {
-        Mockito.when(messageRepository.findById(any()))
-                .thenReturn(Optional.of(Message.builder().id(1L).build()));
+        Mockito.when(messageService.getMessage(any()))
+                .thenReturn(Optional.ofNullable(Message.builder().id(1L).build()));
 
         mockMvc.perform(get("/api/v1/messages/1")
                         .with(httpBasic("user", "password")))
@@ -65,8 +58,8 @@ public class MessageControllerTest {
                         }
                 """;
 
-        Mockito.when(smsService.sendSmsMessage("1234567890", "This is a test"))
-                .thenReturn(SmsMessage.builder().providerMessageId("message_id").build());
+        Mockito.when(messageService.sendMessage(any()))
+                .thenReturn(Message.builder().id(1L).build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -82,7 +75,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(smsService, Mockito.never()).sendSmsMessage("1234567890", "This is a test");
+        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
     }
 
     @Test
@@ -99,7 +92,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(smsService, Mockito.never()).sendSmsMessage("1234567890", "This is a test");
+        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
     }
 
 }
