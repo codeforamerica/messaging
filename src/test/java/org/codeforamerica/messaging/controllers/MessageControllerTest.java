@@ -4,7 +4,6 @@ package org.codeforamerica.messaging.controllers;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.services.MessageService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,7 +168,6 @@ public class MessageControllerTest {
 
     @Test
     @WithMockUser
-    @Disabled
     public void createMessageMissingSubject() throws Exception {
         String requestBody = """
                         {
@@ -187,7 +185,6 @@ public class MessageControllerTest {
 
     @Test
     @WithMockUser
-    @Disabled
     public void createMessageMissingPhoneAndEmail() throws Exception {
         String requestBody = """
                         {

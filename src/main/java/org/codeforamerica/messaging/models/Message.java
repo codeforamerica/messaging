@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
+import org.codeforamerica.messaging.validators.ValidMessage;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
+@ValidMessage
 public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
