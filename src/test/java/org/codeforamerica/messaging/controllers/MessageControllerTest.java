@@ -71,56 +71,50 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
     }
 
-//    @Test
-//    public void createMessageSuccessEmailOnly() throws Exception {
-//        String requestBody = """
-//                        {
-//                        "toEmail": "fake@email.com",
-//                        "body": "This is a test",
-//                        "subject": "Test"
-//                        }
-//                """;
-//
-//        Mockito.when(emailService.sendEmailMessage("fake@email.com", "This is a test", "Test"))
-//                .thenReturn(EmailMessage.builder().providerMessageId("message_id").build());
-//
-//        mockMvc.perform(post("/api/v1/messages")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andExpect(MockMvcResultMatchers.status().isOk())
-//                .andExpect(MockMvcResultMatchers.content().string("Sent message(s)"));
-//        Mockito.verify(smsService, Mockito.never()).sendSmsMessage(any(), any());
-//        Mockito.verify(emailService, Mockito.times(1))
-//                .sendEmailMessage("fake@email.com", "This is a test", "Test");
-//    }
-//
-//    @Test
-//    public void createMessageSuccessMultiModal() throws Exception {
-//        String requestBody = """
-//                        {
-//                        "toPhone": "1234567890",
-//                        "toEmail": "fake@email.com",
-//                        "body": "This is a test",
-//                        "subject": "Test"
-//                        }
-//                """;
-//
-//        Mockito.when(smsService.sendSmsMessage("1234567890", "This is a test"))
-//                .thenReturn(Message.builder().providerMessageId("sms_id").build());
-//        Mockito.when(emailService.sendEmailMessage("fake@email.com", "This is a test", "Test"))
-//                .thenReturn(EmailMessage.builder().providerMessageId("email_id").build());
-//
-//        mockMvc.perform(post("/api/v1/messages")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content(requestBody))
-//                .andExpect(MockMvcResultMatchers.status().isOk())
-//                .andExpect(MockMvcResultMatchers.content().string("Sent message(s)"));
-//        Mockito.verify(smsService, Mockito.times(1))
-//                .sendSmsMessage("1234567890", "This is a test");
-//        Mockito.verify(emailService, Mockito.times(1))
-//                .sendEmailMessage("fake@email.com", "This is a test", "Test");
-//>>>>>>> 09616a1 (WIP request)
-//    }
+    @Test
+    @WithMockUser
+    public void createMessageSuccessEmailOnly() throws Exception {
+        String requestBody = """
+                        {
+                        "toEmail": "fake@email.com",
+                        "body": "This is a test",
+                        "subject": "Test"
+                        }
+                """;
+
+        Message message = Message.builder().id(1L).build();
+        Mockito.when(messageService.sendMessage(any()))
+                .thenReturn(message);
+
+        mockMvc.perform(post("/api/v1/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+    }
+
+    @Test
+    @WithMockUser
+    public void createMessageSuccessMultiModal() throws Exception {
+        String requestBody = """
+                        {
+                        "toPhone": "1234567890",
+                        "toEmail": "fake@email.com",
+                        "body": "This is a test",
+                        "subject": "Test"
+                        }
+                """;
+
+        Message message = Message.builder().id(1L).build();
+        Mockito.when(messageService.sendMessage(any()))
+                .thenReturn(message);
+
+        mockMvc.perform(post("/api/v1/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+    }
 
     @Test
     @WithMockUser
