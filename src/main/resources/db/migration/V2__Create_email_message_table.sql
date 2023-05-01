@@ -8,7 +8,7 @@ create table email_message
     status              text                     not null,
     provider_message_id text                     not null,
     provider_created_at timestamp with time zone,
-    created_at          timestamp with time zone not null,
-    updated_at          timestamp with time zone,
+    creation_timestamp  timestamp with time zone not null,
+    update_timestamp    timestamp with time zone,
     primary key (id)
 );

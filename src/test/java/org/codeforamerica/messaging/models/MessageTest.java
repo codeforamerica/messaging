@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.OffsetDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,7 +67,6 @@ class MessageTest {
                 .body(body)
                 .status("fixme")
                 .providerMessageId("some-provider-message-id")
-                .createdAt(OffsetDateTime.now())
                 .build();
         message.setSmsMessage(smsMessage);
         smsMessageRepository.save(smsMessage);
