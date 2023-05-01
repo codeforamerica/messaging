@@ -18,6 +18,9 @@ All secrets will be read from environment variables and kept out of version cont
 | FORCE_SSL                     | Disallows HTTP and redirects to HTTPS | Set to "true"                                      |
 | SPRING_DATASOURCE_URL         | PostgreSQL connection URI             | E.g., `jdbc:postgresql://localhost:5432/messaging` |
 | SPRING_SECURITY_USER_PASSWORD | Password for Basic Authentication     | Saved in a shared folder in LastPass               |
+| MAILGUN_API_DOMAIN            |
+| MAILGUN_API_FROM              |                                       |
+| MAILGUN_API_KEY               |                                       |
 | TWILIO_ACCOUNT_SID            |                                       |                                                    |
 | TWILIO_AUTH_TOKEN             |                                       |                                                    |
 | TWILIO_MESSAGING_SERVICE_SID  |                                       |                                                    |
