@@ -36,9 +36,9 @@ public class EmailMessage {
     private String providerMessageId;
     private OffsetDateTime providerCreatedAt;
     @CreationTimestamp
-    private OffsetDateTime createdAt;
+    private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime updateTimestamp;
 
     @JsonIgnore
     @OneToOne(mappedBy = "emailMessage")

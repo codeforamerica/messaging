@@ -34,7 +34,7 @@ public class Message {
     @OneToOne(cascade = CascadeType.REMOVE)
     private EmailMessage emailMessage;
     @CreationTimestamp
-    private OffsetDateTime createdAt;
+    private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
-    private OffsetDateTime updatedAt;
+    private OffsetDateTime updateTimestamp;
 }

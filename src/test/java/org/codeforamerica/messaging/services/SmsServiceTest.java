@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.time.OffsetDateTime;
-
 
 @SpringBootTest
 public class SmsServiceTest {
@@ -41,7 +39,6 @@ public class SmsServiceTest {
                 .body(body)
                 .status("fixme")
                 .providerMessageId(providerMessageId)
-                .createdAt(OffsetDateTime.now())
                 .build();
 
         Mockito.when(twilioGateway.sendMessage(to, body)).thenReturn(smsMessage);
