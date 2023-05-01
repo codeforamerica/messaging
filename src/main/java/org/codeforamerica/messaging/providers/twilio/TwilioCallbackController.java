@@ -25,7 +25,6 @@ public class TwilioCallbackController {
 
     @PostMapping(path = "/status", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public ResponseEntity<Object> updateStatus(@RequestParam Map<String, String> twilioStatusMessage) {
-        log.info("Received twilio callback: " + twilioStatusMessage);
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(twilioStatusMessage.get("MessageSid"));
         smsMessage.setStatus(twilioStatusMessage.get("MessageStatus"));
         smsMessage.setFromPhone(twilioStatusMessage.get("From"));

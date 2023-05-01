@@ -23,11 +23,8 @@ public class MailgunCallbackController {
 
     @PostMapping(path = "/status")
     public ResponseEntity<Object> updateStatus(@RequestBody JsonNode mailgunCallback) {
-        log.info("Received mailgun callback: " + mailgunCallback);
-
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(
                 mailgunCallback.at("/event-data/message/headers/message-id").textValue());
-        log.info(mailgunCallback.at("/event-data/event").textValue());
         emailMessage.setStatus(mailgunCallback.at("/event-data/event").textValue());
         emailMessageRepository.save(emailMessage);
 
