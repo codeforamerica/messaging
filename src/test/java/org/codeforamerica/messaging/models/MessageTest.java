@@ -20,7 +20,6 @@ class MessageTest {
 
     @Autowired
     private Validator validator;
-
     @Autowired
     private MessageRepository messageRepository;
     @Autowired
@@ -31,21 +30,40 @@ class MessageTest {
     public void acceptsValidPhoneNumbers(String candidate) {
         Message mr = Message.builder()
                 .toPhone(candidate)
-                .toEmail("sender@example.com")
                 .body("some body")
                 .build();
         Set<ConstraintViolation<Message>> violations = validator.validate(mr);
         assertTrue(violations.isEmpty());
     }
 
-
     @ParameterizedTest
     @ValueSource(strings = { "123456A7890", "123456789012" })
     public void rejectsInValidPhoneNumbers(String candidate) {
         Message mr = Message.builder()
                 .toPhone(candidate)
+                .body("some body")
+                .build();
+        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    public void whenToEmailIsPresentSubjectIsRequired() {
+        Message mr = Message.builder()
+                .toPhone("1234567890")
                 .toEmail("sender@example.com")
                 .body("some body")
+                .build();
+        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        assertFalse(violations.isEmpty());
+    }
+
+    @Test
+    public void whenSubjectIsPresentToEmailIsRequired() {
+        Message mr = Message.builder()
+                .toPhone("1234567890")
+                .body("some body")
+                .subject("some subject")
                 .build();
         Set<ConstraintViolation<Message>> violations = validator.validate(mr);
         assertFalse(violations.isEmpty());
@@ -59,6 +77,7 @@ class MessageTest {
                 .toPhone(toPhone)
                 .toEmail("sender@example.com")
                 .body("some body")
+                .subject("some subject")
                 .build();
         messageRepository.save(message);
         SmsMessage smsMessage = SmsMessage.builder()
@@ -72,7 +91,6 @@ class MessageTest {
         smsMessageRepository.save(smsMessage);
         messageRepository.save(message);
         messageRepository.delete(message);
-
     }
 
 }
