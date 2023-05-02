@@ -9,9 +9,11 @@ public class MessageValidator implements ConstraintValidator<ValidMessage, Messa
 
     @Override
     public boolean isValid(Message message, ConstraintValidatorContext constraintValidatorContext) {
-        if (StringUtils.isNotBlank(message.getToPhone())) {
+        if (StringUtils.isNoneBlank(message.getToEmail(), message.getSubject())) {
             return true;
-        } else
-            return StringUtils.isNoneBlank(message.getToEmail(), message.getSubject());
+        } else if (StringUtils.isAllBlank(message.getToEmail(), message.getSubject())) {
+            return StringUtils.isNotBlank(message.getToPhone());
+        }
+        return false;
     }
 }
