@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.controllers;
 
 import jakarta.validation.Valid;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.services.MessageService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -22,8 +23,8 @@ public class MessageController {
     }
 
     @PostMapping
-    public ResponseEntity<Message> createMessage(@Valid @RequestBody Message message) {
-        Message sentMessage = messageService.sendMessage(message);
+    public ResponseEntity<Message> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
+        Message sentMessage = messageService.sendMessage(messageRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(
                 "/{id}").buildAndExpand(sentMessage.getId()).toUri();

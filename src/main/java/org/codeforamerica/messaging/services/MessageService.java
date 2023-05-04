@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.services;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,13 @@ public class MessageService {
         this.messageRepository = messageRepository;
     }
 
-    public Message sendMessage(Message message) {
+    public Message sendMessage(MessageRequest messageRequest) {
+        Message message = Message.builder()
+                .subject(messageRequest.getSubject())
+                .body(messageRequest.getBody())
+                .toPhone(messageRequest.getToPhone())
+                .toEmail(messageRequest.getToEmail())
+                .build();
         SmsMessage sentSmsMessage;
         EmailMessage sentEmailMessage;
         if (message.getToPhone() != null) {
