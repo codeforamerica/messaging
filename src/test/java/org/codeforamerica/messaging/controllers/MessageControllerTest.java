@@ -193,4 +193,23 @@ public class MessageControllerTest {
         Mockito.verify(messageService, Mockito.never()).sendMessage(any());
     }
 
+    @Test
+    @WithMockUser
+    public void whenExtraFieldsPresent_RejectsAsBadRequest() throws Exception {
+        String requestBody = """
+                        {
+                        "toEmail": "fake@email.com",
+                        "body": "This is a test",
+                        "subject": "Test",
+                        "invalid_field": "1234567890"
+                        }
+                """;
+
+        mockMvc.perform(post("/api/v1/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+    }
+
 }
