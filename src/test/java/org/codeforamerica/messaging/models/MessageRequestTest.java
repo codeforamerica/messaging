@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
-class MessageTest {
+class MessageRequestTest {
 
     @Autowired
     private Validator validator;
@@ -28,44 +28,44 @@ class MessageTest {
     @ParameterizedTest
     @ValueSource(strings = { "1234567890", "11234567890", "+11234567890" })
     public void acceptsValidPhoneNumbers(String candidate) {
-        Message mr = Message.builder()
+        MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
                 .body("some body")
                 .build();
-        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertTrue(violations.isEmpty());
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "123456A7890", "123456789012" })
     public void rejectsInValidPhoneNumbers(String candidate) {
-        Message mr = Message.builder()
+        MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
                 .body("some body")
                 .build();
-        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
     }
 
     @Test
     public void whenToEmailIsPresentSubjectIsRequired() {
-        Message mr = Message.builder()
+        MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("1234567890")
                 .toEmail("sender@example.com")
                 .body("some body")
                 .build();
-        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
     }
 
     @Test
     public void whenSubjectIsPresentToEmailIsRequired() {
-        Message mr = Message.builder()
+        MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("1234567890")
                 .body("some body")
                 .subject("some subject")
                 .build();
-        Set<ConstraintViolation<Message>> violations = validator.validate(mr);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
     }
 

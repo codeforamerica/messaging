@@ -4,12 +4,14 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
-import org.codeforamerica.messaging.validators.ValidMessage;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import lombok.Builder;
+
 import java.time.OffsetDateTime;
 
 @Entity
@@ -17,7 +19,6 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ValidMessage
 public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)

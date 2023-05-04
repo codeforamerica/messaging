@@ -13,10 +13,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({ TYPE, ANNOTATION_TYPE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = { MessageValidator.class })
+@Constraint(validatedBy = { MessageRequestValidator.class })
 @Documented
-public @interface ValidMessage {
-    String message() default "{org.codeforamerica.models.Message.invalidMessage}";
+public @interface ValidMessageRequest {
+    String message() default "{org.codeforamerica.models.Message.invalidMessageRequest}";
 
     Class<?>[] groups() default { };
 
