@@ -17,6 +17,7 @@
         <java.version>17</java.version>
         <!-- Avoid security concerns in earlier versions -->
         <snakeyaml.version>2.0</snakeyaml.version>
+        <jobrunr.version>6.1.4</jobrunr.version>
     </properties>
     <dependencies>
         <dependency>
@@ -89,6 +90,11 @@
             <groupId>com.twilio.sdk</groupId>
             <artifactId>twilio</artifactId>
             <version>9.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jobrunr</groupId>
+            <artifactId>jobrunr-spring-boot-3-starter</artifactId>
+            <version>${jobrunr.version}</version>
         </dependency>
     </dependencies>
     <build>

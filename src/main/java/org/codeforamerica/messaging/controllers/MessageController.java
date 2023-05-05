@@ -24,7 +24,7 @@ public class MessageController {
 
     @PostMapping
     public ResponseEntity<Message> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
-        Message sentMessage = messageService.sendMessage(messageRequest);
+        Message sentMessage = messageService.scheduleMessage(messageRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(
                 "/{id}").buildAndExpand(sentMessage.getId()).toUri();
@@ -34,10 +34,9 @@ public class MessageController {
 
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Message>> getMessage(@PathVariable Long id) {
-        Optional<Message> message = messageService.getMessage(id);
+       Optional<Message> message = messageService.getMessage(id);
         if (message.isPresent()) {
             return ResponseEntity.ok(message);
         }

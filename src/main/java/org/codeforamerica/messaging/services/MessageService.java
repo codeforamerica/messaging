@@ -6,8 +6,11 @@ import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.MessageRepository;
+import org.jobrunr.jobs.JobId;
+import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 
@@ -17,34 +20,47 @@ public class MessageService {
     private final SmsService smsService;
     private final EmailService emailService;
     private final MessageRepository messageRepository;
+    private final JobRequestScheduler jobRequestScheduler;
 
-
-    public MessageService(SmsService smsService, EmailService emailService, MessageRepository messageRepository) {
+    public MessageService(SmsService smsService, EmailService emailService, MessageRepository messageRepository,
+            JobRequestScheduler jobRequestScheduler) {
         this.smsService = smsService;
         this.emailService = emailService;
         this.messageRepository = messageRepository;
+        this.jobRequestScheduler = jobRequestScheduler;
     }
 
-    public Message sendMessage(MessageRequest messageRequest) {
+    public Message scheduleMessage(MessageRequest messageRequest) {
+        Message message = saveMessage(messageRequest);
+
+        OffsetDateTime sendAt = messageRequest.getSendAt() == null ? OffsetDateTime.now() : messageRequest.getSendAt();
+        JobId id = jobRequestScheduler.schedule(sendAt, new SendMessageJobRequest(message.getId()));
+        log.info("Scheduled job {}", id);
+        return message;
+    }
+
+    private Message saveMessage(MessageRequest messageRequest) {
         Message message = Message.builder()
                 .subject(messageRequest.getSubject())
                 .body(messageRequest.getBody())
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
                 .build();
-        SmsMessage sentSmsMessage;
-        EmailMessage sentEmailMessage;
-        if (message.getToPhone() != null) {
-            sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
-            message.setSmsMessage(sentSmsMessage);
-        }
-        if (message.getToEmail() != null) {
-            sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
-            message.setEmailMessage(sentEmailMessage);
-        }
-
         messageRepository.save(message);
         return message;
+    }
+
+    public void sendMessage(Long messageId) {
+        Message message = messageRepository.findById(messageId).get();
+        if (message.needToSendSms()) {
+            SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
+            message.setSmsMessage(sentSmsMessage);
+        }
+        if (message.needToSendEmail()) {
+            EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
+            message.setEmailMessage(sentEmailMessage);
+        }
+        messageRepository.save(message);
     }
 
 

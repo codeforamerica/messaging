@@ -61,7 +61,7 @@ public class MessageControllerTest {
                 """;
 
         Message message = Message.builder().id(1L).build();
-        Mockito.when(messageService.sendMessage(any()))
+        Mockito.when(messageService.scheduleMessage(any()))
                 .thenReturn(message);
 
         mockMvc.perform(post("/api/v1/messages")
@@ -83,7 +83,7 @@ public class MessageControllerTest {
                 """;
 
         Message message = Message.builder().id(1L).build();
-        Mockito.when(messageService.sendMessage(any()))
+        Mockito.when(messageService.scheduleMessage(any()))
                 .thenReturn(message);
 
         mockMvc.perform(post("/api/v1/messages")
@@ -106,7 +106,7 @@ public class MessageControllerTest {
                 """;
 
         Message message = Message.builder().id(1L).build();
-        Mockito.when(messageService.sendMessage(any()))
+        Mockito.when(messageService.scheduleMessage(any()))
                 .thenReturn(message);
 
         mockMvc.perform(post("/api/v1/messages")
@@ -123,7 +123,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
     @Test
@@ -140,7 +140,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
     @Test
@@ -157,7 +157,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
     @Test
@@ -174,7 +174,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
     @Test
@@ -190,7 +190,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
     @Test
@@ -209,7 +209,7 @@ public class MessageControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
+        Mockito.verify(messageService, Mockito.never()).scheduleMessage(any());
     }
 
 }

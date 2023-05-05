@@ -38,4 +38,16 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+
+    public boolean needToSendEmail() {
+        return toEmail != null && emailMessage == null;
+    }
+
+    public boolean needToSendSms() {
+        return toPhone != null && smsMessage == null;
+    }
+
+    public String getStatus() {
+        return needToSendEmail() || needToSendSms()? "pending": "completed";
+    }
 }
