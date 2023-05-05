@@ -1,13 +1,16 @@
 package org.codeforamerica.messaging.models;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.codeforamerica.messaging.validators.ValidMessageRequest;
+
+import java.util.Map;
 
 @Value
 @AllArgsConstructor
@@ -18,7 +21,11 @@ public class MessageRequest {
     String toPhone;
     @Email
     String toEmail;
-    @NotBlank
     String body;
     String subject;
+    @Builder.Default
+    String templateName = "default";
+    @Transient
+    @JsonDeserialize
+    Map<String, Object> templateParams;
 }

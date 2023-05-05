@@ -31,11 +31,13 @@ public class MessageService {
                 .body(messageRequest.getBody())
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
+                .templateName(messageRequest.getTemplateName())
+                .templateParams(messageRequest.getTemplateParams())
                 .build();
         SmsMessage sentSmsMessage;
         EmailMessage sentEmailMessage;
         if (message.getToPhone() != null) {
-            sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
+            sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getTemplateName(), message.getTemplateParams());
             message.setSmsMessage(sentSmsMessage);
         }
         if (message.getToEmail() != null) {

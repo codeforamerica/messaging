@@ -1,8 +1,8 @@
 package org.codeforamerica.messaging.models;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +13,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Entity
 @Data
@@ -27,7 +28,6 @@ public class Message {
     String toPhone;
     @Email
     String toEmail;
-    @NotBlank
     String body;
     String subject;
     @OneToOne(cascade = CascadeType.REMOVE)
@@ -38,4 +38,9 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+    @Builder.Default
+    String templateName = "default";
+    @Transient
+    @JsonDeserialize
+    Map<String, Object> templateParams;
 }
