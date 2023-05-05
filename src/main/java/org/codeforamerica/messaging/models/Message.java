@@ -23,6 +23,8 @@ public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    @ManyToOne
+    TemplateVariant templateVariant;
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     String toPhone;
     @Email
