@@ -10,5 +10,5 @@ create table template
 );
 
 alter table message
-    add column template_name text not null default 'default',
+    add column template_id bigint references template (id) not null default 1,
     alter column body drop not null;

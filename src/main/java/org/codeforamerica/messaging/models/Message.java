@@ -38,8 +38,8 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
-    @Builder.Default
-    String templateName = "default";
+    @ManyToOne
+    Template template;
     @Transient
     @JsonDeserialize
     Map<String, Object> templateParams;

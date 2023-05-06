@@ -56,13 +56,12 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toPhone": "1234567890",
-                        "body": "This is a test"
+                        "templateName": "test"
                         }
                 """;
 
         Message message = Message.builder().id(1L).build();
-        Mockito.when(messageService.sendMessage(any()))
-                .thenReturn(message);
+        Mockito.when(messageService.sendMessage(any())).thenReturn(message);
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)

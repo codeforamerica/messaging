@@ -4,6 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
+import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,6 +25,8 @@ class MessageRequestTest {
     private MessageRepository messageRepository;
     @Autowired
     private SmsMessageRepository smsMessageRepository;
+    @Autowired
+    private TemplateRepository templateRepository;
 
     @ParameterizedTest
     @ValueSource(strings = { "1234567890", "11234567890", "+11234567890" })
@@ -73,11 +76,18 @@ class MessageRequestTest {
     public void persistence() {
         String body = "some body";
         String toPhone = "1234567890";
+        Template template = Template.builder()
+                .name("test")
+                .subject("Email for {{ name }}")
+                .body("Hi {{ name }}")
+                .build();
+        templateRepository.save(template);
         Message message = Message.builder()
                 .toPhone(toPhone)
                 .toEmail("sender@example.com")
                 .body("some body")
                 .subject("some subject")
+                .template(template)
                 .build();
         messageRepository.save(message);
         SmsMessage smsMessage = SmsMessage.builder()
