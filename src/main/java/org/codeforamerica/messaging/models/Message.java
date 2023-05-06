@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging.models;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -13,7 +12,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.Map;
 
 @Entity
 @Data
@@ -24,12 +22,12 @@ public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
+    @ManyToOne
+    Template template;
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     String toPhone;
     @Email
     String toEmail;
-    String body;
-    String subject;
     @OneToOne(cascade = CascadeType.REMOVE)
     private SmsMessage smsMessage;
     @OneToOne(cascade = CascadeType.REMOVE)
@@ -38,9 +36,4 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
-    @ManyToOne
-    Template template;
-    @Transient
-    @JsonDeserialize
-    Map<String, Object> templateParams;
 }

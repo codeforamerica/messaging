@@ -35,21 +35,19 @@ public class MessageService {
         }
 
         Message message = Message.builder()
-                .subject(messageRequest.getSubject())
-                .body(messageRequest.getBody())
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
                 .template(template)
-                .templateParams(messageRequest.getTemplateParams())
                 .build();
-        SmsMessage sentSmsMessage;
-        EmailMessage sentEmailMessage;
+
+        String subject = template.buildSubjectFromTemplate(messageRequest.getTemplateParams());
+        String body = template.buildBodyFromTemplate(messageRequest.getTemplateParams());
         if (message.getToPhone() != null) {
-            sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getTemplate(), message.getTemplateParams());
+            SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), body);
             message.setSmsMessage(sentSmsMessage);
         }
         if (message.getToEmail() != null) {
-            sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
+            EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), body, subject);
             message.setEmailMessage(sentEmailMessage);
         }
 

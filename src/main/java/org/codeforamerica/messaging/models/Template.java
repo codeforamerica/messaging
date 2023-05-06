@@ -38,6 +38,10 @@ public class Template {
     private OffsetDateTime updateTimestamp;
 
 
+    public String buildSubjectFromTemplate(Map<String, Object> templateParams) {
+        return buildContentFromTemplate(templateParams, Template::getSubject);
+    }
+
     public String buildBodyFromTemplate(Map<String, Object> templateParams) {
         return buildContentFromTemplate(templateParams, Template::getBody);
     }

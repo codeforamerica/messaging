@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.models;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,8 +22,7 @@ public class MessageRequest {
     String toPhone;
     @Email
     String toEmail;
-    String body;
-    String subject;
+    @NotBlank
     @Builder.Default
     String templateName = "default";
     @Transient

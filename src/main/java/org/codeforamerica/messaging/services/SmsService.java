@@ -1,12 +1,9 @@
 package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class SmsService {
@@ -18,10 +15,8 @@ public class SmsService {
         this.smsMessageRepository = smsMessageRepository;
     }
 
-    public SmsMessage sendSmsMessage(String to, Template template, Map<String, Object> templateParams) {
-        String body = template.buildBodyFromTemplate(templateParams);
+    public SmsMessage sendSmsMessage(String to, String body) {
         SmsMessage smsMessage = twilioGateway.sendMessage(to, body);
-        smsMessage = smsMessageRepository.save(smsMessage);
-        return smsMessage;
+        return smsMessageRepository.save(smsMessage);
     }
 }

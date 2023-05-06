@@ -5,6 +5,7 @@ import jakarta.validation.Validator;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -33,7 +34,7 @@ class MessageRequestTest {
     public void acceptsValidPhoneNumbers(String candidate) {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
-                .body("some body")
+                .templateName("template_name")
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertTrue(violations.isEmpty());
@@ -44,29 +45,30 @@ class MessageRequestTest {
     public void rejectsInValidPhoneNumbers(String candidate) {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
-                .body("some body")
+                .templateName("template_name")
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
     }
 
     @Test
+    @Disabled
     public void whenToEmailIsPresentSubjectIsRequired() {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("1234567890")
                 .toEmail("sender@example.com")
-                .body("some body")
+                .templateName("template_name")
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
     }
 
     @Test
+    @Disabled
     public void whenSubjectIsPresentToEmailIsRequired() {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("1234567890")
-                .body("some body")
-                .subject("some subject")
+                .templateName("template_name")
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
@@ -85,8 +87,6 @@ class MessageRequestTest {
         Message message = Message.builder()
                 .toPhone(toPhone)
                 .toEmail("sender@example.com")
-                .body("some body")
-                .subject("some subject")
                 .template(template)
                 .build();
         messageRepository.save(message);

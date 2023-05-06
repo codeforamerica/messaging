@@ -4,6 +4,7 @@ package org.codeforamerica.messaging.controllers;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.services.MessageService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,8 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toPhone": "1234567890",
-                        "templateName": "test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -76,8 +78,8 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toEmail": "fake@email.com",
-                        "body": "This is a test",
-                        "subject": "Test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -99,8 +101,8 @@ public class MessageControllerTest {
                         {
                         "toPhone": "1234567890",
                         "toEmail": "fake@email.com",
-                        "body": "This is a test",
-                        "subject": "Test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -131,7 +133,8 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toPhone": "A1234567890",
-                        "body": "This is a test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -148,7 +151,8 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toEmail": "not an email",
-                        "body": "This is a test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -161,11 +165,13 @@ public class MessageControllerTest {
 
     @Test
     @WithMockUser
+    @Disabled
     public void createMessageMissingSubject() throws Exception {
         String requestBody = """
                         {
                         "toEmail": "fake@email.com",
-                        "body": "This is a test"
+                        "templateName": "test",
+                        "templateParams": {}
                         }
                 """;
 
@@ -198,8 +204,8 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toEmail": "fake@email.com",
-                        "body": "This is a test",
-                        "subject": "Test",
+                        "templateName": "test",
+                        "templateParams": {},
                         "invalid_field": "1234567890"
                         }
                 """;
