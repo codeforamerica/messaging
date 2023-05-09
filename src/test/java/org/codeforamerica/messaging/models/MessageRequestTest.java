@@ -5,7 +5,6 @@ import jakarta.validation.Validator;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -52,29 +51,6 @@ class MessageRequestTest {
     }
 
     @Test
-    @Disabled
-    public void whenToEmailIsPresentSubjectIsRequired() {
-        MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("1234567890")
-                .toEmail("sender@example.com")
-                .templateName("template_name")
-                .build();
-        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
-        assertFalse(violations.isEmpty());
-    }
-
-    @Test
-    @Disabled
-    public void whenSubjectIsPresentToEmailIsRequired() {
-        MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("1234567890")
-                .templateName("template_name")
-                .build();
-        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
-        assertFalse(violations.isEmpty());
-    }
-
-    @Test
     public void persistence() {
         String body = "some body";
         String toPhone = "1234567890";
@@ -101,6 +77,7 @@ class MessageRequestTest {
         smsMessageRepository.save(smsMessage);
         messageRepository.save(message);
         messageRepository.delete(message);
+        templateRepository.delete(template);
     }
 
 }

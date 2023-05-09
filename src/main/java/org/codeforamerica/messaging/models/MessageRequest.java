@@ -23,8 +23,7 @@ public class MessageRequest {
     @Email
     String toEmail;
     @NotBlank
-    @Builder.Default
-    String templateName = "default";
+    String templateName;
     @Transient
     @JsonDeserialize
     Map<String, Object> templateParams;

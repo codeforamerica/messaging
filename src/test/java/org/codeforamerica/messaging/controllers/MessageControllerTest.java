@@ -4,7 +4,6 @@ package org.codeforamerica.messaging.controllers;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.services.MessageService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,25 +150,6 @@ public class MessageControllerTest {
         String requestBody = """
                         {
                         "toEmail": "not an email",
-                        "templateName": "test",
-                        "templateParams": {}
-                        }
-                """;
-
-        mockMvc.perform(post("/api/v1/messages")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest());
-        Mockito.verify(messageService, Mockito.never()).sendMessage(any());
-    }
-
-    @Test
-    @WithMockUser
-    @Disabled
-    public void createMessageMissingSubject() throws Exception {
-        String requestBody = """
-                        {
-                        "toEmail": "fake@email.com",
                         "templateName": "test",
                         "templateParams": {}
                         }

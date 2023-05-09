@@ -9,12 +9,6 @@ public class MessageRequestValidator implements ConstraintValidator<ValidMessage
 
     @Override
     public boolean isValid(MessageRequest messageRequest, ConstraintValidatorContext constraintValidatorContext) {
-//        if (StringUtils.isNoneBlank(messageRequest.getToEmail(), messageRequest.getSubject())) {
-//            return true;
-//        } else if (StringUtils.isAllBlank(messageRequest.getToEmail(), messageRequest.getSubject())) {
-//            return StringUtils.isNotBlank(messageRequest.getToPhone());
-//        }
-//        return false;
         return StringUtils.isNotBlank(messageRequest.getToPhone()) || StringUtils.isNotBlank(messageRequest.getToEmail());
     }
 }

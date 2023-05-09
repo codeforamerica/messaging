@@ -1,10 +1,20 @@
+create table template
+(
+    id                  bigserial                not null,
+    name                text                     not null unique,
+    subject             text,
+    body                text                     not null,
+    creation_timestamp  timestamp with time zone not null,
+    update_timestamp    timestamp with time zone,
+    primary key (id)
+);
+
 create table message
 (
     id                 bigserial                not null,
     to_phone           text                     null,
     to_email           text                     null,
-    subject            text,
-    body               text                     not null,
+    template_id        bigint references template (id) not null,
     sms_message_id     bigint references sms_message (id),
     email_message_id   bigint references email_message (id),
     creation_timestamp timestamp with time zone not null,

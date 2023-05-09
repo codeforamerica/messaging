@@ -1,10 +1,7 @@
 package org.codeforamerica.messaging.models;
 
 import com.github.jknack.handlebars.Handlebars;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,6 +25,7 @@ public class Template {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @NotBlank
+    @Column(unique = true)
     String name;
     String subject;
     @NotBlank
