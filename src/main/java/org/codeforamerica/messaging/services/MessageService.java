@@ -35,7 +35,7 @@ public class MessageService {
 
         OffsetDateTime sendAt = messageRequest.getSendAt() == null ? OffsetDateTime.now() : messageRequest.getSendAt();
         JobId id = jobRequestScheduler.schedule(sendAt, new SendMessageJobRequest(message.getId()));
-        log.info("Scheduled job {}", id);
+        log.info("Scheduled job {} to run at {}", id, sendAt);
         return message;
     }
 
@@ -51,6 +51,7 @@ public class MessageService {
     }
 
     public void sendMessage(Long messageId) {
+        log.info("Sending message #{}", messageId);
         Message message = messageRepository.findById(messageId).get();
         if (message.needToSendSms()) {
             SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
