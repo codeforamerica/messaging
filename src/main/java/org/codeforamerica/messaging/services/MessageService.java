@@ -39,7 +39,7 @@ public class MessageService {
         return message;
     }
 
-    private Message saveMessage(MessageRequest messageRequest) {
+    public Message saveMessage(MessageRequest messageRequest) {
         Message message = Message.builder()
                 .subject(messageRequest.getSubject())
                 .body(messageRequest.getBody())
