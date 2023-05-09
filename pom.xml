@@ -96,6 +96,12 @@
             <artifactId>jobrunr-spring-boot-3-starter</artifactId>
             <version>${jobrunr.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
