@@ -40,8 +40,8 @@ public class MessageService {
                 .template(template)
                 .build();
 
-        String subject = template.buildSubjectFromTemplate(messageRequest.getTemplateParams());
-        String body = template.buildBodyFromTemplate(messageRequest.getTemplateParams());
+        String subject = template.build(Template::getSubject, messageRequest.getTemplateParams());
+        String body = template.build(Template::getBody, messageRequest.getTemplateParams());
         if (message.getToPhone() != null) {
             SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), body);
             message.setSmsMessage(sentSmsMessage);

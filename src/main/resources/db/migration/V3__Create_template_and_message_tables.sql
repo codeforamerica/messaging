@@ -1,12 +1,15 @@
 create table template
 (
     id                  bigserial                not null,
-    name                text                     not null unique,
+    name                text                     not null,
     subject             text,
     body                text                     not null,
+    language            text                     not null,
+    variant             text                     not null,
     creation_timestamp  timestamp with time zone not null,
     update_timestamp    timestamp with time zone,
-    primary key (id)
+    primary key (id),
+    constraint unique_name_language_variant unique (name, language, variant)
 );
 
 create table message

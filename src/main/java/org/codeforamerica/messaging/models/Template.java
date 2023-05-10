@@ -20,33 +20,29 @@ import java.util.function.Function;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "language", "variant"})})
 public class Template {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @NotBlank
-    @Column(unique = true)
     String name;
     String subject;
     @NotBlank
     String body;
+    @NotBlank
+    @Builder.Default
+    String language = "en";
+    @NotBlank
+    @Builder.Default
+    String variant = "A";
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
 
 
-    public String buildSubjectFromTemplate(Map<String, Object> templateParams) {
-        return buildContentFromTemplate(templateParams, Template::getSubject);
-    }
-
-    public String buildBodyFromTemplate(Map<String, Object> templateParams) {
-        return buildContentFromTemplate(templateParams, Template::getBody);
-    }
-
-    public String buildContentFromTemplate(
-            Map<String, Object> templateParams,
-            Function<Template, String> templateFieldGetter) {
+    public String build(Function<Template, String> templateFieldGetter, Map<String, Object> templateParams) {
         Handlebars handlebars = new Handlebars();
         com.github.jknack.handlebars.Template handlebarsTemplate;
         try {
