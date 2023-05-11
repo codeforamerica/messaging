@@ -51,7 +51,7 @@ class MessageRequestTest {
     }
 
     @Test
-    public void rejectsDuplicateNameWithMatchingLanguageAndVariant() {
+    public void persistence() {
         String body = "some body";
         String toPhone = "1234567890";
         Template template = Template.builder()

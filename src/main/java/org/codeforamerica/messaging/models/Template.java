@@ -22,6 +22,9 @@ import java.util.function.Function;
 @Builder
 @Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "language", "variant"})})
 public class Template {
+    public static final String DEFAULT_LANGUAGE = "en";
+    public static final String DEFAULT_VARIANT = "A";
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
@@ -32,10 +35,10 @@ public class Template {
     String body;
     @NotBlank
     @Builder.Default
-    String language = "en";
+    String language = DEFAULT_LANGUAGE;
     @NotBlank
     @Builder.Default
-    String variant = "A";
+    String variant = DEFAULT_VARIANT;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp

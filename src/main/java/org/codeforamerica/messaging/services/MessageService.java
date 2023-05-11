@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static org.codeforamerica.messaging.models.Template.DEFAULT_LANGUAGE;
+import static org.codeforamerica.messaging.models.Template.DEFAULT_VARIANT;
+
 
 @Service
 @Slf4j
@@ -29,9 +32,14 @@ public class MessageService {
     }
 
     public Message sendMessage(MessageRequest messageRequest) {
-        Template template = templateRepository.findFirstByName(messageRequest.getTemplateName());
+        String language = getLanguage(messageRequest);
+        String variant = getVariant(messageRequest);
+        Template template = templateRepository.findFirstByNameAndLanguageAndVariant(
+                messageRequest.getTemplateName(), language, variant);
         if (template == null) {
-            throw new RuntimeException("Template not found with the name provided");
+            throw new RuntimeException(String.format(
+                    "Template not found with the info provided: name=%s, language=%s, variant=%s",
+                    messageRequest.getTemplateName(), language, variant));
         }
 
         Message message = Message.builder()
@@ -55,9 +63,22 @@ public class MessageService {
         return message;
     }
 
-
     public Optional<Message> getMessage(Long id) {
         return messageRepository.findById(id);
+    }
+
+    private String getLanguage(MessageRequest messageRequest) {
+        if (messageRequest.getTemplateParams() != null && messageRequest.getTemplateParams().get("language") != null) {
+            return messageRequest.getTemplateParams().get("language").toString();
+        }
+        return DEFAULT_LANGUAGE;
+    }
+
+    private String getVariant(MessageRequest messageRequest) {
+        if (messageRequest.getTemplateParams() != null && messageRequest.getTemplateParams().get("variant") != null) {
+            return messageRequest.getTemplateParams().get("variant").toString();
+        }
+        return DEFAULT_VARIANT;
     }
 
 }

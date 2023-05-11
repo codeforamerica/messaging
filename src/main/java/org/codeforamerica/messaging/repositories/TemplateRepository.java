@@ -6,7 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TemplateRepository extends CrudRepository<Template, Long> {
-
-    Template findFirstByName(String name);
-
+    Template findFirstByNameAndLanguageAndVariant(String name, String language, String variant);
 }
