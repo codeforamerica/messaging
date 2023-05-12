@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.services.MessageService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,13 +42,53 @@ public class MessageControllerTest {
 
     @Test
     @WithMockUser
-    public void getMessageAuthenticated() throws Exception {
+    public void whenAuthenticatedAndPhoneAndNoAssociatedSmsMessage_ThenStatusPending() throws Exception {
+        String expectedResponse = """
+                {
+                    id: 1,
+                    status: "pending",
+                    toPhone: "1234567890"
+                }
+                """;
+        Message message = Message.builder()
+                .id(1L)
+                .toPhone("1234567890")
+                .build();
+
         Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.ofNullable(Message.builder().id(1L).build()));
+                .thenReturn(Optional.of(message));
 
         mockMvc.perform(get("/api/v1/messages/1")
                         .with(httpBasic("user", "password")))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
+    }
+
+    @Test
+    @WithMockUser
+    public void whenAuthenticatedAndPhoneAndHasAssociatedSmsMessage_ThenStatusCompleted() throws Exception {
+        String expectedResponse = """
+                {
+                    id: 1,
+                    status: "completed",
+                    toPhone: "1234567890"
+                }
+                """;
+        Message message = Message.builder()
+                .id(1L)
+                .toPhone("1234567890")
+                .build();
+        SmsMessage smsMessage = SmsMessage.builder()
+                .build();
+        message.setSmsMessage(smsMessage);
+
+        Mockito.when(messageService.getMessage(any()))
+                .thenReturn(Optional.of(message));
+
+        mockMvc.perform(get("/api/v1/messages/1")
+                        .with(httpBasic("user", "password")))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
 
     @Test
