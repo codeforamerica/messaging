@@ -48,6 +48,6 @@ public class Message {
     }
 
     public String getStatus() {
-        return needToSendEmail() || needToSendSms()? "pending": "completed";
+        return needToSendEmail() || needToSendSms() ? "pending" : "completed";
     }
 }

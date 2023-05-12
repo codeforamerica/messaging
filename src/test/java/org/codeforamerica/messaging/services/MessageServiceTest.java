@@ -44,11 +44,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void scheduleMessage() {
-    }
-
-    @Test
-    void whenOnlyPhone_thenOnlySmsServiceCalled() {
+    void whenOnlyPhone_thenOnlySmsServiceCalled() throws Exception {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("8005551212")
                 .body("Test message")
@@ -61,7 +57,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenOnlyEmail_thenOnlyEmailServiceCalled() {
+    void whenOnlyEmail_thenOnlyEmailServiceCalled() throws Exception {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toEmail("foo@example.com")
                 .subject("Test subject")
@@ -75,7 +71,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenBothPhoneAndEmail_thenBothServicesCalled() {
+    void whenBothPhoneAndEmail_thenBothServicesCalled() throws Exception {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone("8005551212")
                 .toEmail("foo@example.com")
