@@ -31,16 +31,14 @@ public class MessageController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(sentMessage, responseHeaders, HttpStatus.CREATED);
-
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Optional<Message>> getMessage(@PathVariable Long id) {
-       Optional<Message> message = messageService.getMessage(id);
+        Optional<Message> message = messageService.getMessage(id);
         if (message.isPresent()) {
             return ResponseEntity.ok(message);
         }
         return ResponseEntity.notFound().build();
     }
-
 }
