@@ -50,18 +50,24 @@ public class MessageService {
         return message;
     }
 
-    public void sendMessage(Long messageId) {
+    public void sendMessage(Long messageId) throws Exception {
         log.info("Sending message #{}", messageId);
-        Message message = messageRepository.findById(messageId).get();
-        if (message.needToSendSms()) {
-            SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
-            message.setSmsMessage(sentSmsMessage);
+        try {
+            Message message = messageRepository.findById(messageId).get();
+            if (message.needToSendSms()) {
+                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
+                message.setSmsMessage(sentSmsMessage);
+            }
+            if (message.needToSendEmail()) {
+                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
+                message.setEmailMessage(sentEmailMessage);
+            }
+            messageRepository.save(message);
+        } catch (Exception e) {
+            log.error("Error running job", e);
+            throw e;
         }
-        if (message.needToSendEmail()) {
-            EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
-            message.setEmailMessage(sentEmailMessage);
-        }
-        messageRepository.save(message);
+
     }
 
 
