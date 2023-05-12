@@ -50,7 +50,7 @@ public class MessageService {
         return message;
     }
 
-    public void sendMessage(Long messageId) throws Exception {
+    public void sendMessage(Long messageId) {
         log.info("Sending message #{}", messageId);
         try {
             Message message = messageRepository.findById(messageId).get();
@@ -67,12 +67,9 @@ public class MessageService {
             log.error("Error running job", e);
             throw e;
         }
-
     }
-
 
     public Optional<Message> getMessage(Long id) {
         return messageRepository.findById(id);
     }
-
 }
