@@ -35,7 +35,9 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn -Dspring.profiles.active=ci -B package --file pom.xml
+      run: |
+        mvn -Dspring.profiles.active=ci -B test -Dtest=MessageServiceTest --file pom.xml
+        mvn -Dspring.profiles.active=ci -B package -Dtest=!MessageServiceTest --file pom.xml
       env:
         POSTGRES_HOST: localhost
         POSTGRES_PORT: 5432
