@@ -1,14 +1,14 @@
 package org.codeforamerica.messaging.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
-import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -16,15 +16,17 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @Builder
 @ToString(onlyExplicitlyIncluded = true)
-public class TemplateSet {
+public class Template {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @NotBlank
     @Column(unique=true)
-    @Pattern(regexp = RegexPatternStrings.TEMPLATE_NAME_REGEX)
     @ToString.Include
     String name;
+    @JsonIgnore
+    @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    List<TemplateVariant> templateVariants;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp

@@ -1,7 +1,10 @@
 package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.models.*;
-import org.codeforamerica.messaging.repositories.*;
+import org.codeforamerica.messaging.repositories.EmailMessageRepository;
+import org.codeforamerica.messaging.repositories.MessageRepository;
+import org.codeforamerica.messaging.repositories.SmsMessageRepository;
+import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -32,43 +36,39 @@ class MessageServiceTest {
     @Autowired
     EmailMessageRepository emailMessageRepository;
     @Autowired
-    TemplateSetRepository templateSetRepository;
-    @Autowired
-    TemplateVariantRepository templateVariantRepository;
+    TemplateRepository templateRepository;
 
     public static final String TEMPLATE_NAME = "test";
     private final String SUBJECT = "Any subject";
     private final String BODY = "Any body";
     private final String SPANISH_SUBJECT = "Spanish subject";
     private final String SPANISH_BODY = "Spanish body";
-    private final TemplateSet TEMPLATE_SET = TemplateSet.builder()
+    private final Template TEMPLATE = Template.builder()
             .name(TEMPLATE_NAME)
             .build();
     private final TemplateVariant TEMPLATE_VARIANT = TemplateVariant.builder()
             .body(BODY)
             .subject(SUBJECT)
-            .templateSet(TEMPLATE_SET)
+            .template(TEMPLATE)
             .build();
     private final TemplateVariant TEMPLATE_VARIANT_ES_B = TemplateVariant.builder()
             .body(SPANISH_BODY)
             .subject(SPANISH_SUBJECT)
-            .templateSet(TEMPLATE_SET)
+            .template(TEMPLATE)
             .language("es")
             .treatment("B")
             .build();
 
     @BeforeEach
     void setup() {
-        templateSetRepository.save(TEMPLATE_SET);
-        templateVariantRepository.save(TEMPLATE_VARIANT);
-        templateVariantRepository.save(TEMPLATE_VARIANT_ES_B);
+        TEMPLATE.setTemplateVariants((List.of(TEMPLATE_VARIANT, TEMPLATE_VARIANT_ES_B)));
+        templateRepository.save(TEMPLATE);
     }
 
     @AfterEach
     void tearDown() {
         messageRepository.deleteAll();
-        templateVariantRepository.deleteAll();
-        templateSetRepository.deleteAll();
+        templateRepository.deleteAll();
     }
 
     @Test

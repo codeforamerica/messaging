@@ -3,8 +3,7 @@ package org.codeforamerica.messaging.services;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.repositories.MessageRepository;
-import org.codeforamerica.messaging.repositories.TemplateSetRepository;
-import org.codeforamerica.messaging.repositories.TemplateVariantRepository;
+import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.stereotype.Service;
@@ -20,22 +19,19 @@ public class MessageService {
     private final SmsService smsService;
     private final EmailService emailService;
     private final MessageRepository messageRepository;
-    private final TemplateSetRepository templateSetRepository;
-    private final TemplateVariantRepository templateVariantRepository;
+    private final TemplateRepository templateRepository;
     private final JobRequestScheduler jobRequestScheduler;
 
 
     public MessageService(SmsService smsService,
             EmailService emailService,
             MessageRepository messageRepository,
-            TemplateSetRepository templateSetRepository,
-            TemplateVariantRepository templateVariantRepository,
+            TemplateRepository templateRepository,
             JobRequestScheduler jobRequestScheduler) {
         this.smsService = smsService;
         this.emailService = emailService;
         this.messageRepository = messageRepository;
-        this.templateSetRepository = templateSetRepository;
-        this.templateVariantRepository = templateVariantRepository;
+        this.templateRepository = templateRepository;
         this.jobRequestScheduler = jobRequestScheduler;
     }
 
@@ -94,21 +90,23 @@ public class MessageService {
     }
 
     private TemplateVariant getTemplateVariant(MessageRequest messageRequest) {
-        TemplateSet templateSet = templateSetRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
-        if (templateSet == null) {
+        Template template = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
+        if (template == null) {
             throw new RuntimeException(String.format(
                     "Template Set not found with the name provided: name=%s", messageRequest.getTemplateName()));
         }
         String language = messageRequest.getLanguage();
         String treatment = messageRequest.getTreatment();
-        TemplateVariant templateVariant = templateVariantRepository.findFirstByTemplateSetAndLanguageAndTreatment(
-                templateSet, language, treatment);
-        if (templateVariant == null) {
+        Optional<TemplateVariant> templateVariantOptional = template.getTemplateVariants().stream()
+                .filter(templateVariant -> language.equals(templateVariant.getLanguage()))
+                .filter(templateVariant -> treatment.equals(templateVariant.getTreatment()))
+                .findFirst();
+        if (templateVariantOptional.isEmpty()) {
             throw new RuntimeException(String.format(
                     "Template Variant not found with the info provided: name=%s, language=%s, treatment=%s",
                     messageRequest.getTemplateName(), language, treatment));
         }
-        return templateVariant;
+        return templateVariantOptional.get();
     }
 
 }

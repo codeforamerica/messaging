@@ -1,8 +1,8 @@
-insert into "template_set" (id, name, creation_timestamp) VALUES (1, 'default', current_timestamp);
-insert into "template_set" (id, name, creation_timestamp) VALUES (2, 'greeting', current_timestamp);
+insert into "template" (id, name, creation_timestamp) VALUES (1, 'default', current_timestamp);
+insert into "template" (id, name, creation_timestamp) VALUES (2, 'greeting', current_timestamp);
 
 
-insert into "template_variant" (subject, body, language, treatment, template_set_id, creation_timestamp)
+insert into "template_variant" (subject, body, language, treatment, template_id, creation_timestamp)
 VALUES (
         '{{ subject }}',
         '{{ body }}',
@@ -12,7 +12,7 @@ VALUES (
         current_timestamp
 );
 
-insert into "template_variant" (subject, body, language, treatment, template_set_id, creation_timestamp)
+insert into "template_variant" (subject, body, language, treatment, template_id, creation_timestamp)
 VALUES (
         'This is a greeting from {{from_name}}',
         'Hi, {{to_name}}!',
@@ -22,7 +22,7 @@ VALUES (
         current_timestamp
 );
 
-insert into "template_variant" (subject, body, language, treatment, template_set_id, creation_timestamp)
+insert into "template_variant" (subject, body, language, treatment, template_id, creation_timestamp)
 VALUES (
         'Este es un saludo de {{from_name}}',
         'Hola, {{to_name}}!',
@@ -32,7 +32,7 @@ VALUES (
         current_timestamp
 );
 
-insert into "template_variant" (subject, body, language, treatment, template_set_id, creation_timestamp)
+insert into "template_variant" (subject, body, language, treatment, template_id, creation_timestamp)
 VALUES (
        'This is a variant greeting from {{from_name}}',
        'Hey, {{to_name}}.',
@@ -42,7 +42,7 @@ VALUES (
        current_timestamp
 );
 
-insert into "template_variant" (subject, body, language, treatment, template_set_id, creation_timestamp)
+insert into "template_variant" (subject, body, language, treatment, template_id, creation_timestamp)
 VALUES (
        'Este es un saludo variante de {{from_name}}',
        'Que tal, {{to_name}}.',

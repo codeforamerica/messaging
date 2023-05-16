@@ -34,8 +34,8 @@ public class TemplateVariant {
     @NotBlank
     @Builder.Default
     String treatment = DEFAULT_TREATMENT;
-    @ManyToOne
-    TemplateSet templateSet;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    Template template;
     @CreationTimestamp
     @ToString.Exclude
     private OffsetDateTime creationTimestamp;
