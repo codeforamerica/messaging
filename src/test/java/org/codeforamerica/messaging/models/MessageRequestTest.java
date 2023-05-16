@@ -4,8 +4,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
-import org.codeforamerica.messaging.repositories.TemplateSetRepository;
-import org.codeforamerica.messaging.repositories.TemplateVariantRepository;
+import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,15 +28,12 @@ class MessageRequestTest {
     @Autowired
     private SmsMessageRepository smsMessageRepository;
     @Autowired
-    private TemplateVariantRepository templateVariantRepository;
-    @Autowired
-    private TemplateSetRepository templateSetRepository;
+    private TemplateRepository templateRepository;
 
     @AfterEach
     void tearDown() {
+        templateRepository.deleteAll();
         messageRepository.deleteAll();
-        templateVariantRepository.deleteAll();
-        templateSetRepository.deleteAll();
     }
 
     @ParameterizedTest
@@ -65,15 +62,17 @@ class MessageRequestTest {
     public void persistence() {
         String body = "some body";
         String toPhone = "1234567890";
-        TemplateSet templateSet = TemplateSet.builder()
-                .name("name")
+        Template template = Template.builder()
+                .name("test")
                 .build();
-        templateSetRepository.save(templateSet);
+        templateRepository.save(template);
         TemplateVariant templateVariant = TemplateVariant.builder()
                 .body("body")
-                .templateSet(templateSet)
+                .template(template)
                 .build();
-        templateVariantRepository.save(templateVariant);
+        template.setTemplateVariants(List.of(templateVariant));
+        templateRepository.save(template);
+        templateVariant = templateRepository.findFirstByNameIgnoreCase("test").getTemplateVariants().get(0);
         Message message = Message.builder()
                 .toPhone(toPhone)
                 .toEmail("sender@example.com")
