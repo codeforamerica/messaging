@@ -93,7 +93,7 @@ public class MessageService {
         Template template = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
         if (template == null) {
             throw new RuntimeException(String.format(
-                    "Template Set not found with the name provided: name=%s", messageRequest.getTemplateName()));
+                    "Template not found with the name provided: name=%s", messageRequest.getTemplateName()));
         }
         String language = messageRequest.getLanguage();
         String treatment = messageRequest.getTreatment();

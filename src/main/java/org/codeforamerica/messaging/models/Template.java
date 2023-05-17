@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -24,7 +23,6 @@ public class Template {
     @Column(unique=true)
     @ToString.Include
     String name;
-    @JsonIgnore
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     List<TemplateVariant> templateVariants;
     @CreationTimestamp

@@ -34,7 +34,7 @@ public class TemplateVariant {
     @NotBlank
     @Builder.Default
     String treatment = DEFAULT_TREATMENT;
-    @ManyToOne(cascade = CascadeType.MERGE)
+    @ManyToOne
     Template template;
     @CreationTimestamp
     @ToString.Exclude
