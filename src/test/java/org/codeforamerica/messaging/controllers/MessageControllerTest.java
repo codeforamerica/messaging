@@ -99,8 +99,7 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toPhone": "1234567890",
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -121,8 +120,7 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toEmail": "fake@email.com",
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -144,8 +142,7 @@ public class MessageControllerTest {
                 {
                     "toPhone": "1234567890",
                     "toEmail": "fake@email.com",
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -176,8 +173,7 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toPhone": "A1234567890",
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -194,8 +190,7 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toEmail": "not an email",
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -211,8 +206,7 @@ public class MessageControllerTest {
     public void createMessageMissingPhoneAndEmail() throws Exception {
         String requestBody = """
                 {
-                    "templateName": "test",
-                    "templateParams": {}
+                    "templateName": "test"
                 }
                 """;
 
@@ -230,7 +224,6 @@ public class MessageControllerTest {
                 {
                     "toEmail": "fake@email.com",
                     "templateName": "test",
-                    "templateParams": {},
                     "invalid_field": "1234567890"
                 }
                 """;
