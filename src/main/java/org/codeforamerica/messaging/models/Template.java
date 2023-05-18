@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedList;
 import java.util.List;
 
 @Entity
@@ -23,10 +24,25 @@ public class Template {
     @Column(unique=true)
     @ToString.Include
     String name;
-    @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    List<TemplateVariant> templateVariants;
+    @ToString.Include
+    @Singular
+    @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    List<TemplateVariant> templateVariants = new LinkedList<>();
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+
+    public void addTemplateVariant(TemplateVariant templateVariant) {
+        if (templateVariants.isEmpty()) {
+            this.setTemplateVariants(new LinkedList<>());
+        }
+        templateVariants.add(templateVariant);
+        templateVariant.setTemplate(this);
+    }
+
+    public void removeTemplateVariant(TemplateVariant templateVariant) {
+        templateVariants.remove(templateVariant);
+        templateVariant.setTemplate(null);
+    }
 }

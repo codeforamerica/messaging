@@ -2,6 +2,8 @@ package org.codeforamerica.messaging.models;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
+import org.codeforamerica.messaging.TestData;
+import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
@@ -12,7 +14,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,7 +42,7 @@ class MessageRequestTest {
     public void acceptsValidPhoneNumbers(String candidate) {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
-                .templateName("template_name")
+                .templateName(TestData.TEMPLATE_NAME)
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertTrue(violations.isEmpty());
@@ -52,7 +53,7 @@ class MessageRequestTest {
     public void rejectsInValidPhoneNumbers(String candidate) {
         MessageRequest messageRequest = MessageRequest.builder()
                 .toPhone(candidate)
-                .templateName("template_name")
+                .templateName(TestData.TEMPLATE_NAME)
                 .build();
         Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
         assertFalse(violations.isEmpty());
@@ -60,38 +61,32 @@ class MessageRequestTest {
 
     @Test
     public void persistence() {
-        String body = "some body";
-        String toPhone = "1234567890";
-        Template template = Template.builder()
-                .name("test")
-                .build();
-        templateRepository.save(template);
-        TemplateVariant templateVariant = TemplateVariant.builder()
-                .body("body")
-                .template(template)
-                .build();
-        template.setTemplateVariants(List.of(templateVariant));
-        templateRepository.save(template);
-        templateVariant = templateRepository.findFirstByNameIgnoreCase("test").getTemplateVariants().get(0);
+        Template template = TestData.aTemplate().build();
+        TemplateVariant templateVariant = TestData.aDefaultTemplateVariant().build();
+        template.addTemplateVariant(templateVariant);
+        template = templateRepository.save(template);
         Message message = Message.builder()
-                .toPhone(toPhone)
-                .toEmail("sender@example.com")
-                .body("some body")
-                .subject("some subject")
-                .templateVariant(templateVariant)
+                .toPhone(TestData.TO_PHONE)
+                .toEmail(TestData.TO_EMAIL)
+                .body(TestData.TEMPLATE_BODY_DEFAULT)
+                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT)
+                .templateVariant(template.getTemplateVariants().get(0))
                 .build();
         messageRepository.save(message);
         SmsMessage smsMessage = SmsMessage.builder()
-                .toPhone(toPhone)
-                .fromPhone("0000000000")
-                .body(body)
-                .status("fixme")
-                .providerMessageId("some-provider-message-id")
+                .toPhone(TestData.TO_PHONE)
+                .fromPhone(TwilioGateway.DEFAULT_NUMBER)
+                .body(TestData.TEMPLATE_BODY_DEFAULT)
+                .status(TestData.STATUS)
+                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
                 .build();
         message.setSmsMessage(smsMessage);
         smsMessageRepository.save(smsMessage);
         messageRepository.save(message);
         messageRepository.delete(message);
+        template.removeTemplateVariant(templateVariant);
+        templateRepository.save(template);
+        templateRepository.delete(template);
     }
 
 }

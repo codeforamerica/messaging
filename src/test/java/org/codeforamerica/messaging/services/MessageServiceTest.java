@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.services;
 
+import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.MessageRepository;
@@ -14,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -38,31 +38,11 @@ class MessageServiceTest {
     @Autowired
     TemplateRepository templateRepository;
 
-    public static final String TEMPLATE_NAME = "test";
-    private final String SUBJECT = "Any subject";
-    private final String BODY = "Any body";
-    private final String SPANISH_SUBJECT = "Spanish subject";
-    private final String SPANISH_BODY = "Spanish body";
-    private final Template TEMPLATE = Template.builder()
-            .name(TEMPLATE_NAME)
-            .build();
-    private final TemplateVariant TEMPLATE_VARIANT = TemplateVariant.builder()
-            .body(BODY)
-            .subject(SUBJECT)
-            .template(TEMPLATE)
-            .build();
-    private final TemplateVariant TEMPLATE_VARIANT_ES_B = TemplateVariant.builder()
-            .body(SPANISH_BODY)
-            .subject(SPANISH_SUBJECT)
-            .template(TEMPLATE)
-            .language("es")
-            .treatment("B")
-            .build();
-
     @BeforeEach
     void setup() {
-        TEMPLATE.setTemplateVariants((List.of(TEMPLATE_VARIANT, TEMPLATE_VARIANT_ES_B)));
-        templateRepository.save(TEMPLATE);
+        Template template = TestData.aTemplate().build();
+        TestData.addVariantsToTemplate(template);
+        templateRepository.save(template);
     }
 
     @AfterEach
@@ -74,71 +54,73 @@ class MessageServiceTest {
     @Test
     void whenOnlyPhone_thenOnlySmsServiceCalled() {
         MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("8005551212")
-                .templateName(TEMPLATE_NAME)
+                .toPhone(TestData.TO_PHONE)
+                .templateName(TestData.TEMPLATE_NAME)
+                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), BODY);
+        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_DEFAULT);
         Mockito.verify(emailService, Mockito.never()).sendEmailMessage(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     @Test
     void whenOnlyEmail_thenOnlyEmailServiceCalled() {
         MessageRequest messageRequest = MessageRequest.builder()
-                .toEmail("foo@example.com")
-                .templateName(TEMPLATE_NAME)
+                .toEmail(TestData.TO_EMAIL)
+                .templateName(TestData.TEMPLATE_NAME)
+                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
         messageService.sendMessage(message.getId());
         Mockito.verify(smsService, Mockito.never()).sendSmsMessage(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), BODY, SUBJECT);
+        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
     }
 
     @Test
     void whenBothPhoneAndEmail_thenBothServicesCalled() {
         MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("8005551212")
-                .toEmail("foo@example.com")
-                .templateName(TEMPLATE_NAME)
+                .toPhone(TestData.TO_PHONE)
+                .toEmail(TestData.TO_EMAIL)
+                .templateName(TestData.TEMPLATE_NAME)
+                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), BODY);
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), BODY, SUBJECT);
+        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_DEFAULT);
+        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
     }
 
     @Test
     void whenScheduledWithBothPhoneAndEmail_thenBothServicesCalledAfterScheduleDelay() {
-        String subject = "Any subject";
-        String body = "Any body";
         MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("8005551212")
-                .toEmail("foo@example.com")
-                .templateName(TEMPLATE_NAME)
+                .toPhone(TestData.TO_PHONE)
+                .toEmail(TestData.TO_EMAIL)
+                .templateName(TestData.TEMPLATE_NAME)
+                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .sendAt(OffsetDateTime.now().plusSeconds(20))
                 .build();
         SmsMessage smsMessage = SmsMessage.builder()
-                .body(body)
+                .body(TestData.TEMPLATE_BODY_DEFAULT)
                 .toPhone(messageRequest.getToPhone())
-                .fromPhone("1234567890")
-                .status("accepted")
-                .providerMessageId("PROVIDER_MESSAGE_ID")
+                .fromPhone(TestData.TO_PHONE)
+                .status(TestData.STATUS)
+                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
                 .build();
         smsMessageRepository.save(smsMessage);
 
         Mockito.when(smsService.sendSmsMessage(Mockito.any(), Mockito.any())).thenReturn(smsMessage);
 
         EmailMessage emailMessage = EmailMessage.builder()
-                .body(body)
-                .subject(subject)
+                .body(TestData.TEMPLATE_BODY_DEFAULT)
+                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT)
                 .toEmail(messageRequest.getToEmail())
-                .fromEmail("messaging@example.com")
-                .status("accepted")
-                .providerMessageId("PROVIDER_MESSAGE_ID")
+                .fromEmail(TestData.TO_EMAIL)
+                .status(TestData.STATUS)
+                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
                 .build();
         Mockito.when(emailService.sendEmailMessage(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(emailMessage);
@@ -154,16 +136,19 @@ class MessageServiceTest {
     @Test
     void whenMessageRequestHasLanguageAndTreatment_thenValuesAreUsedToSelectTemplateVariant() {
         MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone("8005551212")
-                .toEmail("foo@example.com")
-                .templateName(TEMPLATE_NAME)
-                .templateParams(Map.of("language", "es", "treatment", "B"))
+                .toPhone(TestData.TO_PHONE)
+                .toEmail(TestData.TO_EMAIL)
+                .templateName(TestData.TEMPLATE_NAME)
+                .templateParams(Map.of(
+                        "language", "es",
+                        "treatment", "B",
+                        "placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), SPANISH_BODY);
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), SPANISH_BODY, SPANISH_SUBJECT);
+        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_ES_B);
+        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_ES_B, TestData.TEMPLATE_SUBJECT_ES_B);
     }
 
 }
