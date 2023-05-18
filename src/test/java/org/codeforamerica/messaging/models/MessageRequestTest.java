@@ -75,7 +75,7 @@ class MessageRequestTest {
         messageRepository.save(message);
         SmsMessage smsMessage = SmsMessage.builder()
                 .toPhone(TestData.TO_PHONE)
-                .fromPhone(TwilioGateway.DEFAULT_NUMBER)
+                .fromPhone(TwilioGateway.DEFAULT_FROM_PHONE)
                 .body(TestData.TEMPLATE_BODY_DEFAULT)
                 .status(TestData.STATUS)
                 .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
