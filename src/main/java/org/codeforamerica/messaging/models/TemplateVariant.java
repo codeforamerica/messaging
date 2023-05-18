@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.jknack.handlebars.Handlebars;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -25,23 +26,30 @@ public class TemplateVariant {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    String subject;
-    @NotBlank
-    String body;
     @NotBlank
     @Builder.Default
     String language = DEFAULT_LANGUAGE;
     @NotBlank
     @Builder.Default
     String treatment = DEFAULT_TREATMENT;
+    String subject;
+    @NotBlank
+    String body;
     @ManyToOne
+    @JsonIgnore
+    @ToString.Exclude
     Template template;
+    @JsonIgnore
     @CreationTimestamp
     @ToString.Exclude
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     @ToString.Exclude
     private OffsetDateTime updateTimestamp;
+
+    public String getTemplateName() {
+        return template.getName();
+    }
 
     public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, Object> templateParams) throws IOException {
         Handlebars handlebars = new Handlebars();

@@ -90,14 +90,14 @@ public class MessageService {
     }
 
     private TemplateVariant getTemplateVariant(MessageRequest messageRequest) {
-        Template template = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
-        if (template == null) {
+        Optional<Template> templateOptional = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
+        if (templateOptional.isEmpty()) {
             throw new RuntimeException(String.format(
                     "Template not found with the name provided: name=%s", messageRequest.getTemplateName()));
         }
         String language = messageRequest.getLanguage();
         String treatment = messageRequest.getTreatment();
-        Optional<TemplateVariant> templateVariantOptional = template.getTemplateVariants().stream()
+        Optional<TemplateVariant> templateVariantOptional = templateOptional.get().getTemplateVariants().stream()
                 .filter(templateVariant -> language.equals(templateVariant.getLanguage()))
                 .filter(templateVariant -> treatment.equals(templateVariant.getTreatment()))
                 .findFirst();
