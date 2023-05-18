@@ -53,10 +53,8 @@ class MessageServiceTest {
 
     @Test
     void whenOnlyPhone_thenOnlySmsServiceCalled() {
-        MessageRequest messageRequest = MessageRequest.builder()
+        MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
-                .templateName(TestData.TEMPLATE_NAME)
-                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
@@ -67,10 +65,8 @@ class MessageServiceTest {
 
     @Test
     void whenOnlyEmail_thenOnlyEmailServiceCalled() {
-        MessageRequest messageRequest = MessageRequest.builder()
+        MessageRequest messageRequest = TestData.aMessageRequest()
                 .toEmail(TestData.TO_EMAIL)
-                .templateName(TestData.TEMPLATE_NAME)
-                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
@@ -81,11 +77,9 @@ class MessageServiceTest {
 
     @Test
     void whenBothPhoneAndEmail_thenBothServicesCalled() {
-        MessageRequest messageRequest = MessageRequest.builder()
+        MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .templateName(TestData.TEMPLATE_NAME)
-                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest);
 
@@ -96,35 +90,20 @@ class MessageServiceTest {
 
     @Test
     void whenScheduledWithBothPhoneAndEmail_thenBothServicesCalledAfterScheduleDelay() {
-        MessageRequest messageRequest = MessageRequest.builder()
+        MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .templateName(TestData.TEMPLATE_NAME)
-                .templateParams(Map.of("placeholder", "{{placeholder}}"))
                 .sendAt(OffsetDateTime.now().plusSeconds(20))
                 .build();
-        SmsMessage smsMessage = SmsMessage.builder()
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .toPhone(messageRequest.getToPhone())
-                .fromPhone(TestData.TO_PHONE)
-                .status(TestData.STATUS)
-                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
-                .build();
-        smsMessageRepository.save(smsMessage);
 
+        SmsMessage smsMessage = TestData.anSmsMessage().build();
+        smsMessage = smsMessageRepository.save(smsMessage);
         Mockito.when(smsService.sendSmsMessage(Mockito.any(), Mockito.any())).thenReturn(smsMessage);
 
-        EmailMessage emailMessage = EmailMessage.builder()
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT)
-                .toEmail(messageRequest.getToEmail())
-                .fromEmail(TestData.TO_EMAIL)
-                .status(TestData.STATUS)
-                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
-                .build();
+        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        emailMessage = emailMessageRepository.save(emailMessage);
         Mockito.when(emailService.sendEmailMessage(Mockito.any(), Mockito.any(), Mockito.any()))
                 .thenReturn(emailMessage);
-        emailMessageRepository.save(emailMessage);
 
         Message message = messageService.scheduleMessage(messageRequest);
         await().atMost(60, SECONDS).until(() -> {
@@ -135,10 +114,9 @@ class MessageServiceTest {
 
     @Test
     void whenMessageRequestHasLanguageAndTreatment_thenValuesAreUsedToSelectTemplateVariant() {
-        MessageRequest messageRequest = MessageRequest.builder()
+        MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .templateName(TestData.TEMPLATE_NAME)
                 .templateParams(Map.of(
                         "language", "es",
                         "treatment", "B",

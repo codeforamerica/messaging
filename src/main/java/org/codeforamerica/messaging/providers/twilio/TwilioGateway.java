@@ -13,7 +13,7 @@ import java.time.ZonedDateTime;
 @Slf4j
 public class TwilioGateway {
 
-    public static final String DEFAULT_NUMBER = "0000000000";
+    public static final String DEFAULT_FROM_PHONE = "0000000000";
     @Value("${twilio.account.sid}")
     private String twilioAccountSid;
     @Value("${twilio.auth.token}")
@@ -35,7 +35,7 @@ public class TwilioGateway {
                         .create();
 
         return SmsMessage.builder()
-                .fromPhone(DEFAULT_NUMBER)
+                .fromPhone(DEFAULT_FROM_PHONE)
                 .toPhone(twilioMessage.getTo())
                 .body(twilioMessage.getBody())
                 .providerMessageId(twilioMessage.getSid())
