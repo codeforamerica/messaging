@@ -1,10 +1,10 @@
 package org.codeforamerica.messaging.controllers;
 
 
+import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageRequest;
-import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.services.MessageService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -38,7 +38,7 @@ public class MessageControllerTest {
 
     @Test
     public void getMessageUnauthenticated() throws Exception {
-        mockMvc.perform(get("/api/v1/messages/1"))
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
@@ -47,21 +47,17 @@ public class MessageControllerTest {
     public void whenAuthenticatedAndPhoneAndNoAssociatedSmsMessage_ThenStatusPending() throws Exception {
         String expectedResponse = """
                 {
-                    id: 1,
+                    id: %s,
                     status: "pending",
-                    toPhone: "1234567890"
+                    toPhone: "%s"
                 }
-                """;
-        Message message = Message.builder()
-                .id(1L)
-                .toPhone("1234567890")
-                .build();
+                """.formatted(TestData.BASE_ID, TestData.TO_PHONE);
 
         Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.of(message));
+                .thenReturn(Optional.of(TestData.aMessage().toPhone(TestData.TO_PHONE).build()));
 
-        mockMvc.perform(get("/api/v1/messages/1")
-                        .with(httpBasic("user", "password")))
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
@@ -71,24 +67,20 @@ public class MessageControllerTest {
     public void whenAuthenticatedAndPhoneAndHasAssociatedSmsMessage_ThenStatusCompleted() throws Exception {
         String expectedResponse = """
                 {
-                    id: 1,
+                    id: %s,
                     status: "completed",
-                    toPhone: "1234567890"
+                    toPhone: "%s"
                 }
-                """;
-        Message message = Message.builder()
-                .id(1L)
-                .toPhone("1234567890")
-                .build();
-        SmsMessage smsMessage = SmsMessage.builder()
-                .build();
-        message.setSmsMessage(smsMessage);
+                """.formatted(TestData.BASE_ID, TestData.TO_PHONE);
 
         Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.of(message));
+                .thenReturn(Optional.of(TestData.aMessage()
+                        .toPhone(TestData.TO_PHONE)
+                        .smsMessage(TestData.anSmsMessage().build())
+                        .build()));
 
-        mockMvc.perform(get("/api/v1/messages/1")
-                        .with(httpBasic("user", "password")))
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
@@ -98,20 +90,19 @@ public class MessageControllerTest {
     public void createMessageSuccessSmsOnly() throws Exception {
         String requestBody = """
                 {
-                    "toPhone": "1234567890",
-                    "templateName": "test"
+                    "toPhone": "%s",
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TO_PHONE, TestData.TEMPLATE_NAME);
 
-        Message message = Message.builder().id(1L).build();
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(message);
+                .thenReturn(TestData.aMessage().build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/" + TestData.BASE_ID)));
     }
 
     @Test
@@ -119,20 +110,19 @@ public class MessageControllerTest {
     public void createMessageSuccessEmailOnly() throws Exception {
         String requestBody = """
                 {
-                    "toEmail": "fake@email.com",
-                    "templateName": "test"
+                    "toEmail": "%s",
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
-        Message message = Message.builder().id(1L).build();
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(message);
+                .thenReturn(TestData.aMessage().build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/" + TestData.BASE_ID)));
     }
 
     @Test
@@ -140,21 +130,20 @@ public class MessageControllerTest {
     public void createMessageSuccessMultiModal() throws Exception {
         String requestBody = """
                 {
-                    "toPhone": "1234567890",
-                    "toEmail": "fake@email.com",
-                    "templateName": "test"
+                    "toPhone": "%s",
+                    "toEmail": "%s",
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TO_PHONE, TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
-        Message message = Message.builder().id(1L).build();
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(message);
+                .thenReturn(TestData.aMessage().build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/" + TestData.BASE_ID)));
     }
 
     @Test
@@ -173,9 +162,9 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toPhone": "A1234567890",
-                    "templateName": "test"
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TEMPLATE_NAME);
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -190,9 +179,9 @@ public class MessageControllerTest {
         String requestBody = """
                 {
                     "toEmail": "not an email",
-                    "templateName": "test"
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TO_EMAIL);
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -206,9 +195,9 @@ public class MessageControllerTest {
     public void createMessageMissingPhoneAndEmail() throws Exception {
         String requestBody = """
                 {
-                    "templateName": "test"
+                    "templateName": "%s"
                 }
-                """;
+                """.formatted(TestData.TEMPLATE_NAME);
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -222,11 +211,11 @@ public class MessageControllerTest {
     public void whenExtraFieldsPresent_RejectsAsBadRequest() throws Exception {
         String requestBody = """
                 {
-                    "toEmail": "fake@email.com",
-                    "templateName": "test",
+                    "toEmail": "%s",
+                    "templateName": "%s",
                     "invalid_field": "1234567890"
                 }
-                """;
+                """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -240,20 +229,21 @@ public class MessageControllerTest {
     public void whenTemplateParamsPresent_thenParseParams() throws Exception {
         String requestBody = """
                 {
-                    "toEmail": "fake@email.com",
-                    "templateName": "test",
+                    "toEmail": "%s",
+                    "templateName": "%s",
                     "templateParams": {
                         "language": "es",
                         "treatment": "B"
                     }
                 }
-                """;
+                """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
-        Message message = Message.builder().id(1L).build();
-        MessageRequest expectedMessageRequest = MessageRequest.builder()
-                .toEmail("fake@email.com")
-                .templateName("test")
-                .templateParams(Map.of("language", "es", "treatment", "B"))
+        Message message = TestData.aMessage().build();
+        MessageRequest expectedMessageRequest = TestData.aMessageRequest()
+                .toEmail(TestData.TO_EMAIL)
+                .templateParams(Map.of(
+                        "language", "es",
+                        "treatment", "B"))
                 .build();
         Mockito.when(messageService.scheduleMessage(expectedMessageRequest))
                 .thenReturn(message);

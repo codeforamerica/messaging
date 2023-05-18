@@ -3,7 +3,6 @@ package org.codeforamerica.messaging.models;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.codeforamerica.messaging.TestData;
-import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
@@ -40,22 +39,20 @@ class MessageRequestTest {
     @ParameterizedTest
     @ValueSource(strings = { "1234567890", "11234567890", "+11234567890" })
     public void acceptsValidPhoneNumbers(String candidate) {
-        MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone(candidate)
-                .templateName(TestData.TEMPLATE_NAME)
-                .build();
-        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(
+                TestData.aMessageRequest()
+                        .toPhone(candidate)
+                        .build());
         assertTrue(violations.isEmpty());
     }
 
     @ParameterizedTest
     @ValueSource(strings = { "123456A7890", "123456789012" })
     public void rejectsInValidPhoneNumbers(String candidate) {
-        MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone(candidate)
-                .templateName(TestData.TEMPLATE_NAME)
-                .build();
-        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(messageRequest);
+        Set<ConstraintViolation<MessageRequest>> violations = validator.validate(
+                TestData.aMessageRequest()
+                        .toPhone(candidate)
+                        .build());
         assertFalse(violations.isEmpty());
     }
 
@@ -65,28 +62,18 @@ class MessageRequestTest {
         TemplateVariant templateVariant = TestData.aDefaultTemplateVariant().build();
         template.addTemplateVariant(templateVariant);
         template = templateRepository.save(template);
-        Message message = Message.builder()
+        Message message = TestData.aMessage()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT)
                 .templateVariant(template.getTemplateVariants().get(0))
                 .build();
-        messageRepository.save(message);
-        SmsMessage smsMessage = SmsMessage.builder()
-                .toPhone(TestData.TO_PHONE)
-                .fromPhone(TwilioGateway.DEFAULT_FROM_PHONE)
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .status(TestData.STATUS)
-                .providerMessageId(TestData.PROVIDER_MESSAGE_ID)
-                .build();
+        message = messageRepository.save(message);
+        SmsMessage smsMessage = TestData.anSmsMessage().build();
         message.setSmsMessage(smsMessage);
         smsMessageRepository.save(smsMessage);
-        messageRepository.save(message);
+
+        message = messageRepository.save(message);
         messageRepository.delete(message);
-        template.removeTemplateVariant(templateVariant);
-        templateRepository.save(template);
-        templateRepository.delete(template);
     }
 
 }

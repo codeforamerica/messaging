@@ -61,7 +61,7 @@ public class TemplateControllerTest {
                 .thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/v1/templates")
-                        .with(httpBasic("user", "password")))
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -72,18 +72,18 @@ public class TemplateControllerTest {
                 .thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/v1/templates?name=something")
-                        .with(httpBasic("user", "password")))
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     @WithMockUser
     public void whenAuthenticatedAndNoTemplatesWithMatchingId_thenNotFound() throws Exception {
-        Mockito.when(templateService.getTemplateById(1L))
+        Mockito.when(templateService.getTemplateById(TestData.BASE_ID))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v1/templates/1")
-                        .with(httpBasic("user", "password")))
+        mockMvc.perform(get("/api/v1/templates/" + TestData.BASE_ID)
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -94,7 +94,7 @@ public class TemplateControllerTest {
                 .thenReturn(List.of(TEMPLATE_WITH_VARIANTS, TEMPLATE_WITHOUT_VARIANTS));
 
         mockMvc.perform(get("/api/v1/templates")
-                        .with(httpBasic("user", "password")))
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITHOUT_VARIANTS)))
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
@@ -111,7 +111,7 @@ public class TemplateControllerTest {
                 .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
 
         mockMvc.perform(get("/api/v1/templates?name=" + TEMPLATE_WITH_VARIANTS.getName())
-                        .with(httpBasic("user", "password")))
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
                 .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))
@@ -127,7 +127,7 @@ public class TemplateControllerTest {
                 .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
 
         mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getId())
-                        .with(httpBasic("user", "password")))
+                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
                 .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))

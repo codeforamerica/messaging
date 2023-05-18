@@ -53,39 +53,32 @@ class MessageServiceTest {
 
     @Test
     void whenOnlyPhone_thenOnlySmsServiceCalled() {
-        MessageRequest messageRequest = TestData.aMessageRequest()
-                .toPhone(TestData.TO_PHONE)
-                .build();
-        Message message = messageService.saveMessage(messageRequest);
+        Message message = messageService.saveMessage(TestData.aMessageRequest().toPhone(TestData.TO_PHONE).build());
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_DEFAULT);
+        Mockito.verify(smsService).sendSmsMessage(TestData.TO_PHONE, TestData.TEMPLATE_BODY_DEFAULT);
         Mockito.verify(emailService, Mockito.never()).sendEmailMessage(Mockito.any(), Mockito.any(), Mockito.any());
     }
 
     @Test
     void whenOnlyEmail_thenOnlyEmailServiceCalled() {
-        MessageRequest messageRequest = TestData.aMessageRequest()
-                .toEmail(TestData.TO_EMAIL)
-                .build();
-        Message message = messageService.saveMessage(messageRequest);
+        Message message = messageService.saveMessage(TestData.aMessageRequest().toEmail(TestData.TO_EMAIL).build());
 
         messageService.sendMessage(message.getId());
         Mockito.verify(smsService, Mockito.never()).sendSmsMessage(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
+        Mockito.verify(emailService).sendEmailMessage(TestData.TO_EMAIL, TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
     }
 
     @Test
     void whenBothPhoneAndEmail_thenBothServicesCalled() {
-        MessageRequest messageRequest = TestData.aMessageRequest()
+        Message message = messageService.saveMessage(TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .build();
-        Message message = messageService.saveMessage(messageRequest);
+                .build());
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_DEFAULT);
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
+        Mockito.verify(smsService).sendSmsMessage(TestData.TO_PHONE, TestData.TEMPLATE_BODY_DEFAULT);
+        Mockito.verify(emailService).sendEmailMessage(TestData.TO_EMAIL, TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
     }
 
     @Test
