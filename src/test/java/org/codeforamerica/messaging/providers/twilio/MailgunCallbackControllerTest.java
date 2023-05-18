@@ -1,7 +1,7 @@
 package org.codeforamerica.messaging.providers.twilio;
 
+import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
-import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.providers.mailgun.MailgunCallbackController;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,8 @@ public class MailgunCallbackControllerTest {
 
     @Test
     public void postEmailStatusSuccess() throws Exception {
-        Mockito.when(emailMessageRepository.findFirstByProviderMessageId("message_id"))
-                .thenReturn(EmailMessage.builder().providerMessageId("message_id").build());
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(TestData.anEmailMessage().build());
 
         mockMvc.perform(post("/mailgun_callbacks/status")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -38,12 +38,12 @@ public class MailgunCallbackControllerTest {
                                             "event": "delivered",
                                             "message": {
                                               "headers": {
-                                                "message-id": "message_id"
+                                                "message-id": "%s"
                                               }
                                             }
                                         }
                                     }
-                                """))
+                                """.formatted(TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
