@@ -1,4 +1,4 @@
-package org.codeforamerica.messaging.services;
+package org.codeforamerica.messaging.jobs;
 
 import lombok.NoArgsConstructor;
 import org.jobrunr.jobs.lambdas.JobRequest;
@@ -22,8 +22,6 @@ public class SendMessageJobRequest implements JobRequest {
 
     @Override
     public String toString() {
-        return "SendMessageJobRequest{" +
-                "messageId=" + messageId +
-                '}';
+        return String.format("SendMessageJobRequest{messageId=%s}", messageId);
     }
 }

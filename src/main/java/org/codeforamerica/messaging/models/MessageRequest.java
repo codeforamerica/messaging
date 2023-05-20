@@ -31,20 +31,20 @@ public class MessageRequest {
     String templateName;
     @Transient
     @JsonDeserialize
-    Map<String, Object> templateParams;
+    Map<String, String> templateParams;
     @Future
     OffsetDateTime sendAt;
 
     public String getLanguage() {
         if (this.getTemplateParams() != null && this.getTemplateParams().get("language") != null) {
-            return this.getTemplateParams().get("language").toString();
+            return this.getTemplateParams().get("language");
         }
         return DEFAULT_LANGUAGE;
     }
 
     public String getTreatment() {
         if (this.getTemplateParams() != null && this.getTemplateParams().get("treatment") != null) {
-            return this.getTemplateParams().get("treatment").toString();
+            return this.getTemplateParams().get("treatment");
         }
         return DEFAULT_TREATMENT;
     }

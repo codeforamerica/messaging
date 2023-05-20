@@ -34,6 +34,8 @@ public class Message {
     @NotBlank
     String body;
     String subject;
+    @ManyToOne
+    MessageBatch messageBatch;
     @OneToOne(cascade = CascadeType.REMOVE)
     private SmsMessage smsMessage;
     @OneToOne(cascade = CascadeType.REMOVE)

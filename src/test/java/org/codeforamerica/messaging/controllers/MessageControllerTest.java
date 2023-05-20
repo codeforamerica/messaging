@@ -4,6 +4,7 @@ package org.codeforamerica.messaging.controllers;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageBatch;
 import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.services.MessageService;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -23,8 +25,7 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(MessageController.class)
 @Import(SecurityConfiguration.class)
@@ -252,4 +253,26 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
     }
 
+    @Test
+    @WithMockUser
+    public void whenValidParametersForMessageBatch_ThenReturnsCreatedStatus() throws Exception {
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "hello.txt",
+                MediaType.TEXT_PLAIN_VALUE,
+                "Hello, World!".getBytes()
+        );
+
+        MessageBatch messageBatch = MessageBatch.builder().id(1L).build();
+        Mockito.when(messageService.enqueueMessageBatch(any()))
+                .thenReturn(messageBatch);
+
+        mockMvc.perform(multipart("/api/v1/message_batches")
+                        .file(file)
+                        .param("templateName", "foo")
+                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                        )
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/message_batches/1")));
+    }
 }

@@ -55,7 +55,7 @@ public class TemplateVariant {
         return template.getName();
     }
 
-    public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, Object> templateParams) throws IOException {
+    public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, String> templateParams) throws IOException {
         Handlebars handlebars = new Handlebars();
         String templateField = templateFieldGetter.apply(this);
         if (templateField != null) {
