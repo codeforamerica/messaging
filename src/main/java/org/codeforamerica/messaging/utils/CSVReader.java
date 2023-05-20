@@ -8,6 +8,7 @@ import org.apache.commons.csv.CSVRecord;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class CSVReader {
@@ -26,7 +27,7 @@ public class CSVReader {
         return CollectionUtils.isEqualCollection(requiredHeaderNames, parser.getHeaderNames());
     }
 
-    public Stream<CSVRecord> stream() {
-        return parser.stream();
+    public Stream<Map<String, String>> stream() {
+        return parser.stream().map(CSVRecord::toMap);
     }
 }

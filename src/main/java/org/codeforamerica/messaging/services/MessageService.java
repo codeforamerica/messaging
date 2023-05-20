@@ -1,15 +1,22 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
+import org.codeforamerica.messaging.jobs.SendMessageJobRequest;
 import org.codeforamerica.messaging.models.*;
+import org.codeforamerica.messaging.repositories.MessageBatchRepository;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
+import org.codeforamerica.messaging.utils.CSVReader;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.OffsetDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -19,6 +26,7 @@ public class MessageService {
     private final SmsService smsService;
     private final EmailService emailService;
     private final MessageRepository messageRepository;
+    private final MessageBatchRepository messageBatchRepository;
     private final TemplateRepository templateRepository;
     private final JobRequestScheduler jobRequestScheduler;
 
@@ -26,25 +34,55 @@ public class MessageService {
     public MessageService(SmsService smsService,
             EmailService emailService,
             MessageRepository messageRepository,
+            MessageBatchRepository messageBatchRepository,
             TemplateRepository templateRepository,
             JobRequestScheduler jobRequestScheduler) {
         this.smsService = smsService;
         this.emailService = emailService;
         this.messageRepository = messageRepository;
+        this.messageBatchRepository = messageBatchRepository;
         this.templateRepository = templateRepository;
         this.jobRequestScheduler = jobRequestScheduler;
     }
 
-    public Message scheduleMessage(MessageRequest messageRequest) {
-        Message message = saveMessage(messageRequest);
+    public Message scheduleMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
+        Message message = saveMessage(messageRequest, messageBatch);
 
         OffsetDateTime sendAt = messageRequest.getSendAt() == null ? OffsetDateTime.now() : messageRequest.getSendAt();
         JobId id = jobRequestScheduler.schedule(sendAt, new SendMessageJobRequest(message.getId()));
-        log.info("Scheduled job {} to run at {}", id, sendAt);
+        log.info("Scheduled SendMessage job {} to send at {}", id, sendAt);
         return message;
     }
 
-    public Message saveMessage(MessageRequest messageRequest) {
+    public Message scheduleMessage(MessageRequest messageRequest) {
+        return scheduleMessage(messageRequest, null);
+    }
+
+    public Message scheduleMessage(MessageBatch messageBatch, Map<String, String> recipient) {
+        MessageRequest messageRequest = MessageRequest.builder()
+                .toPhone(recipient.get("phone"))
+                .toEmail(recipient.get("email"))
+                .templateName(messageBatch.getTemplate().getName())
+                .templateParams(recipient)
+                .sendAt(messageBatch.getSendAt())
+                .build();
+        return scheduleMessage(messageRequest, messageBatch);
+    }
+
+    public MessageBatch enqueueMessageBatch(MessageBatchRequest messageBatchRequest) throws IOException {
+        Template template = templateRepository.findFirstByNameIgnoreCase(messageBatchRequest.getTemplateName()).orElseThrow(() -> new RuntimeException("template not found"));
+        MessageBatch messageBatch = MessageBatch.builder()
+                .template(template)
+                .recipients(messageBatchRequest.getRecipients().getBytes())
+                .sendAt(messageBatchRequest.getSendAt())
+                .build();
+        messageBatchRepository.save(messageBatch);
+        JobId id = jobRequestScheduler.enqueue(new SendMessageBatchJobRequest(messageBatch.getId()));
+        log.info("Enqueued SendMessageBatch job {}", id);
+        return messageBatch;
+    }
+
+    public Message saveMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
         TemplateVariant templateVariant = getTemplateVariant(messageRequest);
         String subject;
         String body;
@@ -61,9 +99,9 @@ public class MessageService {
                 .body(body)
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
+                .messageBatch(messageBatch)
                 .build();
-        messageRepository.save(message);
-        return message;
+        return messageRepository.save(message);
     }
 
     public void sendMessage(Long messageId) {
@@ -110,4 +148,9 @@ public class MessageService {
         return templateVariantOptional.get();
     }
 
+    public void scheduleMessageBatch(Long messageBatchId) throws IOException {
+        MessageBatch messageBatch = messageBatchRepository.findById(messageBatchId).orElseThrow();
+        CSVReader csvReader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(messageBatch.getRecipients())));
+        csvReader.stream().forEach((r) -> this.scheduleMessage(messageBatch, r) );
+    }
 }
