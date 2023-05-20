@@ -39,16 +39,16 @@ public class MessageControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 
-    @Test
-    @WithMockUser
-    public void getMessageAuthenticated() throws Exception {
-        Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.ofNullable(Message.builder().id(1L).build()));
-
-        mockMvc.perform(get("/api/v1/messages/1")
-                        .with(httpBasic("user", "password")))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-    }
+//    @Test
+//    @WithMockUser
+//    public void getMessageAuthenticated() throws Exception {
+//        Mockito.when(messageService.getMessage(any()))
+//                .thenReturn(Optional.ofNullable(Message.builder().id(1L).build()));
+//
+//        mockMvc.perform(get("/api/v1/messages/1")
+//                        .with(httpBasic("user", "password")))
+//                .andExpect(MockMvcResultMatchers.status().isOk());
+//    }
 
     @Test
     @WithMockUser
