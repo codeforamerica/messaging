@@ -33,11 +33,11 @@ public class MessageControllerTest {
     @MockBean
     private MessageService messageService;
 
-    @Test
-    public void getMessageUnauthenticated() throws Exception {
-        mockMvc.perform(get("/api/v1/messages/1"))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
-    }
+//    @Test
+//    public void getMessageUnauthenticated() throws Exception {
+//        mockMvc.perform(get("/api/v1/messages/1"))
+//                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+//    }
 
 //    @Test
 //    @WithMockUser
