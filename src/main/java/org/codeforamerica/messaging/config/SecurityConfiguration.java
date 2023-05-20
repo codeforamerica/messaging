@@ -48,7 +48,7 @@ public class SecurityConfiguration {
                 .map(String::strip)
                 .collect(Collectors.joining(
                         "') or hasIpAddress('",
-                        "isAuthenticated() and (hasIpAddress('",
+                        "(hasIpAddress('",
                         "'))"));
     }
 }
