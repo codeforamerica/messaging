@@ -1,10 +1,12 @@
 package org.codeforamerica.messaging.controllers;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.services.TemplateService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,21 +21,14 @@ public class TemplateController {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Template>> getTemplateList(@RequestParam(required = false) String name) {
-        if (StringUtils.isNotEmpty(name)) {
-            Optional<Template> template = templateService.getTemplateByName(name);
-            return template.map(value -> ResponseEntity.ok(List.of(value))).orElseGet(() -> ResponseEntity.notFound().build());
-        }
+    public ResponseEntity<List<Template>> getTemplateList() {
         List<Template> templateList = templateService.getTemplateList();
-        if (templateList.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(templateList);
+        return templateList.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(templateService.getTemplateList());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Template> getTemplateById(@PathVariable Long id) {
-        Optional<Template> template = templateService.getTemplateById(id);
+    @GetMapping("/{name}")
+    public ResponseEntity<Template> getTemplateByName(@PathVariable String name) {
+        Optional<Template> template = templateService.getTemplateByName(name);
         return template.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -60,30 +59,17 @@ public class TemplateControllerTest {
         Mockito.when(templateService.getTemplateList())
                 .thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/api/v1/templates")
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/templates"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
     @WithMockUser
     public void whenAuthenticatedAndNoTemplatesWithMatchingName_thenNotFound() throws Exception {
-        Mockito.when(templateService.getTemplateByName("something"))
+        Mockito.when(templateService.getTemplateByName(TestData.TEMPLATE_NAME))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v1/templates?name=something")
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
-    public void whenAuthenticatedAndNoTemplatesWithMatchingId_thenNotFound() throws Exception {
-        Mockito.when(templateService.getTemplateById(TestData.BASE_ID))
-                .thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/v1/templates/" + TestData.BASE_ID)
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/templates/" + TestData.TEMPLATE_NAME))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -93,8 +79,7 @@ public class TemplateControllerTest {
         Mockito.when(templateService.getTemplateList())
                 .thenReturn(List.of(TEMPLATE_WITH_VARIANTS, TEMPLATE_WITHOUT_VARIANTS));
 
-        mockMvc.perform(get("/api/v1/templates")
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/templates"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITHOUT_VARIANTS)))
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
@@ -110,24 +95,7 @@ public class TemplateControllerTest {
         Mockito.when(templateService.getTemplateByName(TEMPLATE_WITH_VARIANTS.getName()))
                 .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
 
-        mockMvc.perform(get("/api/v1/templates?name=" + TEMPLATE_WITH_VARIANTS.getName())
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_ES_B)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_ES_B)));
-    }
-
-    @Test
-    @WithMockUser
-    public void whenAuthenticatedAndTemplateWithMatchingIdExists_thenReturnTemplateAndVariants() throws Exception {
-        Mockito.when(templateService.getTemplateById(TEMPLATE_WITH_VARIANTS.getId()))
-                .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
-
-        mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getId())
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getName()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
                 .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))
