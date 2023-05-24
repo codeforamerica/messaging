@@ -14,7 +14,7 @@ create table template_variant
     body                    text                                    not null,
     language                text                                    not null,
     treatment               text                                    not null,
-    template_id             bigint,
+    template_id             bigint                                  not null,
     creation_timestamp      timestamp with time zone                not null,
     update_timestamp        timestamp with time zone,
     primary key (id),

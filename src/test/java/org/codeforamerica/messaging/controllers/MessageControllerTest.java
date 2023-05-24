@@ -23,7 +23,6 @@ import java.util.Optional;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -56,8 +55,7 @@ public class MessageControllerTest {
         Mockito.when(messageService.getMessage(any()))
                 .thenReturn(Optional.of(TestData.aMessage().toPhone(TestData.TO_PHONE).build()));
 
-        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
@@ -79,8 +77,7 @@ public class MessageControllerTest {
                         .smsMessage(TestData.anSmsMessage().build())
                         .build()));
 
-        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
-                        .with(httpBasic(TestData.USERNAME, TestData.PASSWORD)))
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
