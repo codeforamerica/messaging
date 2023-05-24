@@ -1,13 +1,18 @@
 package org.codeforamerica.messaging.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -25,7 +30,7 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/**").access(new WebExpressionAuthorizationManager(createExpressionString()))
+                        .requestMatchers("/api/v1/**").access(authorizeApiRequest())
                         .requestMatchers("/error/**").authenticated()
                         .requestMatchers("/mailgun_callbacks/**").permitAll()
                         .requestMatchers("/twilio_callbacks/**").permitAll()
@@ -36,6 +41,22 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(withDefaults());
         return http.build();
+    }
+
+    private AuthorizationManager<RequestAuthorizationContext> authorizeApiRequest() {
+        return (authentication, context) -> {
+            HttpServletRequest request = context.getRequest();
+            boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
+                    .anyMatch(allowedIpAddress -> {
+                        IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
+                        return ipAddressMatcher.matches(request.getRemoteAddr())
+                                || ipAddressMatcher.matches(request.getHeader("X-Forwarded-For"));
+                    });
+            return new AuthorizationDecision(
+                    authentication.get().isAuthenticated()
+                            && ipAddressAllowed
+            );
+        };
     }
 
     /**
