@@ -3,5 +3,5 @@ FROM eclipse-temurin:17-jdk-alpine
 COPY . .
 RUN ./mvnw package -DskipTests
 RUN cp /target/messaging-*.jar /messaging-app.jar
-EXPOSE 8080
+EXPOSE 8000 8080
 ENTRYPOINT ["java", "-jar","/messaging-app.jar"]
