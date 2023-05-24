@@ -20,9 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @WebMvcTest(TemplateController.class)
 @Import(SecurityConfiguration.class)
@@ -76,32 +74,87 @@ public class TemplateControllerTest {
     @Test
     @WithMockUser
     public void whenAuthenticatedAndTemplatesExist_thenReturnTemplatesAndVariants() throws Exception {
+        String expectedResponse = """
+                [
+                    {
+                        "id":1,
+                        "name":"Template name with variants",
+                        "templateVariants":[
+                            {
+                                "id":null,
+                                "language":"en",
+                                "treatment":"A",
+                                "subject":"English A Subject: {{placeholder}}",
+                                "body":"English A Body: {{placeholder}}",
+                                "updateTimestamp":null,
+                                "templateName":"Template name with variants"
+                            },
+                            {
+                                "id":null,
+                                "language":"es",
+                                "treatment":"B",
+                                "subject":"Spanish B Subject: {{placeholder}}",
+                                "body":"Spanish B Body: {{placeholder}}",
+                                "updateTimestamp":null,
+                                "templateName":"Template name with variants"
+                            }
+                        ],
+                        "updateTimestamp":null
+                    },
+                    {
+                        "id":1,
+                        "name":"Template name without variants",
+                        "templateVariants":[],
+                        "updateTimestamp":null
+                    }
+                ]
+                """;
+
         Mockito.when(templateService.getTemplateList())
                 .thenReturn(List.of(TEMPLATE_WITH_VARIANTS, TEMPLATE_WITHOUT_VARIANTS));
 
         mockMvc.perform(get("/api/v1/templates"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(content().string(containsString(TEMPLATE_NAME_WITHOUT_VARIANTS)))
-                .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_ES_B)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_ES_B)));
+                .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
 
     @Test
     @WithMockUser
     public void whenAuthenticatedAndTemplateWithMatchingNameExists_thenReturnTemplateAndVariants() throws Exception {
+        String expectedResponse = """
+                {
+                    "id":1,
+                    "name":"Template name with variants",
+                    "templateVariants":[
+                        {
+                            "id":null,
+                            "language":"en",
+                            "treatment":"A",
+                            "subject":"English A Subject: {{placeholder}}",
+                            "body":"English A Body: {{placeholder}}",
+                            "updateTimestamp":null,
+                            "templateName":"Template name with variants"
+                        },
+                        {
+                            "id":null,
+                            "language":"es",
+                            "treatment":"B",
+                            "subject":"Spanish B Subject: {{placeholder}}",
+                            "body":"Spanish B Body: {{placeholder}}",
+                            "updateTimestamp":null,
+                            "templateName":"Template name with variants"
+                        }
+                    ],
+                    "updateTimestamp":null
+                }
+                """;
+
         Mockito.when(templateService.getTemplateByName(TEMPLATE_WITH_VARIANTS.getName()))
                 .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
 
         mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getName()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(content().string(containsString(TEMPLATE_NAME_WITH_VARIANTS)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_DEFAULT)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_SUBJECT_ES_B)))
-                .andExpect(content().string(containsString(TestData.TEMPLATE_BODY_ES_B)));
+                .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
 
 }

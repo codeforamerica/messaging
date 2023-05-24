@@ -59,8 +59,9 @@ class MessageRequestTest {
     @Test
     public void persistence() {
         Template template = TestData.aTemplate().build();
-        TemplateVariant templateVariant = TestData.aDefaultTemplateVariant().build();
-        template.addTemplateVariant(templateVariant);
+        template.addTemplateVariant(TemplateVariant.builder()
+                .body(TestData.TEMPLATE_BODY_DEFAULT)
+                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT));
         template = templateRepository.save(template);
         Message message = TestData.aMessage()
                 .toPhone(TestData.TO_PHONE)

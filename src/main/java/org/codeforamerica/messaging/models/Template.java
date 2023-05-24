@@ -33,16 +33,12 @@ public class Template {
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
 
-    public void addTemplateVariant(TemplateVariant templateVariant) {
+    public TemplateVariant addTemplateVariant(TemplateVariant.TemplateVariantBuilder templateVariantBuilder) {
         if (templateVariants.isEmpty()) {
             this.setTemplateVariants(new LinkedList<>());
         }
+        TemplateVariant templateVariant = templateVariantBuilder.template(this).build();
         templateVariants.add(templateVariant);
-        templateVariant.setTemplate(this);
-    }
-
-    public void removeTemplateVariant(TemplateVariant templateVariant) {
-        templateVariants.remove(templateVariant);
-        templateVariant.setTemplate(null);
+        return templateVariant;
     }
 }

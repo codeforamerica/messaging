@@ -12,7 +12,7 @@ import java.util.Map;
 public class TemplateVariantTest {
     @Test
     void whenInputHasTemplateParams_thenTemplateUsesParams() throws IOException {
-        TemplateVariant templateVariant = TestData.aDefaultTemplateVariant().build();
+        TemplateVariant templateVariant = TestData.aDefaultTemplateVariant(TestData.aTemplate().build());
         Map<String, Object> templateParams = Map.of("placeholder", "testing placeholder");
 
         Assertions.assertEquals("English A Subject: testing placeholder",
