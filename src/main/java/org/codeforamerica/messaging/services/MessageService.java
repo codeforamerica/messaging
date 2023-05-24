@@ -73,12 +73,13 @@ public class MessageService {
             if (message.needToSendSms()) {
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
                 message.setSmsMessage(sentSmsMessage);
+                messageRepository.save(message);
             }
             if (message.needToSendEmail()) {
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
                 message.setEmailMessage(sentEmailMessage);
+                messageRepository.save(message);
             }
-            messageRepository.save(message);
         } catch (Exception e) {
             log.error("Error running job", e);
             throw e;
