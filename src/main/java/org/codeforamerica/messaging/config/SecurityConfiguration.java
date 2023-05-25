@@ -53,6 +53,7 @@ public class SecurityConfiguration {
     private AuthorizationManager<RequestAuthorizationContext> authorizeApiRequest() {
         return (authentication, context) -> {
             HttpServletRequest request = context.getRequest();
+            log.info("Allowed IPs: " + allowedIpAddresses);
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
