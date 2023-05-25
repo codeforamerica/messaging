@@ -41,14 +41,16 @@ public class TemplateVariant {
     @JsonIgnore
     @ToString.Exclude
     Template template;
-    @JsonIgnore
     @CreationTimestamp
+    @JsonIgnore
     @ToString.Exclude
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
+    @JsonIgnore
     @ToString.Exclude
     private OffsetDateTime updateTimestamp;
 
+    @JsonIgnore
     public String getTemplateName() {
         return template.getName();
     }

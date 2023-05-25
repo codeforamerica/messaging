@@ -3,7 +3,6 @@ package org.codeforamerica.messaging;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 
-import java.time.OffsetDateTime;
 import java.util.Map;
 
 public class TestData {
@@ -16,35 +15,29 @@ public class TestData {
     public static final String TEMPLATE_NAME = "default template name";
     public static final String TEMPLATE_SUBJECT_DEFAULT = "English A Subject: {{placeholder}}";
     public static final String TEMPLATE_BODY_DEFAULT = "English A Body: {{placeholder}}";
-    public static final String TEMPLATE_SUBJECT_EN_B = "English B Subject: {{placeholder}}";
-    public static final String TEMPLATE_BODY_EN_B = "English B Body: {{placeholder}}";
-    public static final String TEMPLATE_SUBJECT_ES_A = "Spanish A Subject: {{placeholder}}";
-    public static final String TEMPLATE_BODY_ES_A = "Spanish A Body: {{placeholder}}";
     public static final String TEMPLATE_SUBJECT_ES_B = "Spanish B Subject: {{placeholder}}";
     public static final String TEMPLATE_BODY_ES_B = "Spanish B Body: {{placeholder}}";
 
-    public static TemplateVariant aDefaultTemplateVariant(Template template) {
-        return template.addTemplateVariant(TemplateVariant.builder()
-                .subject(TEMPLATE_SUBJECT_DEFAULT)
-                .body(TEMPLATE_BODY_DEFAULT));
+    public static TemplateVariant.TemplateVariantBuilder aTemplateVariant() {
+        return TemplateVariant.builder()
+                .body(TEMPLATE_BODY_DEFAULT)
+                .subject(TEMPLATE_SUBJECT_DEFAULT);
     }
 
     public static Template.TemplateBuilder aTemplate() {
         return Template.builder()
                 .id(BASE_ID)
-                .name(TEMPLATE_NAME)
-                .creationTimestamp(OffsetDateTime.now());
+                .name(TEMPLATE_NAME);
     }
 
     public static void addVariantsToTemplate(Template template) {
-        template.addTemplateVariant(TemplateVariant.builder()
-                .body(TEMPLATE_BODY_DEFAULT)
-                .subject(TEMPLATE_SUBJECT_DEFAULT));
-        template.addTemplateVariant(TemplateVariant.builder()
+        template.addTemplateVariant(aTemplateVariant().build());
+        template.addTemplateVariant(aTemplateVariant()
                 .body(TEMPLATE_BODY_ES_B)
                 .subject(TEMPLATE_SUBJECT_ES_B)
                 .language("es")
-                .treatment("B"));
+                .treatment("B")
+                .build());
     }
 
     public static MessageRequest.MessageRequestBuilder aMessageRequest() {
@@ -74,10 +67,13 @@ public class TestData {
     }
 
     public static Message.MessageBuilder aMessage() {
+        Template template = aTemplate().build();
+        addVariantsToTemplate(template);
         return Message.builder()
                 .id(BASE_ID)
                 .body(TEMPLATE_BODY_DEFAULT)
-                .subject(TEMPLATE_SUBJECT_DEFAULT);
+                .subject(TEMPLATE_SUBJECT_DEFAULT)
+                .templateVariant(template.getTemplateVariants().stream().findFirst().get());
     }
 
 }

@@ -42,14 +42,7 @@ class MessageServiceTest {
     void setup() {
         Template template = TestData.aTemplate().build();
         template = templateRepository.save(template);
-        template.addTemplateVariant(TemplateVariant.builder()
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT));
-        template.addTemplateVariant(TemplateVariant.builder()
-                .body(TestData.TEMPLATE_BODY_ES_B)
-                .subject(TestData.TEMPLATE_SUBJECT_ES_B)
-                .language("es")
-                .treatment("B"));
+        TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
     }
 
