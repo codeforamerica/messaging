@@ -25,7 +25,7 @@ public class Template {
     @ToString.Include
     String name;
     @ToString.Include
-    @Singular
+    @Builder.Default
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     List<TemplateVariant> templateVariants = new LinkedList<>();
     @CreationTimestamp
@@ -33,12 +33,13 @@ public class Template {
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
 
-    public TemplateVariant addTemplateVariant(TemplateVariant.TemplateVariantBuilder templateVariantBuilder) {
-        if (templateVariants.isEmpty()) {
-            this.setTemplateVariants(new LinkedList<>());
-        }
-        TemplateVariant templateVariant = templateVariantBuilder.template(this).build();
-        templateVariants.add(templateVariant);
-        return templateVariant;
+    public void addTemplateVariant(TemplateVariant templateVariant) {
+        this.templateVariants.add(templateVariant);
+        templateVariant.setTemplate(this);
+    }
+
+    public void removeTemplateVariant(TemplateVariant templateVariant) {
+        this.templateVariants.remove(templateVariant);
+        templateVariant.setTemplate(null);
     }
 }

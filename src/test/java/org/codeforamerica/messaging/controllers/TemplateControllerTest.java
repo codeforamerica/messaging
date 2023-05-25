@@ -77,35 +77,25 @@ public class TemplateControllerTest {
         String expectedResponse = """
                 [
                     {
-                        "id":1,
                         "name":"Template name with variants",
                         "templateVariants":[
                             {
-                                "id":null,
                                 "language":"en",
                                 "treatment":"A",
                                 "subject":"English A Subject: {{placeholder}}",
-                                "body":"English A Body: {{placeholder}}",
-                                "updateTimestamp":null,
-                                "templateName":"Template name with variants"
+                                "body":"English A Body: {{placeholder}}"
                             },
                             {
-                                "id":null,
                                 "language":"es",
                                 "treatment":"B",
                                 "subject":"Spanish B Subject: {{placeholder}}",
-                                "body":"Spanish B Body: {{placeholder}}",
-                                "updateTimestamp":null,
-                                "templateName":"Template name with variants"
+                                "body":"Spanish B Body: {{placeholder}}"
                             }
                         ],
-                        "updateTimestamp":null
                     },
                     {
-                        "id":1,
                         "name":"Template name without variants",
-                        "templateVariants":[],
-                        "updateTimestamp":null
+                        "templateVariants":[]
                     }
                 ]
                 """;
@@ -123,29 +113,21 @@ public class TemplateControllerTest {
     public void whenAuthenticatedAndTemplateWithMatchingNameExists_thenReturnTemplateAndVariants() throws Exception {
         String expectedResponse = """
                 {
-                    "id":1,
                     "name":"Template name with variants",
                     "templateVariants":[
                         {
-                            "id":null,
                             "language":"en",
                             "treatment":"A",
                             "subject":"English A Subject: {{placeholder}}",
-                            "body":"English A Body: {{placeholder}}",
-                            "updateTimestamp":null,
-                            "templateName":"Template name with variants"
+                            "body":"English A Body: {{placeholder}}"
                         },
                         {
-                            "id":null,
                             "language":"es",
                             "treatment":"B",
                             "subject":"Spanish B Subject: {{placeholder}}",
-                            "body":"Spanish B Body: {{placeholder}}",
-                            "updateTimestamp":null,
-                            "templateName":"Template name with variants"
+                            "body":"Spanish B Body: {{placeholder}}"
                         }
-                    ],
-                    "updateTimestamp":null
+                    ]
                 }
                 """;
 

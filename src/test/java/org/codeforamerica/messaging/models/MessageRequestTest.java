@@ -59,14 +59,12 @@ class MessageRequestTest {
     @Test
     public void persistence() {
         Template template = TestData.aTemplate().build();
-        template.addTemplateVariant(TemplateVariant.builder()
-                .body(TestData.TEMPLATE_BODY_DEFAULT)
-                .subject(TestData.TEMPLATE_SUBJECT_DEFAULT));
+        TestData.addVariantsToTemplate(template);
         template = templateRepository.save(template);
         Message message = TestData.aMessage()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .templateVariant(template.getTemplateVariants().get(0))
+                .templateVariant(template.getTemplateVariants().stream().findFirst().get())
                 .build();
         message = messageRepository.save(message);
         SmsMessage smsMessage = TestData.anSmsMessage().build();

@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class Message {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
+    @NotNull
     TemplateVariant templateVariant;
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     String toPhone;
@@ -40,6 +42,10 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+
+    public String getTemplateName() {
+        return templateVariant.getTemplateName();
+    }
 
     public boolean needToSendEmail() {
         return toEmail != null && emailMessage == null;
