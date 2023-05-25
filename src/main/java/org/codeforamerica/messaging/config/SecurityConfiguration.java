@@ -52,8 +52,11 @@ public class SecurityConfiguration {
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
-                        return ipAddressMatcher.matches(request.getRemoteAddr())
-                                || ipAddressMatcher.matches(request.getHeader("X-Forwarded-For"));
+                        String[] xForwardedForIps = request.getHeader("X-Forwarded-For").split(", ");
+                        boolean matchesXForwardedFor = Arrays.stream(xForwardedForIps)
+                                .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
+                        boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
+                        return matchesRemoteAddr || matchesXForwardedFor;
                     });
             return new AuthorizationDecision(ipAddressAllowed);
         };
