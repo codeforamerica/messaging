@@ -1,6 +1,8 @@
 package org.codeforamerica.messaging.config;
 
+import com.twilio.rest.serverless.v1.service.environment.Log;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +25,7 @@ import static org.springframework.security.authorization.AuthenticatedAuthorizat
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@Slf4j
 public class SecurityConfiguration {
 
     @Value("${allowed-ip-addresses}")
@@ -54,10 +57,14 @@ public class SecurityConfiguration {
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
                         String xForwardedFor = request.getHeader("X-Forwarded-For");
+                        log.info(xForwardedFor);
                         boolean matchesXForwardedFor = false;
                         if (xForwardedFor != null) {
                             matchesXForwardedFor = Arrays.stream(xForwardedFor.split(", "))
-                                    .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
+                                    .anyMatch(xForwardedForIp -> {
+                                        log.info("*" + xForwardedForIp + "*");
+                                        return ipAddressMatcher.matches(xForwardedForIp);
+                                    });
                         }
                         boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
                         return matchesRemoteAddr || matchesXForwardedFor;
