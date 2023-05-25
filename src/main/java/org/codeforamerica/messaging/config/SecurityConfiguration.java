@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +18,7 @@ import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static org.springframework.security.authorization.AuthenticatedAuthorizationManager.authenticated;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -30,7 +32,8 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/**").access(authorizeApiRequest())
+                        .requestMatchers("/api/v1/**").access(AuthorizationManagers.allOf(authenticated(), authorizeApiRequest()))
+                        .requestMatchers("/api/v1/**").authenticated()
                         .requestMatchers("/error/**").authenticated()
                         .requestMatchers("/mailgun_callbacks/**").permitAll()
                         .requestMatchers("/twilio_callbacks/**").permitAll()
@@ -52,22 +55,7 @@ public class SecurityConfiguration {
                         return ipAddressMatcher.matches(request.getRemoteAddr())
                                 || ipAddressMatcher.matches(request.getHeader("X-Forwarded-For"));
                     });
-            return new AuthorizationDecision(
-                    authentication.get().isAuthenticated()
-                            && ipAddressAllowed
-            );
+            return new AuthorizationDecision(ipAddressAllowed);
         };
-    }
-
-    /**
-     Example Output: "isAuthenticated() and (hasIpAddress('127.0.0.1') or hasIpAddress('::1'))"
-     */
-    private String createExpressionString() {
-        return Arrays.stream(allowedIpAddresses.split(","))
-                .map(String::strip)
-                .collect(Collectors.joining(
-                        "') or hasIpAddress('",
-                        "isAuthenticated() and (hasIpAddress('",
-                        "'))"));
     }
 }
