@@ -40,4 +40,4 @@ jobs:
             'TWILIO_ACCOUNT_SID=${{ secrets.TWILIO_ACCOUNT_SID }}' \
             'TWILIO_AUTH_TOKEN=${{ secrets.TWILIO_AUTH_TOKEN }}' \
             'TWILIO_MESSAGING_SERVICE_SID=${{ secrets.TWILIO_MESSAGING_SERVICE_SID }}' \
-            'ALLOWED_IP_ADDRESSES'=${{ vars.ALLOWED_IP_ADDRESSES }}'
+            'ALLOWED_IP_ADDRESSES=${{ vars.ALLOWED_IP_ADDRESSES }}'
