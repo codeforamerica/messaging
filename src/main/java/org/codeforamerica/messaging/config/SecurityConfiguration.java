@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,9 +53,12 @@ public class SecurityConfiguration {
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
-                        String[] xForwardedForIps = request.getHeader("X-Forwarded-For").split(", ");
-                        boolean matchesXForwardedFor = Arrays.stream(xForwardedForIps)
-                                .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
+                        String xForwardedFor = request.getHeader("X-Forwarded-For");
+                        boolean matchesXForwardedFor = false;
+                        if (xForwardedFor != null) {
+                            matchesXForwardedFor = Arrays.stream(xForwardedFor.split(", "))
+                                    .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
+                        }
                         boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
                         return matchesRemoteAddr || matchesXForwardedFor;
                     });
