@@ -56,8 +56,9 @@ public class SecurityConfiguration {
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
+                        log.info("Looking for: " + allowedIpAddress);
                         String xForwardedFor = request.getHeader("X-Forwarded-For");
-                        log.info(xForwardedFor);
+                        log.info("X-Forwarded-For is: " + xForwardedFor);
                         boolean matchesXForwardedFor = false;
                         if (xForwardedFor != null) {
                             matchesXForwardedFor = Arrays.stream(xForwardedFor.split(", "))
@@ -66,7 +67,9 @@ public class SecurityConfiguration {
                                         return ipAddressMatcher.matches(xForwardedForIp);
                                     });
                         }
+                        log.info("RemoteAddr: " + request.getRemoteAddr());
                         boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
+                        log.info("Returning: " + (matchesRemoteAddr || matchesXForwardedFor));
                         return matchesRemoteAddr || matchesXForwardedFor;
                     });
             return new AuthorizationDecision(ipAddressAllowed);
