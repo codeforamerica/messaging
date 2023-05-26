@@ -53,9 +53,7 @@ public class SecurityConfiguration {
                         boolean matchesXForwardedFor = false;
                         if (xForwardedFor != null) {
                             matchesXForwardedFor = Arrays.stream(xForwardedFor.split(", "))
-                                    .anyMatch(xForwardedForIp -> {
-                                        return ipAddressMatcher.matches(xForwardedForIp);
-                                    });
+                                    .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
                         }
                         boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
                         return matchesRemoteAddr || matchesXForwardedFor;
