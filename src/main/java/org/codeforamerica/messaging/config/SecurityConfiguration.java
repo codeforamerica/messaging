@@ -30,7 +30,7 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/**").access(AuthorizationManagers.allOf(authenticated(), authorizeApiRequest()))
+                        .requestMatchers("/api/v1/**").access(AuthorizationManagers.allOf(authenticated(), checkForAllowedIp()))
                         .requestMatchers("/api/v1/**").authenticated()
                         .requestMatchers("/error/**").authenticated()
                         .requestMatchers("/mailgun_callbacks/**").permitAll()
@@ -44,7 +44,7 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    private AuthorizationManager<RequestAuthorizationContext> authorizeApiRequest() {
+    private AuthorizationManager<RequestAuthorizationContext> checkForAllowedIp() {
         return (authentication, context) -> {
             HttpServletRequest request = context.getRequest();
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
