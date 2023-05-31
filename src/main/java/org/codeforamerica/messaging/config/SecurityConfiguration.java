@@ -59,10 +59,26 @@ public class SecurityConfiguration {
 
     private List<String> getRequestAddresses(HttpServletRequest request) {
         List<String> requestAddresses = new ArrayList<>(List.of(request.getRemoteAddr()));
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null) {
-            requestAddresses.addAll(Arrays.asList(xForwardedFor.split(", ?")));
+        String forwardedForAddress = getCorrectForwardedForAddress(request);
+        if (forwardedForAddress != null) {
+            requestAddresses.add(forwardedForAddress);
         }
         return requestAddresses;
+    }
+
+    private String getCorrectForwardedForAddress(HttpServletRequest request) {
+        /* Based on https://www.stackhawk.com/blog/do-you-trust-your-x-forwarded-for-header/
+        and https://www.aptible.com/docs/http-request-headers, it looks like we
+        should only examine the penultimate entry in the case of Aptible with
+        ALB. */
+        
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null) {
+            String[] forwardedForAddresses = xForwardedFor.split(", ?");
+            if (forwardedForAddresses.length > 1) {
+                return forwardedForAddresses[forwardedForAddresses.length - 2];
+            }
+        }
+        return null;
     }
 }
