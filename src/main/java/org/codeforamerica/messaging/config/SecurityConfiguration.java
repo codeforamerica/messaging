@@ -5,16 +5,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManagers;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.function.Supplier;
 
 import static org.springframework.security.authorization.AuthenticatedAuthorizationManager.authenticated;
 import static org.springframework.security.config.Customizer.withDefaults;
@@ -30,7 +33,7 @@ public class SecurityConfiguration {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/**").access(AuthorizationManagers.allOf(authenticated(), checkForAllowedIp()))
+                        .requestMatchers("/api/v1/**").access(AuthorizationManagers.allOf(authenticated(), this::validIP))
                         .requestMatchers("/error/**").authenticated()
                         .requestMatchers("/mailgun_callbacks/**").permitAll()
                         .requestMatchers("/twilio_callbacks/**").permitAll()
@@ -43,22 +46,23 @@ public class SecurityConfiguration {
         return http.build();
     }
 
-    private AuthorizationManager<RequestAuthorizationContext> checkForAllowedIp() {
-        return (authentication, context) -> {
+    private AuthorizationDecision validIP(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
             HttpServletRequest request = context.getRequest();
+            List<String> requestAddresses = getRequestAddresses(request);
             boolean ipAddressAllowed = Arrays.stream(allowedIpAddresses.split(","))
                     .anyMatch(allowedIpAddress -> {
                         IpAddressMatcher ipAddressMatcher = new IpAddressMatcher(allowedIpAddress);
-                        String xForwardedFor = request.getHeader("X-Forwarded-For");
-                        boolean matchesXForwardedFor = false;
-                        if (xForwardedFor != null) {
-                            matchesXForwardedFor = Arrays.stream(xForwardedFor.split(", "))
-                                    .anyMatch(xForwardedForIp -> ipAddressMatcher.matches(xForwardedForIp));
-                        }
-                        boolean matchesRemoteAddr = ipAddressMatcher.matches(request.getRemoteAddr());
-                        return matchesRemoteAddr || matchesXForwardedFor;
+                        return requestAddresses.stream().anyMatch(ipAddressMatcher::matches);
                     });
             return new AuthorizationDecision(ipAddressAllowed);
-        };
+    }
+
+    private List<String> getRequestAddresses(HttpServletRequest request) {
+        List<String> requestAddresses = new ArrayList<>(List.of(request.getRemoteAddr()));
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null) {
+            requestAddresses.addAll(Arrays.asList(xForwardedFor.split(", ?")));
+        }
+        return requestAddresses;
     }
 }
