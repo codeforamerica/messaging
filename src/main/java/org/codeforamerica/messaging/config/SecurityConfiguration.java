@@ -74,7 +74,7 @@ public class SecurityConfiguration {
         
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null) {
-            String[] forwardedForAddresses = xForwardedFor.split(", ?");
+            String[] forwardedForAddresses = xForwardedFor.trim().split(", *");
             if (forwardedForAddresses.length > 1) {
                 return forwardedForAddresses[forwardedForAddresses.length - 2];
             }

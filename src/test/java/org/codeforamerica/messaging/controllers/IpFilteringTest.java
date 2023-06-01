@@ -42,6 +42,14 @@ public class IpFilteringTest {
 
     @Test
     @WithMockUser
+    public void whenValidIpForwardedForInPenultimatePositionButExtraSpaces_ThenAllowed() throws Exception {
+        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
+                        .header("X-Forwarded-For", " 127.0.0.2,   10.0.0.1"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
     public void whenInValidIpForwardedForInPenultimatePosition_ThenForbidden() throws Exception {
         mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID)
                         .header("X-Forwarded-For", "127.0.0.1, 10.0.0.1"))
