@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/twilio_callbacks")
+@RequestMapping("/gateway/twilio_callbacks")
 @Slf4j
 public class TwilioCallbackController {
 

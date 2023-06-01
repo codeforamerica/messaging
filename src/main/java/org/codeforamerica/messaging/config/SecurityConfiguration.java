@@ -18,8 +18,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/**").authenticated()
                         .requestMatchers("/error/**").authenticated()
-                        .requestMatchers("/mailgun_callbacks/**").permitAll()
-                        .requestMatchers("/twilio_callbacks/**").permitAll()
+                        .requestMatchers("/gateway/**").permitAll()
                         .requestMatchers("/docs/**").permitAll()
                         .requestMatchers("/v3/**").permitAll()
                         .anyRequest().denyAll()
