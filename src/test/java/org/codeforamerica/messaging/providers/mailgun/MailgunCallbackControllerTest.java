@@ -1,4 +1,4 @@
-package org.codeforamerica.messaging.providers.twilio;
+package org.codeforamerica.messaging.providers.mailgun;
 
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;

@@ -30,7 +30,7 @@ public class TwilioCallbackControllerTest {
         Mockito.when(smsMessageRepository.findFirstByProviderMessageId(any()))
                 .thenReturn(TestData.anSmsMessage().build());
 
-        mockMvc.perform(post("/twilio_callbacks/status")
+        mockMvc.perform(post("/gateway/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
                         .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
