@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 @WebMvcTest(TwilioCallbackController.class)
 @Import(SecurityConfiguration.class)
+@TestPropertySource(properties = {"server.trustedPort=80"})
 public class TwilioCallbackControllerTest {
 
     @MockBean
@@ -26,11 +28,11 @@ public class TwilioCallbackControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public void postSmsStatusSuccessUnauthenticated() throws Exception {
+    public void whenTrustedPort_ThenSucceeds() throws Exception {
         Mockito.when(smsMessageRepository.findFirstByProviderMessageId(any()))
                 .thenReturn(TestData.anSmsMessage().build());
 
-        mockMvc.perform(post("/gateway/twilio_callbacks/status")
+        mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
                         .param("From", TwilioGateway.DEFAULT_FROM_PHONE)

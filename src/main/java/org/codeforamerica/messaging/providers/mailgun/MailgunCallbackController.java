@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/gateway/mailgun_callbacks")
+@RequestMapping("/public/mailgun_callbacks")
 @Slf4j
 public class MailgunCallbackController {
 

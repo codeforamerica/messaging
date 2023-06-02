@@ -11,7 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     @Value("${server.trustedPort:null}")
-    private String trustedPort;
+    private int trustedPort;
 
     @Value("${server.trustedPathPrefix:null}")
     private String trustedPathPrefix;

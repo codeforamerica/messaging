@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class TrustedPortConfiguration {
     @Value("${server.trustedPort:null}")
-    private String trustedPort;
+    private int trustedPort;
 
 
     @Bean
@@ -21,7 +21,7 @@ public class TrustedPortConfiguration {
 
         private Connector createConnector() {
             Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
-            connector.setPort(Integer.parseInt(trustedPort));
+            connector.setPort(trustedPort);
             return connector;
         }
 }
