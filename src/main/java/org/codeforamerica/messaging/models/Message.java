@@ -25,7 +25,7 @@ public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @NotNull
     TemplateVariant templateVariant;
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)

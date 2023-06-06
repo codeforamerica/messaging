@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging;
 
+import lombok.SneakyThrows;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 
@@ -26,10 +27,11 @@ public class TestData {
 
     public static Template.TemplateBuilder aTemplate() {
         return Template.builder()
-                .id(BASE_ID)
+//                .id(BASE_ID)
                 .name(TEMPLATE_NAME);
     }
 
+    @SneakyThrows
     public static void addVariantsToTemplate(Template template) {
         template.addTemplateVariant(aTemplateVariant().build());
         template.addTemplateVariant(aTemplateVariant()
@@ -66,14 +68,11 @@ public class TestData {
                 .providerMessageId(PROVIDER_MESSAGE_ID);
     }
 
-    public static Message.MessageBuilder aMessage() {
-        Template template = aTemplate().build();
-        addVariantsToTemplate(template);
+    public static Message.MessageBuilder aMessage(TemplateVariant templateVariant) {
         return Message.builder()
-                .id(BASE_ID)
                 .body(TEMPLATE_BODY_DEFAULT)
                 .subject(TEMPLATE_SUBJECT_DEFAULT)
-                .templateVariant(template.getTemplateVariants().stream().findFirst().get());
+                .templateVariant(templateVariant);
     }
 
     public static MessageBatch.MessageBatchBuilder aMessageBatch() {

@@ -3,7 +3,6 @@ package org.codeforamerica.messaging.controllers;
 
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
-import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageBatch;
 import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.services.MessageService;
@@ -54,7 +53,9 @@ public class MessageControllerTest {
                 """.formatted(TestData.BASE_ID, TestData.TO_PHONE);
 
         Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.of(TestData.aMessage().toPhone(TestData.TO_PHONE).build()));
+                .thenReturn(Optional.of(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
+                        .toPhone(TestData.TO_PHONE).build()));
 
         mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -73,7 +74,8 @@ public class MessageControllerTest {
                 """.formatted(TestData.BASE_ID, TestData.TO_PHONE);
 
         Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.of(TestData.aMessage()
+                .thenReturn(Optional.of(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
                         .toPhone(TestData.TO_PHONE)
                         .smsMessage(TestData.anSmsMessage().build())
                         .build()));
@@ -94,7 +96,9 @@ public class MessageControllerTest {
                 """.formatted(TestData.TO_PHONE, TestData.TEMPLATE_NAME);
 
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(TestData.aMessage().build());
+                .thenReturn(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
+                        .build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -114,7 +118,9 @@ public class MessageControllerTest {
                 """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(TestData.aMessage().build());
+                .thenReturn(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
+                        .build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -135,7 +141,9 @@ public class MessageControllerTest {
                 """.formatted(TestData.TO_PHONE, TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
         Mockito.when(messageService.scheduleMessage(any()))
-                .thenReturn(TestData.aMessage().build());
+                .thenReturn(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
+                        .build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -236,7 +244,6 @@ public class MessageControllerTest {
                 }
                 """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
 
-        Message message = TestData.aMessage().build();
         MessageRequest expectedMessageRequest = TestData.aMessageRequest()
                 .toEmail(TestData.TO_EMAIL)
                 .templateParams(Map.of(
@@ -244,13 +251,15 @@ public class MessageControllerTest {
                         "treatment", "B"))
                 .build();
         Mockito.when(messageService.scheduleMessage(expectedMessageRequest))
-                .thenReturn(message);
+                .thenReturn(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
+                        .id(TestData.BASE_ID)
+                        .build());
 
         mockMvc.perform(post("/api/v1/messages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/1")));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/messages/" + TestData.BASE_ID)));
     }
 
     @Test
@@ -263,16 +272,16 @@ public class MessageControllerTest {
                 "Hello, World!".getBytes()
         );
 
-        MessageBatch messageBatch = MessageBatch.builder().id(1L).build();
+        MessageBatch messageBatch = MessageBatch.builder().id(TestData.BASE_ID).build();
         Mockito.when(messageService.enqueueMessageBatch(any()))
                 .thenReturn(messageBatch);
 
         mockMvc.perform(multipart("/api/v1/message_batches")
-                        .file(file)
-                        .param("templateName", "foo")
-                        .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
-                        )
+                                .file(file)
+                                .param("templateName", "foo")
+                                .contentType(MediaType.MULTIPART_FORM_DATA_VALUE)
+                )
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/message_batches/1")));
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/message_batches/" + TestData.BASE_ID)));
     }
 }

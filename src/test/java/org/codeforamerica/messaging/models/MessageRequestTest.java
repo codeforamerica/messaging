@@ -61,10 +61,9 @@ class MessageRequestTest {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         template = templateRepository.save(template);
-        Message message = TestData.aMessage()
+        Message message = TestData.aMessage(template.getTemplateVariants().stream().findFirst().get())
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
-                .templateVariant(template.getTemplateVariants().stream().findFirst().get())
                 .build();
         message = messageRepository.save(message);
         SmsMessage smsMessage = TestData.anSmsMessage().build();
