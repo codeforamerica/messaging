@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageBatch;
@@ -27,6 +28,7 @@ public class MessageController {
     }
 
     @PostMapping(path="/messages")
+    @Operation(summary = "Send a message request")
     public ResponseEntity<Message> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
         Message sentMessage = messageService.scheduleMessage(messageRequest);
 
@@ -38,6 +40,7 @@ public class MessageController {
     }
 
     @PostMapping(path="/message_batches", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @Operation(summary = "Send a message batch request")
     public ResponseEntity<MessageBatch> createMessageBatch(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) throws IOException {
         MessageBatch messageBatch = messageService.enqueueMessageBatch(messageBatchRequest);
 
@@ -49,6 +52,7 @@ public class MessageController {
     }
 
     @GetMapping("/messages/{id}")
+    @Operation(summary = "Get a message status")
     public ResponseEntity<Optional<Message>> getMessage(@PathVariable Long id) {
         Optional<Message> message = messageService.getMessage(id);
         if (message.isPresent()) {

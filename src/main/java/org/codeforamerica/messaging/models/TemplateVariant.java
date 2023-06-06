@@ -11,6 +11,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -20,12 +22,14 @@ import java.util.function.Function;
 @NoArgsConstructor
 @Builder
 @ToString
+@EqualsAndHashCode(of = {"template", "language", "treatment"})
 public class TemplateVariant {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String DEFAULT_TREATMENT = "A";
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
     @NotBlank
     @Builder.Default
@@ -41,6 +45,11 @@ public class TemplateVariant {
     @JsonIgnore
     @ToString.Exclude
     Template template;
+    @OneToMany(mappedBy = "templateVariant", fetch = FetchType.EAGER)
+    @JsonIgnore
+    @ToString.Exclude
+    @Builder.Default
+    List<Message> messages = new LinkedList<>();
     @CreationTimestamp
     @JsonIgnore
     @ToString.Exclude

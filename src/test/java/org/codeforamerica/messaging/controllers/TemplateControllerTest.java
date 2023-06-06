@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -19,8 +21,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(TemplateController.class)
 @Import(SecurityConfiguration.class)
@@ -137,6 +142,66 @@ public class TemplateControllerTest {
         mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getName()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
+    }
+
+    @Test
+    @WithMockUser
+    public void whenCreatingTemplateWithVariants_thenReturnTemplateWithVariants() throws Exception {
+        String requestBody = """
+                {
+                    "name":"Template name with variants",
+                    "templateVariants":[
+                        {
+                            "subject":"English A Subject: {{placeholder}}",
+                            "body":"English A Body: {{placeholder}}"
+                        },
+                        {
+                            "language":"es",
+                            "treatment":"B",
+                            "subject":"Spanish B Subject: {{placeholder}}",
+                            "body":"Spanish B Body: {{placeholder}}"
+                        }
+                    ]
+                }
+                """;
+        String expectedResponse = """
+                {
+                    "name":"Template name with variants",
+                    "templateVariants":[
+                        {
+                            "language":"en",
+                            "treatment":"A",
+                            "subject":"English A Subject: {{placeholder}}",
+                            "body":"English A Body: {{placeholder}}"
+                        },
+                        {
+                            "language":"es",
+                            "treatment":"B",
+                            "subject":"Spanish B Subject: {{placeholder}}",
+                            "body":"Spanish B Body: {{placeholder}}"
+                        }
+                    ]
+                }
+                """;
+
+        Mockito.when(templateService.createTemplate(TestData.aTemplate().id(null)
+                        .name(TEMPLATE_NAME_WITH_VARIANTS)
+                        .templateVariants(Set.of(TestData.aTemplateVariant().build(),
+                                TestData.aTemplateVariant()
+                                        .language("es")
+                                        .treatment("B")
+                                        .subject(TestData.TEMPLATE_SUBJECT_ES_B)
+                                        .body(TestData.TEMPLATE_BODY_ES_B)
+                                        .build()))
+                        .build()))
+                .thenReturn(TEMPLATE_WITH_VARIANTS);
+
+        mockMvc.perform(post("/api/v1/templates")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isCreated())
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/templates/Template%20name%20with%20variants")))
+                .andExpect(MockMvcResultMatchers.content().json(expectedResponse));
     }
 
 }

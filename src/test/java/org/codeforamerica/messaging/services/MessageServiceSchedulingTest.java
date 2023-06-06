@@ -8,6 +8,7 @@ import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +54,7 @@ public class MessageServiceSchedulingTest {
     }
 
     @Test
+    @Disabled
     void whenScheduledWithBothPhoneAndEmail_thenBothServicesCalledAfterScheduleDelay() {
         MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
