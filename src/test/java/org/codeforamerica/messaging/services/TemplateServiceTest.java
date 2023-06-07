@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging.services;
 
-import lombok.SneakyThrows;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.Template;
@@ -38,8 +37,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    void whenCreatingAValidTemplate_thenSaveTemplate() {
+    void whenCreatingAValidTemplate_thenSaveTemplate() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
 
@@ -54,7 +52,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenCreatingATemplateWithADuplicateName_thenDoNotSaveTemplate() {
+    void whenCreatingATemplateWithADuplicateName_thenDoNotSaveTemplate() throws Exception {
         templateRepository.save(TestData.aTemplate().build());
         Template template2 = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template2);
@@ -62,8 +60,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    void whenDeletingAnUnusedTemplate_thenDoNotThrowAnException() {
+    void whenDeletingAnUnusedTemplate_thenDoNotThrowAnException() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -73,8 +70,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    void whenDeletingATemplateWithOneUnusedTemplateVariantAndOneUsed_thenDoNotChangeAnything() {
+    void whenDeletingATemplateWithOneUnusedTemplateVariantAndOneUsed_thenDoNotChangeAnything() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -87,7 +83,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenAddingNonDuplicateTemplateVariants_thenAddAllTemplateVariants() {
+    void whenAddingNonDuplicateTemplateVariants_thenAddAllTemplateVariants() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -101,7 +97,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenAddingDuplicateOfUnusedTemplateVariant_thenUpdateDuplicateTemplateVariant() {
+    void whenAddingDuplicateOfUnusedTemplateVariant_thenUpdateDuplicateTemplateVariant() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -116,7 +112,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenAddingDuplicateOfUsedTemplateVariant_thenRejectTheDuplicate() {
+    void whenAddingDuplicateOfUsedTemplateVariant_thenRejectTheDuplicate() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -132,8 +128,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    void whenDeletingTheLastTemplateVariant_thenDoNotDelete() {
+    void whenDeletingTheLastTemplateVariant_thenDoNotDelete() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -146,8 +141,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    void whenDeletingAUsedTemplateVariant_thenDoNotDelete() {
+    void whenDeletingAUsedTemplateVariant_thenDoNotDelete() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);

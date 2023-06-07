@@ -54,7 +54,7 @@ public class TemplateService {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
         templateVariants.forEach(templateVariant -> {
             try {
-                template.upsertTemplateVariant(templateVariant);
+                template.mergeTemplateVariant(templateVariant);
             } catch (Exception e) {
                 throw new RuntimeException("Could not complete update of template variant list", e);
             }
@@ -62,13 +62,13 @@ public class TemplateService {
         return templateRepository.save(template);
     }
 
-    public Template upsertTemplateVariant(
+    public Template mergeTemplateVariant(
             String templateName,
             String language,
             String treatment,
             TemplateVariantRequest templateVariantRequest) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        template.upsertTemplateVariant(TemplateVariant.builder()
+        template.mergeTemplateVariant(TemplateVariant.builder()
                 .body(templateVariantRequest.getBody())
                 .subject(templateVariantRequest.getSubject())
                 .language(language)

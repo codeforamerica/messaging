@@ -58,7 +58,7 @@ public class Template {
         templateVariant.setSubject(subject);
     }
 
-    public void upsertTemplateVariant(TemplateVariant templateVariant) throws Exception {
+    public void mergeTemplateVariant(TemplateVariant templateVariant) throws Exception {
         Optional<TemplateVariant> existingTemplateVariant =
                 this.getTemplateVariant(templateVariant.getLanguage(), templateVariant.getTreatment());
         if (existingTemplateVariant.isPresent()) {

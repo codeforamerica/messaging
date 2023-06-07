@@ -57,7 +57,7 @@ class MessageRequestTest {
     }
 
     @Test
-    public void persistence() {
+    public void persistence() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         template = templateRepository.save(template);

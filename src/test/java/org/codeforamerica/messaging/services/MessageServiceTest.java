@@ -51,7 +51,7 @@ class MessageServiceTest {
     Template template;
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         template = TestData.aTemplate().build();
         template = templateRepository.save(template);
         TestData.addVariantsToTemplate(template);

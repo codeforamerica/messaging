@@ -93,7 +93,7 @@ public class TemplateController {
             @PathVariable String language,
             @PathVariable String treatment,
             @Valid @RequestBody TemplateVariantRequest templateVariantRequest) throws Exception {
-        Template modifiedTemplate = templateService.upsertTemplateVariant(name, language, treatment, templateVariantRequest);
+        Template modifiedTemplate = templateService.mergeTemplateVariant(name, language, treatment, templateVariantRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
                 .buildAndExpand(modifiedTemplate.getName()).toUri();
