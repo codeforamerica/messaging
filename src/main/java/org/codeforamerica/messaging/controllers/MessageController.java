@@ -28,7 +28,7 @@ public class MessageController {
     }
 
     @PostMapping(path="/messages")
-    @Operation(summary = "Send a message request")
+    @Operation(summary = "Send a message")
     public ResponseEntity<Message> createMessage(@Valid @RequestBody MessageRequest messageRequest) {
         Message sentMessage = messageService.scheduleMessage(messageRequest);
 
@@ -40,7 +40,7 @@ public class MessageController {
     }
 
     @PostMapping(path="/message_batches", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    @Operation(summary = "Send a message batch request")
+    @Operation(summary = "Send a message batch")
     public ResponseEntity<MessageBatch> createMessageBatch(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) throws IOException {
         MessageBatch messageBatch = messageService.enqueueMessageBatch(messageBatchRequest);
 

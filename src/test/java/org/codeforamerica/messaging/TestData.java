@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging;
 
-import lombok.SneakyThrows;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 
@@ -27,12 +26,10 @@ public class TestData {
 
     public static Template.TemplateBuilder aTemplate() {
         return Template.builder()
-//                .id(BASE_ID)
                 .name(TEMPLATE_NAME);
     }
 
-    @SneakyThrows
-    public static void addVariantsToTemplate(Template template) {
+    public static void addVariantsToTemplate(Template template) throws Exception {
         template.addTemplateVariant(aTemplateVariant().build());
         template.addTemplateVariant(aTemplateVariant()
                 .body(TEMPLATE_BODY_ES_B)

@@ -46,7 +46,7 @@ public class TemplateControllerTest {
             .build();
 
     @BeforeEach
-    void setup() {
+    void setup() throws Exception {
         TestData.addVariantsToTemplate(TEMPLATE_WITH_VARIANTS);
     }
 
