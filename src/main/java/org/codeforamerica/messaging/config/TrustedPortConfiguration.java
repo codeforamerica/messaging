@@ -15,13 +15,13 @@ public class TrustedPortConfiguration {
 
 
     @Bean
-        public WebServerFactoryCustomizer<TomcatServletWebServerFactory> connectorCustomizer() {
-            return (tomcat) -> tomcat.addAdditionalTomcatConnectors(createConnector());
-        }
+    public WebServerFactoryCustomizer<TomcatServletWebServerFactory> connectorCustomizer() {
+        return (tomcat) -> tomcat.addAdditionalTomcatConnectors(createConnector());
+    }
 
-        private Connector createConnector() {
-            Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
-            connector.setPort(trustedPort);
-            return connector;
-        }
+    private Connector createConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        connector.setPort(trustedPort);
+        return connector;
+    }
 }
