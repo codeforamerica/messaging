@@ -76,4 +76,8 @@ public class TestData {
                 .templateVariant(template.getTemplateVariants().stream().findFirst().get());
     }
 
+    public static MessageBatch.MessageBatchBuilder aMessageBatch() {
+        return MessageBatch.builder()
+                .recipients("somebytes".getBytes());
+    }
 }
