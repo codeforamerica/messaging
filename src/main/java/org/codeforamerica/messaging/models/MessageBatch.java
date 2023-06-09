@@ -11,7 +11,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 
 @Entity
 @Data
@@ -26,13 +25,12 @@ public class MessageBatch {
     Template template;
     @JsonIgnore
     private byte[] recipients;
-    @OneToMany(mappedBy = "messageBatch", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    List<Message> messages;
     @Future
     OffsetDateTime sendAt;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
-
+    @Transient
+    MessageBatchMetrics metrics;
 }

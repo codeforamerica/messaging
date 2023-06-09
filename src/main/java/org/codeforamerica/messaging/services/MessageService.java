@@ -128,6 +128,14 @@ public class MessageService {
         return messageRepository.findById(id);
     }
 
+    public Optional<MessageBatch> getMessageBatch(Long id) {
+        Optional<MessageBatch> messageBatch = messageBatchRepository.findById(id);
+        if (messageBatch.isPresent()) {
+            messageBatch.get().setMetrics(messageRepository.getMetrics(id));
+        }
+        return messageBatch;
+    }
+
     private TemplateVariant getTemplateVariant(MessageRequest messageRequest) {
         Optional<Template> templateOptional = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
         if (templateOptional.isEmpty()) {

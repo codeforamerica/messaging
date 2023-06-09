@@ -38,7 +38,7 @@ public class MessageController {
     }
 
     @PostMapping(path="/message_batches", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<MessageBatch> createBatchMessage(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) throws IOException {
+    public ResponseEntity<MessageBatch> createMessageBatch(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) throws IOException {
         MessageBatch messageBatch = messageService.enqueueMessageBatch(messageBatchRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(
@@ -53,6 +53,15 @@ public class MessageController {
         Optional<Message> message = messageService.getMessage(id);
         if (message.isPresent()) {
             return ResponseEntity.ok(message);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping(path="/message_batches/{id}")
+    public ResponseEntity<Optional<MessageBatch>> getMessageBatch(@PathVariable Long id) {
+        Optional<MessageBatch> messageBatch = messageService.getMessageBatch(id);
+        if (messageBatch.isPresent()) {
+            return ResponseEntity.ok(messageBatch);
         }
         return ResponseEntity.notFound().build();
     }

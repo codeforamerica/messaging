@@ -55,13 +55,13 @@ class MessageServiceTest {
         template = TestData.aTemplate().build();
         template = templateRepository.save(template);
         TestData.addVariantsToTemplate(template);
-        templateRepository.save(template);
+        template = templateRepository.save(template);
     }
 
     @AfterEach
     void tearDown() {
-        messageBatchRepository.deleteAll();
         messageRepository.deleteAll();
+        messageBatchRepository.deleteAll();
         templateRepository.deleteAll();
     }
 
@@ -149,10 +149,51 @@ class MessageServiceTest {
                 (OffsetDateTime) any(),
                 isA(SendMessageJobRequest.class)
         );
-        messageBatch = messageBatchRepository.findByIdAndLoadMessages(messageBatch.getId());
-        Assertions.assertThat(messageBatch.getMessages().stream().map(Message::getToPhone))
+        Assertions.assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
                 .containsExactlyInAnyOrderElementsOf(List.of("8885551212", "1234567890"));
-        Assertions.assertThat(messageBatch.getMessages().stream().map(Message::getToEmail))
+        Assertions.assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToEmail))
                 .containsExactlyInAnyOrderElementsOf(List.of("bar@example.org", "foo@example.com"));
      }
+
+
+    @Test
+    public void whenMessagesInBatchHaveDifferentStatuses_ThenGetReturnsCorrectStatusCounts() throws Exception {
+        MessageBatch originalMessageBatch = TestData.aMessageBatch().template(template).build();
+        messageBatchRepository.save(originalMessageBatch);
+        addMessage(originalMessageBatch, "delivered", "rejected");
+        addMessage(originalMessageBatch, "delivered", "undelivered");
+        addMessage(originalMessageBatch, null, "accepted");
+        addMessage(originalMessageBatch, "accepted", null);
+
+        MessageBatch messageBatch = messageService.getMessageBatch(originalMessageBatch.getId()).get();
+        int[] metricsArray = new int[] {
+                messageBatch.getMetrics().getAcceptedEmailCount(),
+                messageBatch.getMetrics().getRejectedEmailCount(),
+                messageBatch.getMetrics().getDeliveredEmailCount(),
+                messageBatch.getMetrics().getUndeliveredEmailCount(),
+                messageBatch.getMetrics().getAcceptedSmsCount(),
+                messageBatch.getMetrics().getRejectedSmsCount(),
+                messageBatch.getMetrics().getDeliveredSmsCount(),
+                messageBatch.getMetrics().getUndeliveredSmsCount(),
+        };
+        Assertions.assertThat(metricsArray).isEqualTo(new int[] {1, 0, 2, 0, 1, 1, 0, 1});
+    }
+
+    private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
+        Message message = TestData.aMessage().messageBatch(originalMessageBatch)
+                .templateVariant(template.getTemplateVariants().stream().findFirst().get())
+                .build();
+        if (emailStatus != null) {
+            EmailMessage emailMessage = TestData.anEmailMessage().message(message).status(emailStatus).build();
+            emailMessage = emailMessageRepository.save(emailMessage);
+            message.setEmailMessage(emailMessage);
+        }
+        if (smsStatus != null) {
+            SmsMessage smsMessage = TestData.anSmsMessage().message(message).status(smsStatus).build();
+            smsMessage = smsMessageRepository.save(smsMessage);
+            message.setSmsMessage(smsMessage);
+        }
+        messageRepository.save(message);
+    }
+
 }
