@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -157,6 +158,7 @@ class MessageServiceTest {
 
 
     @Test
+    @Transactional
     public void whenMessagesInBatchHaveDifferentStatuses_ThenGetReturnsCorrectStatusCounts() throws Exception {
         MessageBatch originalMessageBatch = TestData.aMessageBatch().template(template).build();
         messageBatchRepository.save(originalMessageBatch);
@@ -180,8 +182,8 @@ class MessageServiceTest {
     }
 
     private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
-        Message message = TestData.aMessage().messageBatch(originalMessageBatch)
-                .templateVariant(template.getTemplateVariants().stream().findFirst().get())
+        Message message = TestData.aMessage(originalMessageBatch.getTemplate().getTemplateVariants().stream().findFirst().get())
+                .messageBatch(originalMessageBatch)
                 .build();
         if (emailStatus != null) {
             EmailMessage emailMessage = TestData.anEmailMessage().message(message).status(emailStatus).build();

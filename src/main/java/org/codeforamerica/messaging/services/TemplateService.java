@@ -44,7 +44,7 @@ public class TemplateService {
 
     public void deleteTemplateAndVariants(String templateName) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        if (template.getTemplateVariants().stream().anyMatch(templateVariant -> !templateVariant.getMessages().isEmpty())) {
+        if (template.getTemplateVariants().stream().anyMatch(Template::isTemplateVariantInUse)) {
             throw new Exception("At least one template variant is currently in use and cannot be deleted");
         }
         templateRepository.delete(template);
