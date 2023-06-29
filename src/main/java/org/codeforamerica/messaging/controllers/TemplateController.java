@@ -41,7 +41,7 @@ public class TemplateController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new template with at least one variant")
+    @Operation(summary = "Create a template with at least one variant")
     public ResponseEntity<Template> createTemplate(@Valid @RequestBody Template template) throws Exception {
         Template createdTemplate = templateService.createTemplate(template);
 
@@ -53,14 +53,14 @@ public class TemplateController {
     }
 
     @DeleteMapping("/{name}")
-    @Operation(summary = "Delete an unused template")
+    @Operation(summary = "Delete a template and its variants")
     public ResponseEntity<?> deleteTemplate(@PathVariable String name) throws Exception {
         templateService.deleteTemplateAndVariants(name);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{name}")
-    @Operation(summary = "Add or modify a list of variants on a template")
+    @Operation(summary = "Create or modify a list of template variants")
     public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<TemplateVariant> templateVariants) {
         Template modifiedTemplate = templateService.modifyTemplateVariants(name, templateVariants);
 
@@ -72,7 +72,7 @@ public class TemplateController {
     }
 
     @DeleteMapping("/{name}/{language}/{treatment}")
-    @Operation(summary = "Delete an unused template variant")
+    @Operation(summary = "Delete a single template variant")
     public ResponseEntity<Template> deleteTemplateVariant(
             @PathVariable String name,
             @PathVariable String language,
@@ -87,7 +87,7 @@ public class TemplateController {
     }
 
     @PutMapping("/{name}/{language}/{treatment}")
-    @Operation(summary = "Create or modify an unused template variant")
+    @Operation(summary = "Create or modify a single template variant")
     public ResponseEntity<Template> createOrUpdateTemplateVariant(
             @PathVariable String name,
             @PathVariable String language,
