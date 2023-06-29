@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging.services;
 
-import org.assertj.core.api.Assertions;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.Template;
@@ -14,7 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,7 +61,6 @@ class TemplateServiceTest {
     }
 
     @Test
-    @Transactional
     void whenDeletingAnUnusedTemplate_thenDoNotThrowAnException() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
@@ -99,28 +98,12 @@ class TemplateServiceTest {
     }
 
     @Test
-    @Transactional
     void whenAddingDuplicateOfUnusedTemplateVariant_thenUpdateDuplicateTemplateVariant() throws Exception {
-        // Original, unused template & variants
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
-        Assertions.assertThat(template.getTemplateVariants().stream()
-                .map(templateVariant -> messageRepository.findMessagesByTemplateVariantId(templateVariant.getId()))
-                .map(Collection::size))
-                .containsExactlyInAnyOrder(0, 0);
 
-        // Set new variant, assert unused
-        Set<TemplateVariant> newTemplateVariants = Set.of(
-                TestData.aTemplateVariant().body("new body").subject(null).build()
-        );
-        Assertions.assertThat(newTemplateVariants.stream()
-                .map(tv -> {
-                    return tv.getId() == null ? Collections.EMPTY_SET : messageRepository.findMessagesByTemplateVariantId(tv.getId());
-                })
-                .map(Collection::size))
-                .containsExactlyInAnyOrder(0);
-
+        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().body("new body").subject(null).build());
         template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants);
         assertEquals(2, template.getTemplateVariants().size());
         assertEquals("new body", template.getTemplateVariant("en", "A").get().getBody());
@@ -128,19 +111,15 @@ class TemplateServiceTest {
     }
 
     @Test
-    @Transactional
     void whenAddingDuplicateOfUsedTemplateVariant_thenRejectTheDuplicate() throws Exception {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         template = templateRepository.save(template);
         TemplateVariant templateVariant = template.getTemplateVariant("en", "A").get();
         Message message = TestData.aMessage(templateVariant).build();
-        templateVariant.setMessages(List.of(message));
         messageRepository.save(message);
 
-        Set<TemplateVariant> newTemplateVariants = Set.of(
-                TestData.aTemplateVariant().body("new body").subject(null).build()
-        );
+        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().body("new body").subject(null).build());
         assertThrows(Exception.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants));
         assertEquals(Optional.of(template), templateRepository.findFirstByNameIgnoreCase(template.getName()));
     }

@@ -9,7 +9,7 @@ import java.util.Collection;
 
 public interface MessageRepository extends CrudRepository<Message, Long> {
     Collection<Message> findMessagesByMessageBatchId(long messageBatchId);
-    Collection<Message> findMessagesByTemplateVariantId(long templateVariantId);
+    long countByTemplateVariantId(long templateVariantId);
 
     @Query("""
             SELECT

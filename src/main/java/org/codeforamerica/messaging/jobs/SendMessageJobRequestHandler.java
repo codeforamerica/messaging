@@ -15,7 +15,7 @@ public class SendMessageJobRequestHandler implements JobRequestHandler<SendMessa
 
     @Override
     @Job(name="SendMessage %0")
-    public void run(SendMessageJobRequest sendMessageJobRequest) throws Exception {
+    public void run(SendMessageJobRequest sendMessageJobRequest) {
         messageService.sendMessage(sendMessageJobRequest.getMessageId());
     }
 }
