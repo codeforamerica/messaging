@@ -51,7 +51,7 @@ public class Template {
 
     public void updateTemplateVariant(TemplateVariant templateVariant, String body, String subject)
             throws Exception {
-        if (!templateVariant.getMessages().isEmpty()) {
+        if (isTemplateVariantInUse(templateVariant)) {
             throw new Exception("Cannot update a template variant that is already in use");
         }
         templateVariant.setBody(body);
@@ -77,9 +77,10 @@ public class Template {
         if (this.getTemplateVariants().size() == 1) {
             throw new Exception("Cannot delete last variant on template - delete parent template instead");
         }
-        if (!templateVariant.getMessages().isEmpty()) {
+        if (isTemplateVariantInUse(templateVariant)) {
             throw new Exception("Template variant is currently in use and cannot be deleted");
         }
+        templateVariant.setTemplate(null);
         this.getTemplateVariants().remove(templateVariant);
     }
 
@@ -88,5 +89,9 @@ public class Template {
                 .filter(templateVariant -> templateVariant.getLanguage().equals(language))
                 .filter(templateVariant -> templateVariant.getTreatment().equals(treatment))
                 .findAny();
+    }
+
+    public static boolean isTemplateVariantInUse(TemplateVariant templateVariant) {
+        return templateVariant.getMessages().size() > 0;
     }
 }

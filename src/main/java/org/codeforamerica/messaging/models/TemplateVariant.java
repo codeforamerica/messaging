@@ -45,7 +45,7 @@ public class TemplateVariant {
     @JsonIgnore
     @ToString.Exclude
     Template template;
-    @OneToMany(mappedBy = "templateVariant", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "templateVariant", fetch = FetchType.LAZY)
     @JsonIgnore
     @ToString.Exclude
     @Builder.Default
