@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.models.TemplateVariant;
 import org.codeforamerica.messaging.models.TemplateVariantRequest;
+import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,11 @@ import java.util.Set;
 public class TemplateService {
 
     private final TemplateRepository templateRepository;
+    private final MessageRepository messageRepository;
 
-    public TemplateService(TemplateRepository templateRepository) {
+    public TemplateService(TemplateRepository templateRepository, MessageRepository messageRepository) {
         this.templateRepository = templateRepository;
+        this.messageRepository = messageRepository;
     }
 
     public List<Template> getTemplateList() {
@@ -44,20 +47,21 @@ public class TemplateService {
 
     public void deleteTemplateAndVariants(String templateName) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        if (template.getTemplateVariants().stream().anyMatch(Template::isTemplateVariantInUse)) {
+        if (template.getTemplateVariants().stream().anyMatch(this::isTemplateVariantInUse)) {
             throw new Exception("At least one template variant is currently in use and cannot be deleted");
         }
         templateRepository.delete(template);
     }
 
-    public Template modifyTemplateVariants(String templateName, Set<TemplateVariant> templateVariants) {
+    public Template modifyTemplateVariants(String templateName, Set<TemplateVariant> newTemplateVariants) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        templateVariants.forEach(templateVariant -> {
+        if (isAnyTemplateVariantInUse(template, newTemplateVariants)) {
+            throw new Exception("Cannot update a template variant that is already in use, list not updated");
+        }
+        newTemplateVariants.forEach(templateVariant -> {
             try {
                 template.mergeTemplateVariant(templateVariant);
-            } catch (Exception e) {
-                throw new RuntimeException("Could not complete update of template variant list", e);
-            }
+            } catch (Exception ignored) {}
         });
         return templateRepository.save(template);
     }
@@ -79,7 +83,23 @@ public class TemplateService {
 
     public Template deleteTemplateVariant(String templateName, String language, String treatment) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        template.removeTemplateVariant(language, treatment);
+        TemplateVariant templateVariant = template.getTemplateVariant(language, treatment).orElseThrow(NoSuchElementException::new);
+        if (isTemplateVariantInUse(templateVariant)) {
+            throw new Exception("Template variant is currently in use and cannot be deleted");
+        }
+        template.removeTemplateVariant(templateVariant);
         return templateRepository.save(template);
+    }
+
+    public boolean isAnyTemplateVariantInUse(Template template, Set<TemplateVariant> templateVariants) {
+        return templateVariants.stream()
+                .map(tv -> template.getTemplateVariant(tv.getLanguage(), tv.getTreatment()))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .anyMatch(this::isTemplateVariantInUse);
+    }
+
+    public boolean isTemplateVariantInUse(TemplateVariant templateVariant) {
+        return templateVariant.getId() != null && messageRepository.countByTemplateVariantId(templateVariant.getId()) > 0;
     }
 }

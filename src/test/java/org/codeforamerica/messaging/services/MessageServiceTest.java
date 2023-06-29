@@ -159,7 +159,7 @@ class MessageServiceTest {
 
     @Test
     @Transactional
-    public void whenMessagesInBatchHaveDifferentStatuses_ThenGetReturnsCorrectStatusCounts() throws Exception {
+    public void whenMessagesInBatchHaveDifferentStatuses_ThenGetReturnsCorrectStatusCounts() {
         MessageBatch originalMessageBatch = TestData.aMessageBatch().template(template).build();
         messageBatchRepository.save(originalMessageBatch);
         addMessage(originalMessageBatch, "delivered", "rejected");

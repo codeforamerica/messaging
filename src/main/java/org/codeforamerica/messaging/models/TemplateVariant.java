@@ -11,8 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -45,11 +43,6 @@ public class TemplateVariant {
     @JsonIgnore
     @ToString.Exclude
     Template template;
-    @OneToMany(mappedBy = "templateVariant", fetch = FetchType.LAZY)
-    @JsonIgnore
-    @ToString.Exclude
-    @Builder.Default
-    List<Message> messages = new LinkedList<>();
     @CreationTimestamp
     @JsonIgnore
     @ToString.Exclude

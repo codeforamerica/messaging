@@ -62,6 +62,7 @@ public class MessageController {
     }
 
     @GetMapping(path="/message_batches/{id}")
+    @Operation(summary = "Get a message batch status")
     public ResponseEntity<Optional<MessageBatch>> getMessageBatch(@PathVariable Long id) {
         Optional<MessageBatch> messageBatch = messageService.getMessageBatch(id);
         if (messageBatch.isPresent()) {
