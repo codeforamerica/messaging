@@ -14,6 +14,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @WebMvcTest(MailgunCallbackController.class)
@@ -23,13 +24,16 @@ public class MailgunCallbackControllerTest {
 
     @MockBean
     EmailMessageRepository emailMessageRepository;
+    @MockBean
+    MailgunSignatureVerificationService mailgunSignatureVerificationService;
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    public void whenTrustedPort_ThenSucceeds() throws Exception {
+    public void whenTrustedPortAndSignatureVerified_ThenSucceeds() throws Exception {
         Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(TestData.anEmailMessage().build());
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/public/mailgun_callbacks/status")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -46,5 +50,28 @@ public class MailgunCallbackControllerTest {
                                     }
                                 """.formatted(TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    public void whenTrustedPortAndSignatureNotVerified_ThenFails() throws Exception {
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(TestData.anEmailMessage().build());
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(false);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "delivered",
+                                            "message": {
+                                              "headers": {
+                                                "message-id": "%s"
+                                              }
+                                            }
+                                        }
+                                    }
+                                """.formatted(TestData.PROVIDER_MESSAGE_ID)))
+                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
 }
