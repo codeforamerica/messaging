@@ -71,8 +71,7 @@ public class Template {
         if (this.getTemplateVariants().size() == 1) {
             throw new Exception("Cannot delete last variant on template - delete parent template instead");
         }
-        templateVariant.setTemplate(null);
-        this.getTemplateVariants().remove(templateVariant);
+        this.getTemplateVariants().removeIf(tv -> tv.equals(templateVariant));
     }
 
     public Optional<TemplateVariant> getTemplateVariant(String language, String treatment) {
