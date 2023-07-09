@@ -1,49 +1,39 @@
-package org.codeforamerica.messaging.config.filters;
+package org.codeforamerica.messaging.providers.twilio;
 
 import com.twilio.security.RequestValidator;
-import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Service
 @Slf4j
-public class TwilioRequestValidatorFilter implements Filter {
+public class TwilioSignatureVerificationService {
+    @Value("${twilio.auth.token}")
+    private String TWILIO_AUTH_TOKEN;
 
-    private final RequestValidator requestValidator;
-
-    public TwilioRequestValidatorFilter(String twilioAuthToken) {
-        this.requestValidator = new RequestValidator(twilioAuthToken);
-    }
-
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        var httpRequest = (HttpServletRequest) servletRequest;
-        var httpResponse = (HttpServletResponse) servletResponse;
-        if (!requestValidator.validate(
+    public boolean verifySignature(HttpServletRequest httpRequest) {
+        RequestValidator requestValidator = new RequestValidator(TWILIO_AUTH_TOKEN);
+        return requestValidator.validate(
                 getRequestUrlAndQueryString(httpRequest),
                 extractPostParams(httpRequest),
-                httpRequest.getHeader("X-Twilio-Signature"))) {
-            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN);
-        } else {
-            filterChain.doFilter(httpRequest, httpResponse);
-        }
+                httpRequest.getHeader("X-Twilio-Signature"));
     }
 
     private String getRequestUrlAndQueryString(HttpServletRequest request) {
         String queryString = request.getQueryString();
-        String requestUrl = request.getRequestURL().toString();
-        if (queryString != null && !queryString.isBlank()) {
-            return requestUrl + "?" + queryString;
-        }
-        return requestUrl;
+        // Load balancers re-direct https requests to http, must recreate the original https request url
+        // https://stackoverflow.com/a/43593017
+        String requestUrl = StringUtils.replaceOnce(
+                request.getRequestURL().toString(), "http", "https");
+        return queryString == null || queryString.isBlank() ? requestUrl : requestUrl + "?" + queryString;
     }
 
     private Map<String, String> extractPostParams(HttpServletRequest request) {
