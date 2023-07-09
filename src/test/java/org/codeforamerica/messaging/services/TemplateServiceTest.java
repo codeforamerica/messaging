@@ -103,10 +103,15 @@ class TemplateServiceTest {
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
 
-        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().body("new body").subject(null).build());
+        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant()
+                .smsBody("new body")
+                .emailBody(null)
+                .subject(null)
+                .build());
         template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants);
         assertEquals(2, template.getTemplateVariants().size());
-        assertEquals("new body", template.getTemplateVariant("en", "A").get().getBody());
+        assertEquals("new body", template.getTemplateVariant("en", "A").get().getSmsBody());
+        assertNull(template.getTemplateVariant("en", "A").get().getEmailBody());
         assertNull(template.getTemplateVariant("en", "A").get().getSubject());
     }
 
@@ -119,7 +124,7 @@ class TemplateServiceTest {
         Message message = TestData.aMessage(templateVariant).build();
         messageRepository.save(message);
 
-        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().body("new body").subject(null).build());
+        Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().smsBody("new body").subject(null).build());
         assertThrows(Exception.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants));
         assertEquals(Optional.of(template), templateRepository.findFirstByNameIgnoreCase(template.getName()));
     }

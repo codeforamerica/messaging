@@ -20,7 +20,8 @@ public class TestData {
 
     public static TemplateVariant.TemplateVariantBuilder aTemplateVariant() {
         return TemplateVariant.builder()
-                .body(TEMPLATE_BODY_DEFAULT)
+                .smsBody(TEMPLATE_BODY_DEFAULT)
+                .emailBody(TEMPLATE_BODY_DEFAULT)
                 .subject(TEMPLATE_SUBJECT_DEFAULT);
     }
 
@@ -32,7 +33,8 @@ public class TestData {
     public static void addVariantsToTemplate(Template template) throws Exception {
         template.addTemplateVariant(aTemplateVariant().build());
         template.addTemplateVariant(aTemplateVariant()
-                .body(TEMPLATE_BODY_ES_B)
+                .smsBody(TEMPLATE_BODY_ES_B)
+                .emailBody(TEMPLATE_BODY_ES_B)
                 .subject(TEMPLATE_SUBJECT_ES_B)
                 .language("es")
                 .treatment("B")
@@ -67,7 +69,8 @@ public class TestData {
 
     public static Message.MessageBuilder aMessage(TemplateVariant templateVariant) {
         return Message.builder()
-                .body(TEMPLATE_BODY_DEFAULT)
+                .emailBody(TEMPLATE_BODY_DEFAULT)
+                .smsBody(TEMPLATE_BODY_DEFAULT)
                 .subject(TEMPLATE_SUBJECT_DEFAULT)
                 .templateVariant(templateVariant);
     }
