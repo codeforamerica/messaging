@@ -73,8 +73,9 @@ public class TemplateService {
             TemplateVariantRequest templateVariantRequest) throws Exception {
         Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
         template.mergeTemplateVariant(TemplateVariant.builder()
-                .body(templateVariantRequest.getBody())
                 .subject(templateVariantRequest.getSubject())
+                .emailBody(templateVariantRequest.getEmailBody())
+                .smsBody(templateVariantRequest.getSmsBody())
                 .language(language)
                 .treatment(treatment)
                 .build());

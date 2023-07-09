@@ -88,13 +88,15 @@ public class TemplateControllerTest {
                                 "language":"en",
                                 "treatment":"A",
                                 "subject":"English A Subject: {{placeholder}}",
-                                "body":"English A Body: {{placeholder}}"
+                                "emailBody":"English A Body: {{placeholder}}",
+                                "smsBody":"English A Body: {{placeholder}}"
                             },
                             {
                                 "language":"es",
                                 "treatment":"B",
                                 "subject":"Spanish B Subject: {{placeholder}}",
-                                "body":"Spanish B Body: {{placeholder}}"
+                                "emailBody":"Spanish B Body: {{placeholder}}",
+                                "smsBody":"Spanish B Body: {{placeholder}}"
                             }
                         ],
                     },
@@ -124,13 +126,15 @@ public class TemplateControllerTest {
                             "language":"en",
                             "treatment":"A",
                             "subject":"English A Subject: {{placeholder}}",
-                            "body":"English A Body: {{placeholder}}"
+                            "emailBody":"English A Body: {{placeholder}}",
+                            "smsBody":"English A Body: {{placeholder}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
                             "subject":"Spanish B Subject: {{placeholder}}",
-                            "body":"Spanish B Body: {{placeholder}}"
+                            "emailBody":"Spanish B Body: {{placeholder}}",
+                            "smsBody":"Spanish B Body: {{placeholder}}"
                         }
                     ]
                 }
@@ -153,13 +157,15 @@ public class TemplateControllerTest {
                     "templateVariants":[
                         {
                             "subject":"English A Subject: {{placeholder}}",
-                            "body":"English A Body: {{placeholder}}"
+                            "emailBody":"English A Body: {{placeholder}}",
+                            "smsBody":"English A Body: {{placeholder}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
                             "subject":"Spanish B Subject: {{placeholder}}",
-                            "body":"Spanish B Body: {{placeholder}}"
+                            "emailBody":"Spanish B Body: {{placeholder}}",
+                            "smsBody":"Spanish B Body: {{placeholder}}"
                         }
                     ]
                 }
@@ -172,13 +178,15 @@ public class TemplateControllerTest {
                             "language":"en",
                             "treatment":"A",
                             "subject":"English A Subject: {{placeholder}}",
-                            "body":"English A Body: {{placeholder}}"
+                            "emailBody":"English A Body: {{placeholder}}",
+                            "smsBody":"English A Body: {{placeholder}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
                             "subject":"Spanish B Subject: {{placeholder}}",
-                            "body":"Spanish B Body: {{placeholder}}"
+                            "emailBody":"Spanish B Body: {{placeholder}}",
+                            "smsBody":"Spanish B Body: {{placeholder}}"
                         }
                     ]
                 }
@@ -191,7 +199,8 @@ public class TemplateControllerTest {
                                         .language("es")
                                         .treatment("B")
                                         .subject(TestData.TEMPLATE_SUBJECT_ES_B)
-                                        .body(TestData.TEMPLATE_BODY_ES_B)
+                                        .emailBody(TestData.TEMPLATE_BODY_ES_B)
+                                        .smsBody(TestData.TEMPLATE_BODY_ES_B)
                                         .build()))
                         .build()))
                 .thenReturn(TEMPLATE_WITH_VARIANTS);

@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.codeforamerica.messaging.validators.ValidMessageContents;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -21,6 +22,7 @@ import java.util.function.Function;
 @Builder
 @ToString
 @EqualsAndHashCode(of = {"template", "language", "treatment"})
+@ValidMessageContents
 public class TemplateVariant {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String DEFAULT_TREATMENT = "A";
@@ -36,8 +38,8 @@ public class TemplateVariant {
     @Builder.Default
     String treatment = DEFAULT_TREATMENT;
     String subject;
-    @NotBlank
-    String body;
+    String emailBody;
+    String smsBody;
     @ManyToOne
     @NotNull
     @JsonIgnore

@@ -48,8 +48,9 @@ public class Template {
         }
     }
 
-    public void updateTemplateVariant(TemplateVariant templateVariant, String body, String subject) {
-        templateVariant.setBody(body);
+    public void updateTemplateVariant(TemplateVariant templateVariant, String smsBody, String emailBody, String subject) {
+        templateVariant.setSmsBody(smsBody);
+        templateVariant.setEmailBody(emailBody);
         templateVariant.setSubject(subject);
     }
 
@@ -59,7 +60,8 @@ public class Template {
         if (existingTemplateVariant.isPresent()) {
             this.updateTemplateVariant(
                     existingTemplateVariant.get(),
-                    templateVariant.getBody(),
+                    templateVariant.getSmsBody(),
+                    templateVariant.getEmailBody(),
                     templateVariant.getSubject()
             );
         } else {
