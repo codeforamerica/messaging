@@ -29,9 +29,6 @@ public class MessageService {
     private final MessageBatchRepository messageBatchRepository;
     private final TemplateRepository templateRepository;
     private final JobRequestScheduler jobRequestScheduler;
-//    @Autowired
-//    private final MessageValidator messageValidator;
-
 
     public MessageService(SmsService smsService,
             EmailService emailService,

@@ -61,7 +61,7 @@ public class TemplateController {
 
     @PutMapping("/{name}")
     @Operation(summary = "Create or modify a list of template variants")
-    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<TemplateVariant> templateVariants)
+    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<@Valid TemplateVariant> templateVariants)
             throws Exception {
         Template modifiedTemplate = templateService.modifyTemplateVariants(name, templateVariants);
 

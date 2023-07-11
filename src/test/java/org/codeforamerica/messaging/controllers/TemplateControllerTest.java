@@ -24,8 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.endsWith;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
 @WebMvcTest(TemplateController.class)
 @Import(SecurityConfiguration.class)
@@ -211,6 +210,42 @@ public class TemplateControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isCreated())
                 .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/templates/Template%20name%20with%20variants")))
                 .andExpect(MockMvcResultMatchers.content().json(expectedResponse));
+    }
+
+    @Test
+    @WithMockUser
+    public void whenCreatingTemplateVariantsWithEmailBodyAndNoSubject_thenBadRequest() throws Exception {
+        String requestBody = """
+                {
+                    "name":"Template name with variants",
+                    "templateVariants":[
+                        {
+                            "language":"es",
+                            "treatment":"B",
+                            "emailBody":"Spanish B Body: {{placeholder}}"
+                        }
+                    ]
+                }
+                """;
+        mockMvc.perform(post("/api/v1/templates")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    public void whenModifyingATemplateVariantWithEmailBodyAndNoSubject_thenBadRequest() throws Exception {
+        String requestBody = """
+                {
+                    "emailBody":"Spanish B Body: {{placeholder}}"
+                }
+                """;
+
+        mockMvc.perform(put("/api/v1/templates/name/en/A")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
 }
