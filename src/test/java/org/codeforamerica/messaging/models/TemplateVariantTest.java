@@ -18,6 +18,8 @@ public class TemplateVariantTest {
         Assertions.assertEquals("English A Subject: testing placeholder",
                 templateVariant.build(TemplateVariant::getSubject, templateParams));
         Assertions.assertEquals("English A Body: testing placeholder",
-                templateVariant.build(TemplateVariant::getBody, templateParams));
+                templateVariant.build(TemplateVariant::getEmailBody, templateParams));
+        Assertions.assertEquals("English A Body: testing placeholder",
+                templateVariant.build(TemplateVariant::getSmsBody, templateParams));
     }
 }

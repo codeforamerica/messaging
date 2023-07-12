@@ -1,15 +1,16 @@
 package org.codeforamerica.messaging.models;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import org.codeforamerica.messaging.validators.ValidMessageContents;
 
 @Value
 @AllArgsConstructor
 @Builder
+@ValidMessageContents
 public class TemplateVariantRequest {
     String subject;
-    @NotBlank
-    String body;
+    String emailBody;
+    String smsBody;
 }

@@ -2,7 +2,6 @@ package org.codeforamerica.messaging.models;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -10,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
+import org.codeforamerica.messaging.validators.ValidMessageContents;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ValidMessageContents
 public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -31,8 +32,8 @@ public class Message {
     String toPhone;
     @Email
     String toEmail;
-    @NotBlank
-    String body;
+    String emailBody;
+    String smsBody;
     String subject;
     @ManyToOne
     MessageBatch messageBatch;

@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -31,7 +32,7 @@ public class Template {
     @ToString.Include
     @Builder.Default
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<TemplateVariant> templateVariants = new HashSet<>();
+    Set<@Valid TemplateVariant> templateVariants = new HashSet<>();
     @CreationTimestamp
     @JsonIgnore
     private OffsetDateTime creationTimestamp;
@@ -48,8 +49,9 @@ public class Template {
         }
     }
 
-    public void updateTemplateVariant(TemplateVariant templateVariant, String body, String subject) {
-        templateVariant.setBody(body);
+    public void updateTemplateVariant(TemplateVariant templateVariant, String smsBody, String emailBody, String subject) {
+        templateVariant.setSmsBody(smsBody);
+        templateVariant.setEmailBody(emailBody);
         templateVariant.setSubject(subject);
     }
 
@@ -59,7 +61,8 @@ public class Template {
         if (existingTemplateVariant.isPresent()) {
             this.updateTemplateVariant(
                     existingTemplateVariant.get(),
-                    templateVariant.getBody(),
+                    templateVariant.getSmsBody(),
+                    templateVariant.getEmailBody(),
                     templateVariant.getSubject()
             );
         } else {

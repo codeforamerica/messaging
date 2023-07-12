@@ -30,7 +30,6 @@ public class MessageService {
     private final TemplateRepository templateRepository;
     private final JobRequestScheduler jobRequestScheduler;
 
-
     public MessageService(SmsService smsService,
             EmailService emailService,
             MessageRepository messageRepository,
@@ -85,10 +84,12 @@ public class MessageService {
     public Message saveMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
         TemplateVariant templateVariant = getTemplateVariant(messageRequest);
         String subject;
-        String body;
+        String emailBody;
+        String smsBody;
         try {
             subject = templateVariant.build(TemplateVariant::getSubject, messageRequest.getTemplateParams());
-            body = templateVariant.build(TemplateVariant::getBody, messageRequest.getTemplateParams());
+            emailBody = templateVariant.build(TemplateVariant::getEmailBody, messageRequest.getTemplateParams());
+            smsBody = templateVariant.build(TemplateVariant::getSmsBody, messageRequest.getTemplateParams());
         } catch (IOException e) {
             log.error("Error processing templates. " + templateVariant);
             throw new RuntimeException(e.getMessage());
@@ -96,7 +97,8 @@ public class MessageService {
         Message message = Message.builder()
                 .templateVariant(templateVariant)
                 .subject(subject)
-                .body(body)
+                .emailBody(emailBody)
+                .smsBody(smsBody)
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
                 .messageBatch(messageBatch)
@@ -109,12 +111,12 @@ public class MessageService {
         try {
             Message message = messageRepository.findById(messageId).get();
             if (message.needToSendSms()) {
-                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getBody());
+                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getSmsBody());
                 message.setSmsMessage(sentSmsMessage);
                 messageRepository.save(message);
             }
             if (message.needToSendEmail()) {
-                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getBody(), message.getSubject());
+                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getEmailBody(), message.getSubject());
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
             }
