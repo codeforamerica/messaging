@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
-import org.codeforamerica.messaging.validators.ValidMessageContents;
+import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -20,8 +20,8 @@ import java.time.OffsetDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ValidMessageContents
-public class Message {
+@ValidMessageable
+public class Message implements Messageable {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
