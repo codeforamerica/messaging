@@ -2,9 +2,9 @@ package org.codeforamerica.messaging.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -32,7 +32,7 @@ public class Template {
     @ToString.Include
     @Builder.Default
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<@Valid TemplateVariant> templateVariants = new HashSet<>();
+    Set<@ValidMessageable TemplateVariant> templateVariants = new HashSet<>();
     @CreationTimestamp
     @JsonIgnore
     private OffsetDateTime creationTimestamp;
