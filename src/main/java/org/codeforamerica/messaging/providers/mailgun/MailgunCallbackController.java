@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/public/mailgun_callbacks")
 @Slf4j
@@ -33,9 +36,34 @@ public class MailgunCallbackController {
 
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(
                 requestJSON.at("/event-data/message/headers/message-id").textValue());
-        emailMessage.setStatus(requestJSON.at("/event-data/event").textValue());
+        String status = requestJSON.at("/event-data/event").textValue();
+        emailMessage.setStatus(status);
+        if (hadError(status)) {
+            emailMessage.setProviderError(buildProviderError(requestJSON, status));
+        }
+
         emailMessageRepository.save(emailMessage);
 
         return ResponseEntity.ok().build();
+    }
+
+    private static boolean hadError(String status) {
+        return status.equals("failed") || status.equals("rejected");
+    }
+
+    private static Map<String, String> buildProviderError(JsonNode requestJSON, String status) {
+        log.info(requestJSON.toString());
+        Map<String, String> providerError = new HashMap<>();
+        if (status.equals("failed")) {
+            providerError.put("severity",requestJSON.at("/event-data/severity").textValue());
+            providerError.put("reason",requestJSON.at("/event-data/reason").textValue());
+            providerError.put("errorCode",requestJSON.at("/event-data/delivery-status/code").asText());
+            providerError.put("errorMessage",requestJSON.at("/event-data/delivery-status/message").textValue());
+            providerError.put("errorDescription",requestJSON.at("/event-data/delivery-status/description").textValue());
+        } else if (status.equals("rejected")) {
+            providerError.put("reason",requestJSON.at("/event-data/reject/reason").textValue());
+            providerError.put("errorDescription",requestJSON.at("/event-data/reject/description").textValue());
+        }
+        return providerError;
     }
 }
