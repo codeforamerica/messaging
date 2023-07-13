@@ -64,11 +64,11 @@ public class MessageServiceSchedulingTest {
 
         SmsMessage smsMessage = TestData.anSmsMessage().build();
         smsMessage = smsMessageRepository.save(smsMessage);
-        Mockito.when(smsService.sendSmsMessage(Mockito.any(), Mockito.any())).thenReturn(smsMessage);
+        Mockito.when(smsService.sendSmsMessage(Mockito.any())).thenReturn(smsMessage);
 
         EmailMessage emailMessage = TestData.anEmailMessage().build();
         emailMessage = emailMessageRepository.save(emailMessage);
-        Mockito.when(emailService.sendEmailMessage(Mockito.any(), Mockito.any(), Mockito.any()))
+        Mockito.when(emailService.sendEmailMessage(Mockito.any()))
                 .thenReturn(emailMessage);
 
         Message message = messageService.scheduleMessage(messageRequest);

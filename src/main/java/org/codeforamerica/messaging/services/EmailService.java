@@ -19,10 +19,7 @@ public class EmailService {
         this.emailMessageRepository = emailMessageRepository;
     }
 
-    public EmailMessage sendEmailMessage(String to, String body, String subject) {
-        EmailMessage message = mailgunGateway.sendMessage(to, body, subject);
-        message = emailMessageRepository.save(message);
-        log.info("Message sent, Mailgun response: " + message);
-        return message;
+    public EmailMessage sendEmailMessage(EmailMessage emailMessage) {
+        return emailMessageRepository.save(mailgunGateway.sendMessage(emailMessage));
     }
 }

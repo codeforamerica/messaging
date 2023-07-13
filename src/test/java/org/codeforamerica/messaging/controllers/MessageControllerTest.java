@@ -43,7 +43,7 @@ public class MessageControllerTest {
 
     @Test
     @WithMockUser
-    public void whenAuthenticatedAndPhoneAndNoAssociatedSmsMessage_ThenStatusPending() throws Exception {
+    public void whenAuthenticatedAndPhoneAndSmsMessageScheduled_ThenMessageStatusPending() throws Exception {
         String expectedResponse = """
                 {
                     id: %s,
@@ -55,7 +55,10 @@ public class MessageControllerTest {
         Mockito.when(messageService.getMessage(any()))
                 .thenReturn(Optional.of(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
                         .id(TestData.BASE_ID)
-                        .toPhone(TestData.TO_PHONE).build()));
+                        .smsMessage(TestData.anSmsMessage()
+                                .status("scheduled")
+                                .build())
+                        .build()));
 
         mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isOk())
@@ -76,7 +79,6 @@ public class MessageControllerTest {
         Mockito.when(messageService.getMessage(any()))
                 .thenReturn(Optional.of(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
                         .id(TestData.BASE_ID)
-                        .toPhone(TestData.TO_PHONE)
                         .smsMessage(TestData.anSmsMessage().build())
                         .build()));
 

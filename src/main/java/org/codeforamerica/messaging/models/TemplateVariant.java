@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -23,6 +24,7 @@ import java.util.function.Function;
 @ToString
 @EqualsAndHashCode(of = {"template", "language", "treatment"})
 @ValidMessageable
+@Slf4j
 public class TemplateVariant implements Messageable {
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String DEFAULT_TREATMENT = "A";
@@ -59,11 +61,15 @@ public class TemplateVariant implements Messageable {
         return template.getName();
     }
 
-    public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, String> templateParams) throws IOException {
+    public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, String> templateParams) {
         Handlebars handlebars = new Handlebars();
         String templateField = templateFieldGetter.apply(this);
         if (templateField != null) {
-            return handlebars.compileInline(templateField).apply(templateParams);
+            try {
+                return handlebars.compileInline(templateField).apply(templateParams);
+            } catch (IOException e) {
+                log.error("Error processing template field using getter " + templateFieldGetter + " in templateVariant #" + this.getId());
+            }
         }
         return null;
     }

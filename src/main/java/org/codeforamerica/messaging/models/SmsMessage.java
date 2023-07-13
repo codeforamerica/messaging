@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -41,6 +38,7 @@ public class SmsMessage {
     private OffsetDateTime updateTimestamp;
 
     @JsonIgnore
+    @ToString.Exclude
     @OneToOne(mappedBy = "smsMessage")
     private Message message;
 }

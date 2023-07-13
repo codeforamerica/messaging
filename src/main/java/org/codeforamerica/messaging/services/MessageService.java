@@ -10,6 +10,7 @@ import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.codeforamerica.messaging.utils.CSVReader;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -19,10 +20,14 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.codeforamerica.messaging.providers.twilio.TwilioGateway.DEFAULT_FROM_PHONE;
+
 
 @Service
 @Slf4j
 public class MessageService {
+    @Value("${mailgun.api.from}")
+    private String fromEmail;
     private final SmsService smsService;
     private final EmailService emailService;
     private final MessageRepository messageRepository;
@@ -83,24 +88,10 @@ public class MessageService {
 
     public Message saveMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
         TemplateVariant templateVariant = getTemplateVariant(messageRequest);
-        String subject;
-        String emailBody;
-        String smsBody;
-        try {
-            subject = templateVariant.build(TemplateVariant::getSubject, messageRequest.getTemplateParams());
-            emailBody = templateVariant.build(TemplateVariant::getEmailBody, messageRequest.getTemplateParams());
-            smsBody = templateVariant.build(TemplateVariant::getSmsBody, messageRequest.getTemplateParams());
-        } catch (IOException e) {
-            log.error("Error processing templates. " + templateVariant);
-            throw new RuntimeException(e.getMessage());
-        }
         Message message = Message.builder()
                 .templateVariant(templateVariant)
-                .subject(subject)
-                .emailBody(emailBody)
-                .smsBody(smsBody)
-                .toPhone(messageRequest.getToPhone())
-                .toEmail(messageRequest.getToEmail())
+                .smsMessage(buildSmsMessage(messageRequest, templateVariant))
+                .emailMessage(buildEmailMessage(messageRequest, templateVariant))
                 .messageBatch(messageBatch)
                 .build();
         return messageRepository.save(message);
@@ -111,12 +102,12 @@ public class MessageService {
         try {
             Message message = messageRepository.findById(messageId).get();
             if (message.needToSendSms()) {
-                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getSmsBody());
+                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getSmsMessage());
                 message.setSmsMessage(sentSmsMessage);
                 messageRepository.save(message);
             }
             if (message.needToSendEmail()) {
-                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getEmailBody(), message.getSubject());
+                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getEmailMessage());
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
             }
@@ -132,9 +123,7 @@ public class MessageService {
 
     public Optional<MessageBatch> getMessageBatch(Long id) {
         Optional<MessageBatch> messageBatch = messageBatchRepository.findById(id);
-        if (messageBatch.isPresent()) {
-            messageBatch.get().setMetrics(messageRepository.getMetrics(id));
-        }
+        messageBatch.ifPresent(batch -> batch.setMetrics(messageRepository.getMetrics(id)));
         return messageBatch;
     }
 
@@ -162,5 +151,43 @@ public class MessageService {
         MessageBatch messageBatch = messageBatchRepository.findById(messageBatchId).orElseThrow();
         CSVReader csvReader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(messageBatch.getRecipients())));
         csvReader.stream().forEach((r) -> this.scheduleMessage(messageBatch, r) );
+    }
+
+    private EmailMessage buildEmailMessage(MessageRequest messageRequest, TemplateVariant templateVariant) {
+        if (messageRequest.getToEmail() == null) {
+            return null;
+        }
+        String subject = templateVariant.build(TemplateVariant::getSubject, messageRequest.getTemplateParams());
+        String emailBody = templateVariant.build(TemplateVariant::getEmailBody, messageRequest.getTemplateParams());
+        if (subject == null || emailBody == null) {
+            log.warn("Email address provided but email message could not be created with template variant #" + templateVariant.getId());
+            return null;
+        }
+        return EmailMessage.builder()
+                .fromEmail(fromEmail)
+                .toEmail(messageRequest.getToEmail())
+                .subject(subject)
+                .body(emailBody)
+                .status("scheduled")
+                .providerMessageId("unknown")
+                .build();
+    }
+
+    private SmsMessage buildSmsMessage(MessageRequest messageRequest, TemplateVariant templateVariant) {
+        if (messageRequest.getToPhone() == null) {
+            return null;
+        }
+        String smsBody = templateVariant.build(TemplateVariant::getSmsBody, messageRequest.getTemplateParams());
+        if (smsBody == null) {
+            log.warn("Phone number provided but SMS message could not be created with template variant #" + templateVariant.getId());
+            return null;
+        }
+        return SmsMessage.builder()
+                .fromPhone(DEFAULT_FROM_PHONE)
+                .toPhone(messageRequest.getToPhone())
+                .body(smsBody)
+                .status("scheduled")
+                .providerMessageId("unknown")
+                .build();
     }
 }

@@ -15,8 +15,7 @@ public class SmsService {
         this.smsMessageRepository = smsMessageRepository;
     }
 
-    public SmsMessage sendSmsMessage(String to, String body) {
-        SmsMessage smsMessage = twilioGateway.sendMessage(to, body);
-        return smsMessageRepository.save(smsMessage);
+    public SmsMessage sendSmsMessage(SmsMessage smsMessage) {
+        return smsMessageRepository.save(twilioGateway.sendMessage(smsMessage));
     }
 }
