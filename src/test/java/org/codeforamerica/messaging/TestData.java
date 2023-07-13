@@ -69,9 +69,8 @@ public class TestData {
 
     public static Message.MessageBuilder aMessage(TemplateVariant templateVariant) {
         return Message.builder()
-                .emailBody(TEMPLATE_BODY_DEFAULT)
-                .smsBody(TEMPLATE_BODY_DEFAULT)
-                .subject(TEMPLATE_SUBJECT_DEFAULT)
+                .emailMessage(anEmailMessage().build())
+                .smsMessage(anSmsMessage().build())
                 .templateVariant(templateVariant);
     }
 

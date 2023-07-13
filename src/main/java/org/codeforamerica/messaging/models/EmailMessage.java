@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -41,6 +38,7 @@ public class EmailMessage {
     private OffsetDateTime updateTimestamp;
 
     @JsonIgnore
+    @ToString.Exclude
     @OneToOne(mappedBy = "emailMessage")
     private Message message;
 }

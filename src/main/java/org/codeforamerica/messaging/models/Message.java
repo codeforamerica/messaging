@@ -1,14 +1,11 @@
 package org.codeforamerica.messaging.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.codeforamerica.messaging.utils.RegexPatternStrings;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -28,18 +25,11 @@ public class Message implements Messageable {
     @ManyToOne
     @NotNull
     TemplateVariant templateVariant;
-    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    String toPhone;
-    @Email
-    String toEmail;
-    String emailBody;
-    String smsBody;
-    String subject;
     @ManyToOne
     MessageBatch messageBatch;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.ALL)
     private SmsMessage smsMessage;
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.ALL)
     private EmailMessage emailMessage;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
@@ -50,12 +40,32 @@ public class Message implements Messageable {
         return templateVariant.getTemplateName();
     }
 
+    public String getToPhone() {
+        return this.smsMessage == null ? null : this.smsMessage.getToPhone();
+    }
+
+    public String getToEmail() {
+        return this.emailMessage == null ? null : this.emailMessage.getToEmail();
+    }
+
+    public String getSubject() {
+        return this.emailMessage == null ? null : this.emailMessage.getSubject();
+    }
+
+    public String getEmailBody() {
+        return this.emailMessage == null ? null : this.emailMessage.getBody();
+    }
+
+    public String getSmsBody() {
+        return this.smsMessage == null ? null : this.smsMessage.getBody();
+    }
+
     public boolean needToSendEmail() {
-        return toEmail != null && emailMessage == null;
+        return emailMessage != null && emailMessage.getStatus().equals("scheduled");
     }
 
     public boolean needToSendSms() {
-        return toPhone != null && smsMessage == null;
+        return smsMessage != null && smsMessage.getStatus().equals("scheduled");
     }
 
     public String getStatus() {

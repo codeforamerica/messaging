@@ -21,29 +21,24 @@ public class MailgunGateway {
     @Value("${mailgun.api.from}")
     private String from;
 
-    public EmailMessage sendMessage(String toEmail, String body, String subject) {
+    public EmailMessage sendMessage(EmailMessage emailMessage) {
         MailgunMessagesApi mailgunMessagesApi = MailgunClient.config(mailgunApiKey)
                 .createApi(MailgunMessagesApi.class);
 
         com.mailgun.model.message.Message mailgunMessage =
                 com.mailgun.model.message.Message.builder()
                         .from(from)
-                        .to(toEmail)
-                        .subject(subject)
-                        .text(body)
+                        .to(emailMessage.getToEmail())
+                        .subject(emailMessage.getSubject())
+                        .text(emailMessage.getBody())
                         .build();
 
         MessageResponse response = mailgunMessagesApi.sendMessage(mailgunDomain, mailgunMessage);
 
-        return EmailMessage.builder()
-                .fromEmail(from)
-                .toEmail(toEmail)
-                .subject(subject)
-                .body(body)
-                .providerMessageId(cleanupProviderId(response.getId()))
-                .status("accepted")
-                .providerCreatedAt(OffsetDateTime.now())
-                .build();
+        emailMessage.setProviderMessageId(cleanupProviderId(response.getId()));
+        emailMessage.setStatus("accepted");
+        emailMessage.setProviderCreatedAt(OffsetDateTime.now());
+        return emailMessage;
     }
 
     private String cleanupProviderId(String providerId) {

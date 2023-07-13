@@ -25,23 +25,20 @@ public class TwilioGateway {
         return zonedDateTime == null ? null : zonedDateTime.toOffsetDateTime();
     }
 
-    public SmsMessage sendMessage(String to, String body) {
+    public SmsMessage sendMessage(SmsMessage smsMessage) {
         Twilio.init(twilioAccountSid, twilioAuthToken);
         com.twilio.rest.api.v2010.account.Message twilioMessage =
                 com.twilio.rest.api.v2010.account.Message.creator(
-                                new com.twilio.type.PhoneNumber(to),
+                                new com.twilio.type.PhoneNumber(smsMessage.getToPhone()),
                                 twilioMessagingServiceSid,
-                                body)
+                                smsMessage.getBody())
                         .create();
 
-        return SmsMessage.builder()
-                .fromPhone(DEFAULT_FROM_PHONE)
-                .toPhone(twilioMessage.getTo())
-                .body(twilioMessage.getBody())
-                .providerMessageId(twilioMessage.getSid())
-                .status(String.valueOf(twilioMessage.getStatus()))
-                .providerCreatedAt(toOffsetDateTime(twilioMessage.getDateCreated()))
-                .build();
+        smsMessage.setToPhone(twilioMessage.getTo());
+        smsMessage.setProviderMessageId(twilioMessage.getSid());
+        smsMessage.setStatus(String.valueOf(twilioMessage.getStatus()));
+        smsMessage.setProviderCreatedAt(toOffsetDateTime(twilioMessage.getDateCreated()));
+        return smsMessage;
     }
 
 }
