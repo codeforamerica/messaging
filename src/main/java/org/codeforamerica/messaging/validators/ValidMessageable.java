@@ -12,7 +12,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target({ TYPE, ANNOTATION_TYPE, TYPE_USE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = { MessagableValidator.class })
+@Constraint(validatedBy = { MessageableValidator.class })
 @Documented
 public @interface ValidMessageable {
     String message() default "{org.codeforamerica.models.Message.invalidMessageContents}";
