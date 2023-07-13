@@ -9,9 +9,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Entity
 @Data
@@ -43,6 +46,6 @@ public class EmailMessage {
     @JsonIgnore
     @OneToOne(mappedBy = "emailMessage")
     private Message message;
+    @JdbcTypeCode( SqlTypes.JSON)
+    private Map<String, String> providerError;
 }
-
-

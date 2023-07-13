@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.providers.mailgun;
 
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
+import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -14,6 +15,9 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -31,8 +35,9 @@ public class MailgunCallbackControllerTest {
 
     @Test
     public void whenTrustedPortAndSignatureVerified_ThenSucceeds() throws Exception {
+        EmailMessage emailMessage = TestData.anEmailMessage().build();
         Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
-                .thenReturn(TestData.anEmailMessage().build());
+                .thenReturn(emailMessage);
         Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
 
         mockMvc.perform(post("/public/mailgun_callbacks/status")
@@ -50,6 +55,45 @@ public class MailgunCallbackControllerTest {
                                     }
                                 """.formatted(TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals("delivered", emailMessage.getStatus());
+    }
+
+    @Test
+    public void whenFailed_ThenSavesProviderError() throws Exception {
+        String severity = "permanent";
+        String reason = "bounce";
+        String errorCode = "550";
+        String errorMessage = "5.1.1 The email account that you tried to reach does not exist";
+        String errorDescription = "";
+
+        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(emailMessage);
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "failed",
+                                            "severity": "%s",
+                                            "reason": "%s",
+                                            "message": {
+                                              "headers": {
+                                                "message-id": "%s"
+                                              }
+                                            },
+                                            "delivery-status": {
+                                                "code": "%s",
+                                                "message": "%s",
+                                                "description" : "%s"
+                                            }
+                                        }
+                                    }
+                                """.formatted(severity, reason, TestData.PROVIDER_MESSAGE_ID, errorCode, errorMessage, errorDescription)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals(Map.of("severity", severity, "reason", reason, "errorCode", errorCode, "errorMessage", errorMessage, "errorDescription", errorDescription), emailMessage.getProviderError());
     }
 
     @Test

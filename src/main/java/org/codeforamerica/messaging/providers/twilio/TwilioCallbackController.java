@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/public/twilio_callbacks")
 @Slf4j
@@ -34,7 +37,24 @@ public class TwilioCallbackController {
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(request.getParameter("MessageSid"));
         smsMessage.setStatus(request.getParameter("MessageStatus"));
         smsMessage.setFromPhone(request.getParameter("From"));
+        if (hadError(smsMessage)) {
+            smsMessage.setProviderError(buildProviderError(request));
+        }
         smsMessageRepository.save(smsMessage);
         return ResponseEntity.ok().build();
+    }
+
+    private static boolean hadError(SmsMessage smsMessage) {
+        String status = smsMessage.getStatus();
+        return status.equals("failed") || status.equals("undelivered");
+    }
+
+    private static Map<String, String> buildProviderError(HttpServletRequest request) {
+        Map<String, String> providerError = new HashMap<>();
+        providerError.put("errorCode", request.getParameter("ErrorCode"));
+        if (request.getParameter("ErrorMessage") != null) {
+            providerError.put("errorMessage", request.getParameter("ErrorMessage"));
+        }
+        return providerError;
     }
 }
