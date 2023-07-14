@@ -69,7 +69,8 @@ public class MessageService {
     }
 
     public MessageBatch enqueueMessageBatch(MessageBatchRequest messageBatchRequest) throws IOException {
-        Template template = templateRepository.findFirstByNameIgnoreCase(messageBatchRequest.getTemplateName()).orElseThrow(() -> new RuntimeException("template not found"));
+        Template template = templateRepository.findFirstActiveByNameIgnoreCase(messageBatchRequest.getTemplateName())
+                .orElseThrow(() -> new RuntimeException("template not found"));
         MessageBatch messageBatch = MessageBatch.builder()
                 .template(template)
                 .recipients(messageBatchRequest.getRecipients().getBytes())
@@ -139,7 +140,7 @@ public class MessageService {
     }
 
     private TemplateVariant getTemplateVariant(MessageRequest messageRequest) {
-        Optional<Template> templateOptional = templateRepository.findFirstByNameIgnoreCase(messageRequest.getTemplateName().strip());
+        Optional<Template> templateOptional = templateRepository.findFirstActiveByNameIgnoreCase(messageRequest.getTemplateName().strip());
         if (templateOptional.isEmpty()) {
             throw new RuntimeException(String.format(
                     "Template not found with the name provided: name=%s", messageRequest.getTemplateName()));

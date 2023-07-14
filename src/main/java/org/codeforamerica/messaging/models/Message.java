@@ -45,9 +45,11 @@ public class Message implements Messageable {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
-
     public String getTemplateName() {
         return templateVariant.getTemplateName();
+    }
+    public int getTemplateVersion() {
+        return templateVariant.getTemplateVersion();
     }
 
     public boolean needToSendEmail() {

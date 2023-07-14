@@ -27,7 +27,8 @@ public class TestData {
 
     public static Template.TemplateBuilder aTemplate() {
         return Template.builder()
-                .name(TEMPLATE_NAME);
+                .name(TEMPLATE_NAME)
+                .status(Template.Status.ACTIVE.name());
     }
 
     public static void addVariantsToTemplate(Template template) throws Exception {

@@ -68,10 +68,10 @@ public class TemplateControllerTest {
     @Test
     @WithMockUser
     public void whenAuthenticatedAndNoTemplatesWithMatchingName_thenNotFound() throws Exception {
-        Mockito.when(templateService.getTemplateByName(TestData.TEMPLATE_NAME))
+        Mockito.when(templateService.getActiveTemplateByName(TestData.TEMPLATE_NAME))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/v1/templates/" + TestData.TEMPLATE_NAME))
+        mockMvc.perform(get("/api/v1/templates/%s/%s".formatted(TestData.TEMPLATE_NAME, 1L)))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -139,10 +139,10 @@ public class TemplateControllerTest {
                 }
                 """;
 
-        Mockito.when(templateService.getTemplateByName(TEMPLATE_WITH_VARIANTS.getName()))
+        Mockito.when(templateService.getTemplateByNameAndVersion(TEMPLATE_WITH_VARIANTS.getName(), TEMPLATE_WITH_VARIANTS.getVersion()))
                 .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
 
-        mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getName()))
+        mockMvc.perform(get("/api/v1/templates/%s/%s".formatted(TEMPLATE_WITH_VARIANTS.getName(), TEMPLATE_WITH_VARIANTS.getVersion())))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
@@ -208,7 +208,7 @@ public class TemplateControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/templates/Template%20name%20with%20variants")))
+                .andExpect(MockMvcResultMatchers.header().string(HttpHeaders.LOCATION, endsWith("/templates/Template%20name%20with%20variants/1")))
                 .andExpect(MockMvcResultMatchers.content().json(expectedResponse));
     }
 

@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
@@ -17,10 +18,14 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @ToString(onlyExplicitlyIncluded = true)
-@EqualsAndHashCode(of = {"name"})
+@EqualsAndHashCode(of = {"name", "version"})
 public class Template {
+    public enum Status {
+        DRAFT, ACTIVE, ARCHIVED
+    }
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @JsonIgnore
@@ -29,6 +34,12 @@ public class Template {
     @Column(unique=true)
     @ToString.Include
     String name;
+    @NotNull
+    @Builder.Default
+    private int version = 1;
+    @NotBlank
+    @Builder.Default
+    private String status = Status.DRAFT.name();
     @ToString.Include
     @Builder.Default
     @OneToMany(mappedBy = "template", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)

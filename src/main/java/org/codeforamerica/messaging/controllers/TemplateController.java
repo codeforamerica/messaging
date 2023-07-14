@@ -30,13 +30,20 @@ public class TemplateController {
     @Operation(summary = "Get the list of all templates and their variants")
     public ResponseEntity<List<Template>> getTemplateList() {
         List<Template> templateList = templateService.getTemplateList();
-        return templateList.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(templateService.getTemplateList());
+        return templateList.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(templateList);
     }
 
     @GetMapping("/{name}")
-    @Operation(summary = "Get a template and its variants")
-    public ResponseEntity<Template> getTemplateByName(@PathVariable String name) {
-        Optional<Template> template = templateService.getTemplateByName(name);
+    @Operation(summary = "Get the all versions of a template and their variants")
+    public ResponseEntity<Set<Template>> getTemplatesByName(@PathVariable String name) {
+        Set<Template> templateSet = templateService.getAllTemplatesByName(name);
+        return templateSet.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(templateSet);
+    }
+
+    @GetMapping("/{name}/{version}")
+    @Operation(summary = "Get a template version and its variants")
+    public ResponseEntity<Template> getTemplateByNameAndVersion(@PathVariable String name, @PathVariable int version) {
+        Optional<Template> template = templateService.getTemplateByNameAndVersion(name, version);
         return template.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -45,8 +52,8 @@ public class TemplateController {
     public ResponseEntity<Template> createTemplate(@Valid @RequestBody Template template) throws Exception {
         Template createdTemplate = templateService.createTemplate(template);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
-                .buildAndExpand(createdTemplate.getName()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(createdTemplate.getName(), createdTemplate.getVersion()).toUri();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(createdTemplate, responseHeaders, HttpStatus.CREATED);
@@ -65,11 +72,49 @@ public class TemplateController {
             throws Exception {
         Template modifiedTemplate = templateService.modifyTemplateVariants(name, templateVariants);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
-                .buildAndExpand(modifiedTemplate.getName()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(modifiedTemplate, responseHeaders, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/{name}/{version}/draft_copy")
+    @Operation(summary = "Start a draft of a template based on an existing version")
+    public ResponseEntity<Template> startNewDraft(@PathVariable String name, @PathVariable int version) {
+        Template newTemplate = templateService.createDraftCopy(name, version);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(newTemplate.getName(), newTemplate.getVersion()).toUri();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        return new ResponseEntity<>(newTemplate, responseHeaders, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{name}/{version}/archive")
+    @Operation(summary = "Archive a template version")
+    public ResponseEntity<Template> archiveTemplateVersion(@PathVariable String name, @PathVariable int version)
+            throws Exception {
+        Template archivedTemplate = templateService.archiveTemplateVersion(name, version);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(archivedTemplate.getName(), archivedTemplate.getVersion()).toUri();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        return new ResponseEntity<>(archivedTemplate, responseHeaders, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{name}/{version}/activate")
+    @Operation(summary = "Activate a draft template version and archive the existing active version")
+    public ResponseEntity<Template> activateTemplateVersion(@PathVariable String name, @PathVariable int version)
+            throws Exception {
+        Template activeTemplate = templateService.activateTemplateVersion(name, version);
+
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(activeTemplate.getName(), activeTemplate.getVersion()).toUri();
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setLocation(location);
+        return new ResponseEntity<>(activeTemplate, responseHeaders, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{name}/{language}/{treatment}")
@@ -80,8 +125,8 @@ public class TemplateController {
             @PathVariable String treatment) throws Exception {
         Template modifiedTemplate = templateService.deleteTemplateVariant(name, language, treatment);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
-                .buildAndExpand(modifiedTemplate.getName()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(modifiedTemplate, responseHeaders, HttpStatus.OK);
@@ -96,8 +141,8 @@ public class TemplateController {
             @Valid @RequestBody TemplateVariantRequest templateVariantRequest) throws Exception {
         Template modifiedTemplate = templateService.mergeTemplateVariant(name, language, treatment, templateVariantRequest);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
-                .buildAndExpand(modifiedTemplate.getName()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
+                .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(modifiedTemplate, responseHeaders, HttpStatus.CREATED);

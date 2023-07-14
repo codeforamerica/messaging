@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @EqualsAndHashCode(of = {"template", "language", "treatment"})
 @ValidMessageable
@@ -53,10 +53,17 @@ public class TemplateVariant implements Messageable {
     @JsonIgnore
     @ToString.Exclude
     private OffsetDateTime updateTimestamp;
-
     @JsonIgnore
     public String getTemplateName() {
         return template.getName();
+    }
+    @JsonIgnore
+    public int getTemplateVersion() {
+        return template.getVersion();
+    }
+    @JsonIgnore
+    public String getTemplateStatus() {
+        return template.getStatus();
     }
 
     public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, String> templateParams) throws IOException {
