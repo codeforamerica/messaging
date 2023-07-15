@@ -46,6 +46,6 @@ public class EmailMessage {
     @JsonIgnore
     @OneToOne(mappedBy = "emailMessage")
     private Message message;
-    @JdbcTypeCode( SqlTypes.JSON)
+    @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, String> providerError;
 }
