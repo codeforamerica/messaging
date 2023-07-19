@@ -51,26 +51,27 @@ public class TemplateController {
     @Operation(summary = "Create a template with at least one variant")
     public ResponseEntity<Template> createTemplate(@Valid @RequestBody Template template) throws Exception {
         Template createdTemplate = templateService.createTemplate(template);
+        Template updatedTemplate = templateService.getTemplateById(createdTemplate.getId()).get();
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
-                .buildAndExpand(createdTemplate.getName(), createdTemplate.getVersion()).toUri();
+                .buildAndExpand(updatedTemplate.getName(), updatedTemplate.getVersion()).toUri();
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setLocation(location);
         return new ResponseEntity<>(createdTemplate, responseHeaders, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{name}")
-    @Operation(summary = "Delete a template and its variants")
-    public ResponseEntity<?> deleteTemplate(@PathVariable String name) throws Exception {
-        templateService.deleteTemplateAndVariants(name);
+    @DeleteMapping("/{name}/{version}")
+    @Operation(summary = "Delete a template version and its variants")
+    public ResponseEntity<?> deleteTemplate(@PathVariable String name, @PathVariable int version) throws Exception {
+        templateService.deleteTemplateAndVariants(name, version);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/{name}")
+    @PutMapping("/{name}/{version}")
     @Operation(summary = "Create or modify a list of template variants")
-    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<@Valid TemplateVariant> templateVariants)
-            throws Exception {
-        Template modifiedTemplate = templateService.modifyTemplateVariants(name, templateVariants);
+    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @PathVariable int version,
+            @RequestBody Set<@Valid TemplateVariant> templateVariants) throws Exception {
+        Template modifiedTemplate = templateService.modifyTemplateVariants(name, version, templateVariants);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
                 .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();
@@ -117,13 +118,14 @@ public class TemplateController {
         return new ResponseEntity<>(activeTemplate, responseHeaders, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{name}/{language}/{treatment}")
+    @DeleteMapping("/{name}/{version}/{language}/{treatment}")
     @Operation(summary = "Delete a single template variant")
     public ResponseEntity<Template> deleteTemplateVariant(
             @PathVariable String name,
+            @PathVariable int version,
             @PathVariable String language,
             @PathVariable String treatment) throws Exception {
-        Template modifiedTemplate = templateService.deleteTemplateVariant(name, language, treatment);
+        Template modifiedTemplate = templateService.deleteTemplateVariant(name, version, language, treatment);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
                 .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();
@@ -132,14 +134,15 @@ public class TemplateController {
         return new ResponseEntity<>(modifiedTemplate, responseHeaders, HttpStatus.OK);
     }
 
-    @PutMapping("/{name}/{language}/{treatment}")
+    @PutMapping("/{name}/{version}/{language}/{treatment}")
     @Operation(summary = "Create or modify a single template variant")
     public ResponseEntity<Template> createOrUpdateTemplateVariant(
             @PathVariable String name,
+            @PathVariable int version,
             @PathVariable String language,
             @PathVariable String treatment,
             @Valid @RequestBody TemplateVariantRequest templateVariantRequest) throws Exception {
-        Template modifiedTemplate = templateService.mergeTemplateVariant(name, language, treatment, templateVariantRequest);
+        Template modifiedTemplate = templateService.mergeTemplateVariant(name, version, language, treatment, templateVariantRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}/{version}")
                 .buildAndExpand(modifiedTemplate.getName(), modifiedTemplate.getVersion()).toUri();

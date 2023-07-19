@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.codeforamerica.messaging.TestData.BASE_VERSION;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -152,7 +153,7 @@ class TemplateServiceTest {
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
 
-        templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME);
+        templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME, BASE_VERSION);
         assertTrue(templateRepository.findFirstActiveByNameIgnoreCase(TestData.TEMPLATE_NAME).isEmpty());
     }
 
@@ -165,7 +166,7 @@ class TemplateServiceTest {
         Message message = TestData.aMessage(templateVariant).build();
         messageRepository.save(message);
 
-        assertThrows(Exception.class, () -> templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME));
+        assertThrows(Exception.class, () -> templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME, BASE_VERSION));
         assertEquals(Optional.of(template), templateRepository.findFirstActiveByNameIgnoreCase(template.getName()));
     }
 
@@ -179,7 +180,7 @@ class TemplateServiceTest {
                 TestData.aTemplateVariant().language("es").build(),
                 TestData.aTemplateVariant().treatment("B").build()
         );
-        template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants);
+        template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, BASE_VERSION, newTemplateVariants);
         assertEquals(4, template.getTemplateVariants().size());
     }
 
@@ -194,7 +195,7 @@ class TemplateServiceTest {
                 .emailBody(null)
                 .subject(null)
                 .build());
-        template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants);
+        template = templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, BASE_VERSION, newTemplateVariants);
         assertEquals(2, template.getTemplateVariants().size());
         assertEquals("new body", template.getTemplateVariant("en", "A").get().getSmsBody());
         assertNull(template.getTemplateVariant("en", "A").get().getEmailBody());
@@ -211,7 +212,7 @@ class TemplateServiceTest {
         messageRepository.save(message);
 
         Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().smsBody("new body").subject(null).build());
-        assertThrows(Exception.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants));
+        assertThrows(Exception.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, BASE_VERSION, newTemplateVariants));
         assertEquals(Optional.of(template), templateRepository.findFirstActiveByNameIgnoreCase(template.getName()));
     }
 
@@ -222,10 +223,10 @@ class TemplateServiceTest {
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
 
-        template = templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "es", "B");
+        template = templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, BASE_VERSION, "es", "B");
         assertTrue(template.getTemplateVariant("es", "B").isEmpty());
         assertThrows(Exception.class, () ->
-                templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "en", "A"));
+                templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, BASE_VERSION, "en", "A"));
         assertFalse(template.getTemplateVariants().isEmpty());
     }
 
@@ -239,7 +240,7 @@ class TemplateServiceTest {
         messageRepository.save(message);
 
         assertThrows(Exception.class, () ->
-                templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "es", "B"));
+                templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, BASE_VERSION, "es", "B"));
         assertTrue(template.getTemplateVariant("es", "B").isPresent());
     }
 

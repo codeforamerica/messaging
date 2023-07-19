@@ -12,6 +12,7 @@ import java.util.Set;
 public interface TemplateRepository extends CrudRepository<Template, Long> {
     @Query("select t from Template t where t.status='ACTIVE'")
     Optional<Template> findFirstActiveByNameIgnoreCase(String name);
+    Optional<Template> findFirstByNameIgnoreCaseOrderByCreationTimestampDesc(String name);
     Optional<Template> findFirstByNameIgnoreCaseAndVersion(String name, int version);
     Set<Template> findAllByNameIgnoreCase(String name);
     @Query("select max(t.version) from Template t where t.name=?1")

@@ -35,8 +35,8 @@ public class Template {
     @ToString.Include
     String name;
     @NotNull
-    @Builder.Default
-    private int version = 1;
+    @Column(insertable = false, updatable = false, columnDefinition = "serial")
+    private int version;
     @NotBlank
     @Builder.Default
     private String status = Status.DRAFT.name();
