@@ -9,32 +9,32 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.codeforamerica.messaging.utils.RegexPatternStrings;
-import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.Map;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ValidMessageable
-public class Message implements Messageable {
+public class Message {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
     @NotNull
     TemplateVariant templateVariant;
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, String> templateParams;
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     String toPhone;
     @Email
     String toEmail;
-    String emailBody;
-    String smsBody;
-    String subject;
     @ManyToOne
     MessageBatch messageBatch;
     @OneToOne(cascade = CascadeType.REMOVE)

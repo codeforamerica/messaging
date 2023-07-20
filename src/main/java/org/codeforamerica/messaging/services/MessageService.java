@@ -83,22 +83,9 @@ public class MessageService {
 
     public Message saveMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
         TemplateVariant templateVariant = getTemplateVariant(messageRequest);
-        String subject;
-        String emailBody;
-        String smsBody;
-        try {
-            subject = templateVariant.build(TemplateVariant::getSubject, messageRequest.getTemplateParams());
-            emailBody = templateVariant.build(TemplateVariant::getEmailBody, messageRequest.getTemplateParams());
-            smsBody = templateVariant.build(TemplateVariant::getSmsBody, messageRequest.getTemplateParams());
-        } catch (IOException e) {
-            log.error("Error processing templates. " + templateVariant);
-            throw new RuntimeException(e.getMessage());
-        }
         Message message = Message.builder()
                 .templateVariant(templateVariant)
-                .subject(subject)
-                .emailBody(emailBody)
-                .smsBody(smsBody)
+                .templateParams(messageRequest.getTemplateParams())
                 .toPhone(messageRequest.getToPhone())
                 .toEmail(messageRequest.getToEmail())
                 .messageBatch(messageBatch)
@@ -108,21 +95,33 @@ public class MessageService {
 
     public void sendMessage(Long messageId) {
         log.info("Sending message #{}", messageId);
-        try {
-            Message message = messageRepository.findById(messageId).get();
-            if (message.needToSendSms()) {
-                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), message.getSmsBody());
+        Message message = messageRepository.findById(messageId).get();
+        TemplateVariant templateVariant = message.getTemplateVariant();
+        Map<String, String> templateParams = message.getTemplateParams();
+        if (message.needToSendSms()) {
+            try {
+                String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
+                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
                 message.setSmsMessage(sentSmsMessage);
                 messageRepository.save(message);
+            } catch (IOException e) {
+                log.error("Error processing SMS template: " + templateVariant.getId());
+            } catch (Exception e) {
+                log.error("Error sending SMS job", e);
             }
-            if (message.needToSendEmail()) {
-                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), message.getEmailBody(), message.getSubject());
+        }
+        if (message.needToSendEmail()) {
+            try {
+                String subject = templateVariant.build(TemplateVariant::getSubject, templateParams);
+                String emailBody = templateVariant.build(TemplateVariant::getEmailBody, templateParams);
+                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
+            } catch (IOException e) {
+                log.error("Error processing email templates: " + templateVariant.getId());
+            } catch (Exception e) {
+                log.error("Error sending email job", e);
             }
-        } catch (Exception e) {
-            log.error("Error running job", e);
-            throw e;
         }
     }
 
