@@ -69,10 +69,9 @@ public class TestData {
 
     public static Message.MessageBuilder aMessage(TemplateVariant templateVariant) {
         return Message.builder()
-                .emailBody(TEMPLATE_BODY_DEFAULT)
-                .smsBody(TEMPLATE_BODY_DEFAULT)
-                .subject(TEMPLATE_SUBJECT_DEFAULT)
-                .templateVariant(templateVariant);
+                .templateVariant(templateVariant)
+                // this is to replace "{{placeholder}}" if the placeholder is not being tested
+                .templateParams(Map.of("placeholder", "{{placeholder}}"));
     }
 
     public static MessageBatch.MessageBatchBuilder aMessageBatch() {
