@@ -104,10 +104,8 @@ public class MessageService {
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
                 message.setSmsMessage(sentSmsMessage);
                 messageRepository.save(message);
-            } catch (IOException e) {
-                log.error("Error processing SMS template: " + templateVariant.getId());
             } catch (Exception e) {
-                log.error("Error sending SMS job", e);
+                log.error("Error sending SMS job, templateId=" + templateVariant.getId(), e);
             }
         }
         if (message.needToSendEmail()) {
@@ -117,10 +115,8 @@ public class MessageService {
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
-            } catch (IOException e) {
-                log.error("Error processing email templates: " + templateVariant.getId());
             } catch (Exception e) {
-                log.error("Error sending email job", e);
+                log.error("Error sending email job, templateId=" + templateVariant.getId(), e);
             }
         }
     }
