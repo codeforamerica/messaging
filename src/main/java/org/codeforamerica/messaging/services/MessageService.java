@@ -105,7 +105,7 @@ public class MessageService {
                 message.setSmsMessage(sentSmsMessage);
                 messageRepository.save(message);
             } catch (Exception e) {
-                log.error("Error sending SMS job, templateId=" + templateVariant.getId(), e);
+                log.error("Error sending SMS job, templateId={}", templateVariant.getId(), e);
             }
         }
         if (message.needToSendEmail()) {
@@ -116,7 +116,7 @@ public class MessageService {
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
             } catch (Exception e) {
-                log.error("Error sending email job, templateId=" + templateVariant.getId(), e);
+                log.error("Error sending email job, templateId={}", templateVariant.getId(), e);
             }
         }
     }
