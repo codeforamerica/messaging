@@ -10,25 +10,29 @@ import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.codeforamerica.messaging.utils.CSVReader;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
+import org.springframework.context.MessageSource;
+import org.springframework.context.MessageSourceAware;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 
 @Service
 @Slf4j
-public class MessageService {
+public class MessageService implements MessageSourceAware {
     private final SmsService smsService;
     private final EmailService emailService;
     private final MessageRepository messageRepository;
     private final MessageBatchRepository messageBatchRepository;
     private final TemplateRepository templateRepository;
     private final JobRequestScheduler jobRequestScheduler;
+    private MessageSource messageSource;
 
     public MessageService(SmsService smsService,
             EmailService emailService,
@@ -42,6 +46,10 @@ public class MessageService {
         this.messageBatchRepository = messageBatchRepository;
         this.templateRepository = templateRepository;
         this.jobRequestScheduler = jobRequestScheduler;
+    }
+
+    public void setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource;
     }
 
     public Message scheduleMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
@@ -112,6 +120,7 @@ public class MessageService {
             try {
                 String subject = templateVariant.build(TemplateVariant::getSubject, templateParams);
                 String emailBody = templateVariant.build(TemplateVariant::getEmailBody, templateParams);
+                emailBody = addUnsubscribeFooter(message, emailBody);
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
                 messageRepository.save(message);
@@ -119,6 +128,12 @@ public class MessageService {
                 log.error("Error sending email job, templateId={}", templateVariant.getId(), e);
             }
         }
+    }
+
+    private String addUnsubscribeFooter(Message message, String emailBody) {
+        String emailUnsubscribeFooter = messageSource.getMessage("email.unsubscribe.footer", null, Locale.forLanguageTag(message.getLanguage()));
+        emailBody += "\n\n\n" + emailUnsubscribeFooter;
+        return emailBody;
     }
 
     public Optional<Message> getMessage(Long id) {

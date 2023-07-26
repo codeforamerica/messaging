@@ -17,6 +17,8 @@ import org.hibernate.type.SqlTypes;
 import java.time.OffsetDateTime;
 import java.util.Map;
 
+import static org.codeforamerica.messaging.models.TemplateVariant.DEFAULT_LANGUAGE;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -61,4 +63,12 @@ public class Message {
     public String getStatus() {
         return needToSendEmail() || needToSendSms() ? "pending" : "completed";
     }
+
+    public String getLanguage() {
+        if (this.getTemplateParams() != null && this.getTemplateParams().get("language") != null) {
+            return this.getTemplateParams().get("language");
+        }
+        return DEFAULT_LANGUAGE;
+    }
+
 }

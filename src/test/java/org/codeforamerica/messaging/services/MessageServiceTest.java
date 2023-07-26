@@ -1,6 +1,5 @@
 package org.codeforamerica.messaging.services;
 
-import org.assertj.core.api.Assertions;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
 import org.codeforamerica.messaging.jobs.SendMessageJobRequest;
@@ -11,6 +10,7 @@ import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,6 +24,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 
@@ -81,7 +83,10 @@ class MessageServiceTest {
 
         messageService.sendMessage(message.getId());
         Mockito.verify(smsService, Mockito.never()).sendSmsMessage(Mockito.anyString(), Mockito.anyString());
-        Mockito.verify(emailService).sendEmailMessage(TestData.TO_EMAIL, TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
+        ArgumentCaptor<String> emailBodyCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(emailService).sendEmailMessage(eq(TestData.TO_EMAIL), emailBodyCaptor.capture(), eq(TestData.TEMPLATE_SUBJECT_DEFAULT));
+        assertTrue(emailBodyCaptor.getValue().contains(TestData.TEMPLATE_BODY_DEFAULT));
+        assertTrue(emailBodyCaptor.getValue().contains("To unsubscribe click: %unsubscribe_url%"));
     }
 
     @Test
@@ -94,7 +99,10 @@ class MessageServiceTest {
 
         messageService.sendMessage(message.getId());
         Mockito.verify(smsService).sendSmsMessage(TestData.TO_PHONE, TestData.TEMPLATE_BODY_DEFAULT);
-        Mockito.verify(emailService).sendEmailMessage(TestData.TO_EMAIL, TestData.TEMPLATE_BODY_DEFAULT, TestData.TEMPLATE_SUBJECT_DEFAULT);
+        ArgumentCaptor<String> emailBodyCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(emailService).sendEmailMessage(eq(TestData.TO_EMAIL), emailBodyCaptor.capture(), eq(TestData.TEMPLATE_SUBJECT_DEFAULT));
+        assertTrue(emailBodyCaptor.getValue().contains(TestData.TEMPLATE_BODY_DEFAULT));
+        assertTrue(emailBodyCaptor.getValue().contains("To unsubscribe click: %unsubscribe_url%"));
     }
 
     @Test
@@ -111,7 +119,10 @@ class MessageServiceTest {
 
         messageService.sendMessage(message.getId());
         Mockito.verify(smsService).sendSmsMessage(messageRequest.getToPhone(), TestData.TEMPLATE_BODY_ES_B);
-        Mockito.verify(emailService).sendEmailMessage(message.getToEmail(), TestData.TEMPLATE_BODY_ES_B, TestData.TEMPLATE_SUBJECT_ES_B);
+        ArgumentCaptor<String> emailBodyCaptor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(emailService).sendEmailMessage(eq(message.getToEmail()), emailBodyCaptor.capture(), eq(TestData.TEMPLATE_SUBJECT_ES_B));
+        assertTrue(emailBodyCaptor.getValue().contains(TestData.TEMPLATE_BODY_ES_B));
+        assertTrue(emailBodyCaptor.getValue().contains("Para darse de baja haga clic: %unsubscribe_url%"));
     }
 
     @Test
@@ -150,9 +161,9 @@ class MessageServiceTest {
                 (OffsetDateTime) any(),
                 isA(SendMessageJobRequest.class)
         );
-        Assertions.assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
+        assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
                 .containsExactlyInAnyOrderElementsOf(List.of("8885551212", "1234567890"));
-        Assertions.assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToEmail))
+        assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToEmail))
                 .containsExactlyInAnyOrderElementsOf(List.of("bar@example.org", "foo@example.com"));
      }
 
@@ -178,7 +189,7 @@ class MessageServiceTest {
                 messageBatch.getMetrics().getDeliveredSmsCount(),
                 messageBatch.getMetrics().getUndeliveredSmsCount(),
         };
-        Assertions.assertThat(metricsArray).isEqualTo(new int[] {1, 0, 2, 0, 1, 1, 0, 1});
+        assertThat(metricsArray).isEqualTo(new int[] {1, 0, 2, 0, 1, 1, 0, 1});
     }
 
     private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
