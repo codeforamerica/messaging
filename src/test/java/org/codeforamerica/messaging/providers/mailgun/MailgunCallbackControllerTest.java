@@ -3,8 +3,11 @@ package org.codeforamerica.messaging.providers.mailgun;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.EmailMessage;
+import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
+import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,6 +21,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -30,6 +34,8 @@ public class MailgunCallbackControllerTest {
     EmailMessageRepository emailMessageRepository;
     @MockBean
     MailgunSignatureVerificationService mailgunSignatureVerificationService;
+    @MockBean
+    EmailSubscriptionRepository emailSubscriptionRepository;
     @Autowired
     private MockMvc mockMvc;
 
@@ -94,6 +100,39 @@ public class MailgunCallbackControllerTest {
                                 """.formatted(severity, reason, TestData.PROVIDER_MESSAGE_ID, errorCode, errorMessage, errorDescription)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
         assertEquals(Map.of("severity", severity, "reason", reason, "errorCode", errorCode, "errorMessage", errorMessage, "errorDescription", errorDescription), emailMessage.getProviderError());
+    }
+
+    @Test
+    public void whenUnsubscribed_ThenSavesEmailSubscription() throws Exception {
+        String recipient = "unsubscriber@example.com";
+
+        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(emailMessage);
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "unsubscribed",
+                                            "recipient": "%s",
+                                            "message": {
+                                                  "headers": {
+                                                    "message-id": "%s"
+                                                  }
+                                            }
+                                        }
+                                    }
+                                """.formatted(recipient, TestData.PROVIDER_MESSAGE_ID)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        ArgumentCaptor<EmailSubscription> emailSubscriptionCaptor = ArgumentCaptor.forClass(EmailSubscription.class);
+        Mockito.verify(emailSubscriptionRepository).save(emailSubscriptionCaptor.capture());
+        EmailSubscription emailSubscription = emailSubscriptionCaptor.getValue();
+        assertTrue(emailSubscription.isUnsubscribed());
+        assertEquals(emailSubscription.getEmail(), recipient);
+        assertTrue(emailSubscription.isSourceInternal());
     }
 
     @Test
