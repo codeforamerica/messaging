@@ -3,7 +3,9 @@ package org.codeforamerica.messaging.providers.mailgun;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.EmailMessage;
+import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
+import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,11 +21,14 @@ import java.util.Map;
 @Slf4j
 public class MailgunCallbackController {
     private final EmailMessageRepository emailMessageRepository;
+    private final EmailSubscriptionRepository emailSubscriptionRepository;
     private final MailgunSignatureVerificationService mailgunSignatureVerificationService;
 
     public MailgunCallbackController(EmailMessageRepository emailMessageRepository,
-            MailgunSignatureVerificationService mailgunSignatureVerificationService) {
+                                     EmailSubscriptionRepository emailSubscriptionRepository,
+                                     MailgunSignatureVerificationService mailgunSignatureVerificationService) {
         this.emailMessageRepository = emailMessageRepository;
+        this.emailSubscriptionRepository = emailSubscriptionRepository;
         this.mailgunSignatureVerificationService = mailgunSignatureVerificationService;
     }
 
@@ -40,11 +45,23 @@ public class MailgunCallbackController {
         emailMessage.setStatus(status);
         if (hadError(status)) {
             emailMessage.setProviderError(buildProviderError(requestJSON, status));
+        } else if (status.equals("unsubscribed")) {
+            unsubscribeEmail(requestJSON);
         }
 
         emailMessageRepository.save(emailMessage);
 
         return ResponseEntity.ok().build();
+    }
+
+    private void unsubscribeEmail(JsonNode requestJSON) {
+        String unsubscribedEmail = requestJSON.at("/event-data/recipient").textValue();
+        log.info("Unsubscribing {}", unsubscribedEmail);
+        emailSubscriptionRepository.save(EmailSubscription.builder()
+                .email(unsubscribedEmail)
+                .sourceInternal(true)
+                .unsubscribed(true)
+                .build());
     }
 
     private static boolean hadError(String status) {
