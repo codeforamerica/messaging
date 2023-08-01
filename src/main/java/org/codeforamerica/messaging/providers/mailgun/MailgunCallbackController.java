@@ -56,7 +56,7 @@ public class MailgunCallbackController {
 
     private void unsubscribeEmail(JsonNode requestJSON) {
         String unsubscribedEmail = requestJSON.at("/event-data/recipient").textValue();
-        log.info("Unsubscribing {}", unsubscribedEmail);
+        log.info("Unsubscribing");
         emailSubscriptionRepository.save(EmailSubscription.builder()
                 .email(unsubscribedEmail)
                 .sourceInternal(true)
