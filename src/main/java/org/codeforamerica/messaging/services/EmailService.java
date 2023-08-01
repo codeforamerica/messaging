@@ -28,9 +28,8 @@ public class EmailService {
         if (!unsubscribed(toEmail)) {
             message = mailgunGateway.sendMessage(toEmail, body, subject);
             message = emailMessageRepository.save(message);
-            log.info("Message sent, Mailgun response: " + message);
         } else {
-            log.error("Email {} is unsubscribed", toEmail);
+            log.error("Skipping unsubscribed email");
         }
         return message;
     }
