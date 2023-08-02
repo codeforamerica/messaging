@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import com.twilio.Twilio;
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,24 +26,27 @@ public class TwilioGateway {
         return zonedDateTime == null ? null : zonedDateTime.toOffsetDateTime();
     }
 
-    public SmsMessage sendMessage(String to, String body) {
-        Twilio.init(twilioAccountSid, twilioAuthToken);
+    public SmsMessage sendMessage(String to, String body) throws MessageSendException {
         com.twilio.rest.api.v2010.account.Message twilioMessage =
-                com.twilio.rest.api.v2010.account.Message.creator(
-                                new com.twilio.type.PhoneNumber(to),
-                                twilioMessagingServiceSid,
-                                body)
-                        .create();
+                null;
+        try {
+            Twilio.init(twilioAccountSid, twilioAuthToken);
+            twilioMessage = com.twilio.rest.api.v2010.account.Message.creator(
+                            new com.twilio.type.PhoneNumber(to),
+                            twilioMessagingServiceSid,
+                            body)
+                    .create();
+        } catch (com.twilio.exception.TwilioException e) {
+            throw new MessageSendException(e.getMessage());
+        }
 
         return SmsMessage.builder()
                 .fromPhone(DEFAULT_FROM_PHONE)
                 .toPhone(twilioMessage.getTo())
                 .body(twilioMessage.getBody())
                 .providerMessageId(twilioMessage.getSid())
-                .status(String.valueOf(twilioMessage.getStatus()))
                 .providerCreatedAt(toOffsetDateTime(twilioMessage.getDateCreated()))
                 .build();
     }
 
 }
-

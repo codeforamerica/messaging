@@ -1,6 +1,8 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.MessageSendException;
+import org.codeforamerica.messaging.exceptions.UnsubscribedException;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.providers.mailgun.MailgunGateway;
@@ -23,13 +25,14 @@ public class EmailService {
         this.emailSubscriptionRepository = emailSubscriptionRepository;
     }
 
-    public EmailMessage sendEmailMessage(String toEmail, String body, String subject) {
-        EmailMessage message = null;
+    public EmailMessage sendEmailMessage (String toEmail, String body, String subject) throws MessageSendException {
+        EmailMessage message;
         if (!unsubscribed(toEmail)) {
             message = mailgunGateway.sendMessage(toEmail, body, subject);
             message = emailMessageRepository.save(message);
         } else {
             log.error("Skipping unsubscribed email");
+            throw new UnsubscribedException();
         }
         return message;
     }

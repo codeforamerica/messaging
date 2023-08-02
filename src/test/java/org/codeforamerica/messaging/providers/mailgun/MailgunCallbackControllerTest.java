@@ -4,6 +4,7 @@ import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.models.EmailSubscription;
+import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,8 @@ public class MailgunCallbackControllerTest {
 
     @Test
     public void whenTrustedPortAndSignatureVerified_ThenSucceeds() throws Exception {
-        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
         Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(emailMessage);
         Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
@@ -61,7 +63,7 @@ public class MailgunCallbackControllerTest {
                                     }
                                 """.formatted(TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        assertEquals("delivered", emailMessage.getStatus());
+        assertEquals("delivered", emailMessage.getMessage().getEmailStatus());
     }
 
     @Test
@@ -72,7 +74,8 @@ public class MailgunCallbackControllerTest {
         String errorMessage = "5.1.1 The email account that you tried to reach does not exist";
         String errorDescription = "";
 
-        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
         Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(emailMessage);
         Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
@@ -106,7 +109,8 @@ public class MailgunCallbackControllerTest {
     public void whenUnsubscribed_ThenSavesEmailSubscription() throws Exception {
         String recipient = "unsubscriber@example.com";
 
-        EmailMessage emailMessage = TestData.anEmailMessage().build();
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
         Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(emailMessage);
         Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);

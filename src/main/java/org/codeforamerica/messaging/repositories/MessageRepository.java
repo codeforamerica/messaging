@@ -13,18 +13,16 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
     @Query("""
             SELECT
-             SUM(CASE email.status WHEN 'accepted' THEN 1 ELSE 0 END) AS acceptedEmailCount,
-             SUM(CASE email.status WHEN 'rejected' THEN 1 ELSE 0 END) AS rejectedEmailCount,
-             SUM(CASE email.status WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredEmailCount,
-             SUM(CASE email.status WHEN 'failed' THEN 1 ELSE 0 END) AS undeliveredEmailCount,
-             SUM(CASE sms.status WHEN 'accepted' THEN 1 ELSE 0 END) AS acceptedSmsCount,
-             SUM(CASE sms.status WHEN 'rejected' THEN 1 ELSE 0 END) AS rejectedSmsCount,
-             SUM(CASE sms.status WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredSmsCount,
-             SUM(CASE sms.status WHEN 'undelivered' THEN 1 ELSE 0 END) AS undeliveredSmsCount
+             SUM(CASE emailStatus WHEN 'accepted' THEN 1 ELSE 0 END) AS acceptedEmailCount,
+             SUM(CASE emailStatus WHEN 'rejected' THEN 1 ELSE 0 END) AS rejectedEmailCount,
+             SUM(CASE emailStatus WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredEmailCount,
+             SUM(CASE emailStatus WHEN 'failed' THEN 1 ELSE 0 END) AS undeliveredEmailCount,
+             SUM(CASE smsStatus WHEN 'accepted' THEN 1 ELSE 0 END) AS acceptedSmsCount,
+             SUM(CASE smsStatus WHEN 'rejected' THEN 1 ELSE 0 END) AS rejectedSmsCount,
+             SUM(CASE smsStatus WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredSmsCount,
+             SUM(CASE smsStatus WHEN 'undelivered' THEN 1 ELSE 0 END) AS undeliveredSmsCount
              FROM Message msg
-             LEFT JOIN msg.emailMessage email
-             LEFT JOIN msg.smsMessage sms
-             WHERE msg.messageBatch.id = ?1
+            WHERE msg.messageBatch.id = ?1
              """)
     MessageBatchMetrics getMetrics(Long messageBatchId);
 }

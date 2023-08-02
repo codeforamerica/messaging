@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
+import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,8 @@ public class TwilioCallbackControllerTest {
 
     @Test
     public void whenTrustedPortAndSignatureVerified_ThenSucceeds() throws Exception {
-        SmsMessage smsMessage = TestData.anSmsMessage().build();
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
         Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(smsMessage);
         Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
@@ -46,14 +48,15 @@ public class TwilioCallbackControllerTest {
                         .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
                         .param("MessageStatus", "delivered"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        assertEquals("delivered", smsMessage.getStatus());
+        assertEquals("delivered", smsMessage.getMessage().getSmsStatus());
     }
 
     @Test
     public void whenUndelivered_ThenSavesProviderError() throws Exception {
         String errorCode = "30005";
         String errorMessage = "Unknown destination handset";
-        SmsMessage smsMessage = TestData.anSmsMessage().build();
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
         Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(smsMessage);
         Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);

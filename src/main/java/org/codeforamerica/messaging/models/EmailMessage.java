@@ -35,7 +35,6 @@ public class EmailMessage {
     private String fromEmail;
     @NotBlank
     private String subject;
-    private String status;
     private String providerMessageId;
     private OffsetDateTime providerCreatedAt;
     @CreationTimestamp

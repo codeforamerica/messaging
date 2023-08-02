@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.services;
 
+import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
@@ -15,7 +16,7 @@ public class SmsService {
         this.smsMessageRepository = smsMessageRepository;
     }
 
-    public SmsMessage sendSmsMessage(String to, String body) {
+    public SmsMessage sendSmsMessage(String to, String body) throws MessageSendException {
         SmsMessage smsMessage = twilioGateway.sendMessage(to, body);
         return smsMessageRepository.save(smsMessage);
     }

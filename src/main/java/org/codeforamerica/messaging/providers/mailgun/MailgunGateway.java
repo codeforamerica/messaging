@@ -3,7 +3,9 @@ package org.codeforamerica.messaging.providers.mailgun;
 import com.mailgun.api.v3.MailgunMessagesApi;
 import com.mailgun.client.MailgunClient;
 import com.mailgun.model.message.MessageResponse;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +23,7 @@ public class MailgunGateway {
     @Value("${mailgun.api.from}")
     private String from;
 
-    public EmailMessage sendMessage(String toEmail, String body, String subject) {
+    public EmailMessage sendMessage(String toEmail, String body, String subject) throws MessageSendException {
         MailgunMessagesApi mailgunMessagesApi = MailgunClient.config(mailgunApiKey)
                 .createApi(MailgunMessagesApi.class);
 
@@ -33,7 +35,12 @@ public class MailgunGateway {
                         .text(body)
                         .build();
 
-        MessageResponse response = mailgunMessagesApi.sendMessage(mailgunDomain, mailgunMessage);
+        MessageResponse response;
+        try {
+            response = mailgunMessagesApi.sendMessage(mailgunDomain, mailgunMessage);
+        } catch (FeignException e) {
+            throw new MessageSendException(e.getMessage());
+        }
 
         return EmailMessage.builder()
                 .fromEmail(from)
@@ -41,7 +48,6 @@ public class MailgunGateway {
                 .subject(subject)
                 .body(body)
                 .providerMessageId(cleanupProviderId(response.getId()))
-                .status("accepted")
                 .providerCreatedAt(OffsetDateTime.now())
                 .build();
     }
@@ -51,4 +57,3 @@ public class MailgunGateway {
     }
 
 }
-
