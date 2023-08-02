@@ -86,16 +86,16 @@ public class TemplateControllerTest {
                             {
                                 "language":"en",
                                 "treatment":"A",
-                                "subject":"English A Subject: {{placeholder}}",
-                                "emailBody":"English A Body: {{placeholder}}",
-                                "smsBody":"English A Body: {{placeholder}}"
+                                "subject":"English A Subject: {{{placeholder}}}",
+                                "emailBody":"English A Body: {{{placeholder}}}",
+                                "smsBody":"English A Body: {{{placeholder}}}"
                             },
                             {
                                 "language":"es",
                                 "treatment":"B",
-                                "subject":"Spanish B Subject: {{placeholder}}",
-                                "emailBody":"Spanish B Body: {{placeholder}}",
-                                "smsBody":"Spanish B Body: {{placeholder}}"
+                                "subject":"Spanish B Subject: {{{placeholder}}}",
+                                "emailBody":"Spanish B Body: {{{placeholder}}}",
+                                "smsBody":"Spanish B Body: {{{placeholder}}}"
                             }
                         ],
                     },
@@ -124,16 +124,16 @@ public class TemplateControllerTest {
                         {
                             "language":"en",
                             "treatment":"A",
-                            "subject":"English A Subject: {{placeholder}}",
-                            "emailBody":"English A Body: {{placeholder}}",
-                            "smsBody":"English A Body: {{placeholder}}"
+                            "subject":"English A Subject: {{{placeholder}}}",
+                            "emailBody":"English A Body: {{{placeholder}}}",
+                            "smsBody":"English A Body: {{{placeholder}}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
-                            "subject":"Spanish B Subject: {{placeholder}}",
-                            "emailBody":"Spanish B Body: {{placeholder}}",
-                            "smsBody":"Spanish B Body: {{placeholder}}"
+                            "subject":"Spanish B Subject: {{{placeholder}}}",
+                            "emailBody":"Spanish B Body: {{{placeholder}}}",
+                            "smsBody":"Spanish B Body: {{{placeholder}}}"
                         }
                     ]
                 }
@@ -155,16 +155,16 @@ public class TemplateControllerTest {
                     "name":"Template name with variants",
                     "templateVariants":[
                         {
-                            "subject":"English A Subject: {{placeholder}}",
-                            "emailBody":"English A Body: {{placeholder}}",
-                            "smsBody":"English A Body: {{placeholder}}"
+                            "subject":"English A Subject: {{{placeholder}}}",
+                            "emailBody":"English A Body: {{{placeholder}}}",
+                            "smsBody":"English A Body: {{{placeholder}}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
-                            "subject":"Spanish B Subject: {{placeholder}}",
-                            "emailBody":"Spanish B Body: {{placeholder}}",
-                            "smsBody":"Spanish B Body: {{placeholder}}"
+                            "subject":"Spanish B Subject: {{{placeholder}}}",
+                            "emailBody":"Spanish B Body: {{{placeholder}}}",
+                            "smsBody":"Spanish B Body: {{{placeholder}}}"
                         }
                     ]
                 }
@@ -176,16 +176,16 @@ public class TemplateControllerTest {
                         {
                             "language":"en",
                             "treatment":"A",
-                            "subject":"English A Subject: {{placeholder}}",
-                            "emailBody":"English A Body: {{placeholder}}",
-                            "smsBody":"English A Body: {{placeholder}}"
+                            "subject":"English A Subject: {{{placeholder}}}",
+                            "emailBody":"English A Body: {{{placeholder}}}",
+                            "smsBody":"English A Body: {{{placeholder}}}"
                         },
                         {
                             "language":"es",
                             "treatment":"B",
-                            "subject":"Spanish B Subject: {{placeholder}}",
-                            "emailBody":"Spanish B Body: {{placeholder}}",
-                            "smsBody":"Spanish B Body: {{placeholder}}"
+                            "subject":"Spanish B Subject: {{{placeholder}}}",
+                            "emailBody":"Spanish B Body: {{{placeholder}}}",
+                            "smsBody":"Spanish B Body: {{{placeholder}}}"
                         }
                     ]
                 }
@@ -222,7 +222,7 @@ public class TemplateControllerTest {
                         {
                             "language":"es",
                             "treatment":"B",
-                            "emailBody":"Spanish B Body: {{placeholder}}"
+                            "emailBody":"Spanish B Body: {{{placeholder}}}"
                         }
                     ]
                 }
@@ -238,7 +238,7 @@ public class TemplateControllerTest {
     public void whenModifyingATemplateVariantWithEmailBodyAndNoSubject_thenBadRequest() throws Exception {
         String requestBody = """
                 {
-                    "emailBody":"Spanish B Body: {{placeholder}}"
+                    "emailBody":"Spanish B Body: {{{placeholder}}}"
                 }
                 """;
 

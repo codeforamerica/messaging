@@ -114,7 +114,7 @@ class MessageServiceTest {
                 .templateParams(Map.of(
                         "language", "es",
                         "treatment", "B",
-                        "placeholder", "{{placeholder}}"))
+                        "placeholder", "{{{placeholder}}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest, null);
 
