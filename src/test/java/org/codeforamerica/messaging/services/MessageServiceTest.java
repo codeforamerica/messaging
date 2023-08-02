@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.TestData;
+import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
 import org.codeforamerica.messaging.jobs.SendMessageJobRequest;
 import org.codeforamerica.messaging.models.*;
@@ -69,7 +70,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenOnlyPhone_thenOnlySmsServiceCalled() {
+    void whenOnlyPhone_thenOnlySmsServiceCalled() throws MessageSendException {
         Message message = messageService.saveMessage(TestData.aMessageRequest().toPhone(TestData.TO_PHONE).build(), null);
 
         messageService.sendMessage(message.getId());
@@ -78,7 +79,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenOnlyEmail_thenOnlyEmailServiceCalled() {
+    void whenOnlyEmail_thenOnlyEmailServiceCalled() throws MessageSendException {
         Message message = messageService.saveMessage(TestData.aMessageRequest().toEmail(TestData.TO_EMAIL).build(), null);
 
         messageService.sendMessage(message.getId());
@@ -90,7 +91,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenBothPhoneAndEmail_thenBothServicesCalled() {
+    void whenBothPhoneAndEmail_thenBothServicesCalled() throws MessageSendException {
         MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
@@ -106,7 +107,7 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenMessageRequestHasLanguageAndTreatment_thenValuesAreUsedToSelectTemplateVariant() {
+    void whenMessageRequestHasLanguageAndTreatment_thenValuesAreUsedToSelectTemplateVariant() throws MessageSendException {
         MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
@@ -195,14 +196,16 @@ class MessageServiceTest {
     private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
         Message message = TestData.aMessage(originalMessageBatch.getTemplate().getTemplateVariants().stream().findFirst().get())
                 .messageBatch(originalMessageBatch)
+                .smsStatus(smsStatus)
+                .emailStatus(emailStatus)
                 .build();
         if (emailStatus != null) {
-            EmailMessage emailMessage = TestData.anEmailMessage().message(message).status(emailStatus).build();
+            EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
             emailMessage = emailMessageRepository.save(emailMessage);
             message.setEmailMessage(emailMessage);
         }
         if (smsStatus != null) {
-            SmsMessage smsMessage = TestData.anSmsMessage().message(message).status(smsStatus).build();
+            SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
             smsMessage = smsMessageRepository.save(smsMessage);
             message.setSmsMessage(smsMessage);
         }

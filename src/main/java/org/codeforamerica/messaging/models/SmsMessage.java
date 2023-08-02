@@ -35,7 +35,6 @@ public class SmsMessage {
     @NotBlank
     @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
     private String fromPhone;
-    private String status;
     private String providerMessageId;
     private OffsetDateTime providerCreatedAt;
     @CreationTimestamp

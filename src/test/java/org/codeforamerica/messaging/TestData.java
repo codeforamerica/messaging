@@ -53,7 +53,6 @@ public class TestData {
                 .body(TEMPLATE_BODY_DEFAULT)
                 .toPhone(TO_PHONE)
                 .fromPhone(TwilioGateway.DEFAULT_FROM_PHONE)
-                .status(STATUS)
                 .providerMessageId(PROVIDER_MESSAGE_ID);
     }
 
@@ -63,7 +62,6 @@ public class TestData {
                 .subject(TEMPLATE_SUBJECT_DEFAULT)
                 .toEmail(TO_EMAIL)
                 .fromEmail(FROM_EMAIL)
-                .status(STATUS)
                 .providerMessageId(PROVIDER_MESSAGE_ID);
     }
 

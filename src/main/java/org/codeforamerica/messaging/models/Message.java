@@ -41,8 +41,12 @@ public class Message {
     MessageBatch messageBatch;
     @OneToOne(cascade = CascadeType.REMOVE)
     private SmsMessage smsMessage;
+    private String smsStatus;
+    private String smsErrorMessage;
     @OneToOne(cascade = CascadeType.REMOVE)
     private EmailMessage emailMessage;
+    private String emailStatus;
+    private String emailErrorMessage;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
@@ -53,15 +57,11 @@ public class Message {
     }
 
     public boolean needToSendEmail() {
-        return toEmail != null && emailMessage == null;
+        return toEmail != null && emailMessage == null && emailStatus == null;
     }
 
     public boolean needToSendSms() {
-        return toPhone != null && smsMessage == null;
-    }
-
-    public String getStatus() {
-        return needToSendEmail() || needToSendSms() ? "pending" : "completed";
+        return toPhone != null && smsMessage == null && smsStatus == null;
     }
 
     public String getLanguage() {

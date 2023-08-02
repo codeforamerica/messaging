@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.TestData;
+import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.*;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.MessageRepository;
@@ -55,7 +56,7 @@ public class MessageServiceSchedulingTest {
 
     @Test
     @Disabled
-    void whenScheduledWithBothPhoneAndEmail_thenBothServicesCalledAfterScheduleDelay() {
+    void whenScheduledWithBothPhoneAndEmail_thenBothServicesCalledAfterScheduleDelay() throws MessageSendException {
         MessageRequest messageRequest = TestData.aMessageRequest()
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)

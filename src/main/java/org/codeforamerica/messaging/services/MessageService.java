@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.UnsubscribedException;
 import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
 import org.codeforamerica.messaging.jobs.SendMessageJobRequest;
 import org.codeforamerica.messaging.models.*;
@@ -111,9 +112,13 @@ public class MessageService implements MessageSourceAware {
                 String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
                 message.setSmsMessage(sentSmsMessage);
+                message.setSmsStatus("provider_accepted");
                 messageRepository.save(message);
             } catch (Exception e) {
-                log.error("Error sending SMS job, templateId={}", templateVariant.getId(), e);
+                log.error("Error sending SMS", e);
+                message.setSmsStatus("failed");
+                message.setSmsErrorMessage(e.getMessage());
+                messageRepository.save(message);
             }
         }
         if (message.needToSendEmail()) {
@@ -123,9 +128,17 @@ public class MessageService implements MessageSourceAware {
                 emailBody = addUnsubscribeFooter(message, emailBody);
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
+                message.setEmailStatus("provider_accepted");
+                messageRepository.save(message);
+            } catch (UnsubscribedException e) {
+                message.setEmailStatus("unsubscribed");
+                message.setEmailErrorMessage(e.getMessage());
                 messageRepository.save(message);
             } catch (Exception e) {
-                log.error("Error sending email job, templateId={}", templateVariant.getId(), e);
+                log.error("Error sending email", e);
+                message.setEmailStatus("failed");
+                message.setEmailErrorMessage(e.getMessage());
+                messageRepository.save(message);
             }
         }
     }

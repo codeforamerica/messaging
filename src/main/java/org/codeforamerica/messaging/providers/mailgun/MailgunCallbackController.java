@@ -42,7 +42,7 @@ public class MailgunCallbackController {
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(
                 requestJSON.at("/event-data/message/headers/message-id").textValue());
         String status = requestJSON.at("/event-data/event").textValue();
-        emailMessage.setStatus(status);
+        emailMessage.getMessage().setEmailStatus(status);
         if (hadError(status)) {
             emailMessage.setProviderError(buildProviderError(requestJSON, status));
         } else if (status.equals("unsubscribed")) {
@@ -69,7 +69,6 @@ public class MailgunCallbackController {
     }
 
     private static Map<String, String> buildProviderError(JsonNode requestJSON, String status) {
-        log.info(requestJSON.toString());
         Map<String, String> providerError = new HashMap<>();
         if (status.equals("failed")) {
             providerError.put("severity",requestJSON.at("/event-data/severity").textValue());

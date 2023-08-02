@@ -35,7 +35,7 @@ public class TwilioCallbackController {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(request.getParameter("MessageSid"));
-        smsMessage.setStatus(request.getParameter("MessageStatus"));
+        smsMessage.getMessage().setSmsStatus(request.getParameter("MessageStatus"));
         smsMessage.setFromPhone(request.getParameter("From"));
         if (hadError(smsMessage)) {
             smsMessage.setProviderError(buildProviderError(request));
@@ -45,7 +45,7 @@ public class TwilioCallbackController {
     }
 
     private static boolean hadError(SmsMessage smsMessage) {
-        String status = smsMessage.getStatus();
+        String status = smsMessage.getMessage().getSmsStatus();
         return status.equals("failed") || status.equals("undelivered");
     }
 
