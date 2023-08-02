@@ -13,10 +13,10 @@ public class TestData {
     public static final String PROVIDER_MESSAGE_ID = "some-provider-message-id";
     public static final String STATUS = "any status";
     public static final String TEMPLATE_NAME = "default template name";
-    public static final String TEMPLATE_SUBJECT_DEFAULT = "English A Subject: {{placeholder}}";
-    public static final String TEMPLATE_BODY_DEFAULT = "English A Body: {{placeholder}}";
-    public static final String TEMPLATE_SUBJECT_ES_B = "Spanish B Subject: {{placeholder}}";
-    public static final String TEMPLATE_BODY_ES_B = "Spanish B Body: {{placeholder}}";
+    public static final String TEMPLATE_SUBJECT_DEFAULT = "English A Subject: {{{placeholder}}}";
+    public static final String TEMPLATE_BODY_DEFAULT = "English A Body: {{{placeholder}}}";
+    public static final String TEMPLATE_SUBJECT_ES_B = "Spanish B Subject: {{{placeholder}}}";
+    public static final String TEMPLATE_BODY_ES_B = "Spanish B Body: {{{placeholder}}}";
 
     public static TemplateVariant.TemplateVariantBuilder aTemplateVariant() {
         return TemplateVariant.builder()
@@ -44,8 +44,8 @@ public class TestData {
     public static MessageRequest.MessageRequestBuilder aMessageRequest() {
         return MessageRequest.builder()
                 .templateName(TEMPLATE_NAME)
-                // this is to replace "{{placeholder}}" if the placeholder is not being tested
-                .templateParams(Map.of("placeholder", "{{placeholder}}"));
+                // this is to replace "{{{placeholder}}}" if the placeholder is not being tested
+                .templateParams(Map.of("placeholder", "{{{placeholder}}}"));
     }
 
     public static SmsMessage.SmsMessageBuilder anSmsMessage() {
@@ -68,8 +68,8 @@ public class TestData {
     public static Message.MessageBuilder aMessage(TemplateVariant templateVariant) {
         return Message.builder()
                 .templateVariant(templateVariant)
-                // this is to replace "{{placeholder}}" if the placeholder is not being tested
-                .templateParams(Map.of("placeholder", "{{placeholder}}"));
+                // this is to replace "{{{placeholder}}}" if the placeholder is not being tested
+                .templateParams(Map.of("placeholder", "{{{placeholder}}}"));
     }
 
     public static MessageBatch.MessageBatchBuilder aMessageBatch() {
