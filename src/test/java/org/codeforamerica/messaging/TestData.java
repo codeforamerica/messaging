@@ -30,7 +30,7 @@ public class TestData {
                 .name(TEMPLATE_NAME);
     }
 
-    public static void addVariantsToTemplate(Template template) throws Exception {
+    public static void addVariantsToTemplate(Template template) {
         template.addTemplateVariant(aTemplateVariant().build());
         template.addTemplateVariant(aTemplateVariant()
                 .smsBody(TEMPLATE_BODY_ES_B)

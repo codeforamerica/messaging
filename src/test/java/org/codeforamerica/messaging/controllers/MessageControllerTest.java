@@ -21,6 +21,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Map;
 
+import static org.codeforamerica.messaging.utils.CSVReader.LANGUAGE_HEADER;
+import static org.codeforamerica.messaging.utils.CSVReader.TREATMENT_HEADER;
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -193,17 +195,17 @@ public class MessageControllerTest {
                     "toEmail": "%s",
                     "templateName": "%s",
                     "templateParams": {
-                        "language": "es",
-                        "treatment": "B"
+                        "%s": "es",
+                        "%s": "B"
                     }
                 }
-                """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME);
+                """.formatted(TestData.TO_EMAIL, TestData.TEMPLATE_NAME, LANGUAGE_HEADER, TREATMENT_HEADER);
 
         MessageRequest expectedMessageRequest = TestData.aMessageRequest()
                 .toEmail(TestData.TO_EMAIL)
                 .templateParams(Map.of(
-                        "language", "es",
-                        "treatment", "B"))
+                        LANGUAGE_HEADER, "es",
+                        TREATMENT_HEADER, "B"))
                 .build();
         Mockito.when(messageService.scheduleMessage(expectedMessageRequest))
                 .thenReturn(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())

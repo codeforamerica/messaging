@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,14 +22,14 @@ class CSVReaderTest {
     public void whenRequiredHeadersPresent_ThenSucceedsValidation() throws IOException {
         CSVReader reader = new CSVReader(new StringReader(testCSV));
 
-        assertTrue(reader.validateHeader(List.of("phone", "email", "language", "color", "score")));
+        assertTrue(reader.isValidHeader(Set.of("phone", "email", "language", "color", "score")));
     }
 
     @Test
     public void whenRequiredHeadersAbsent_ThenFailsValidation() throws IOException {
         CSVReader reader = new CSVReader(new StringReader(testCSV));
 
-        assertFalse(reader.validateHeader(List.of("phone", "language", "color", "score")));
+        assertFalse(reader.isValidHeader(Set.of("phone", "language", "color", "score")));
     }
 
     @Test

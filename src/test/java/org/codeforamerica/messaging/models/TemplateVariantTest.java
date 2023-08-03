@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.io.IOException;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
 public class TemplateVariantTest {
     @Test
-    void whenInputHasTemplateParams_thenTemplateUsesParams() throws IOException {
+    void whenInputHasTemplateParams_thenTemplateUsesParams() {
         TemplateVariant templateVariant = TestData.aTemplateVariant().build();
         Map<String, String> templateParams = Map.of("placeholder", "testing placeholder");
 
@@ -21,5 +22,14 @@ public class TemplateVariantTest {
                 templateVariant.build(TemplateVariant::getEmailBody, templateParams));
         Assertions.assertEquals("English A Body: testing placeholder",
                 templateVariant.build(TemplateVariant::getSmsBody, templateParams));
+    }
+    @Test
+    void whenInputHasNoTemplateParams_thenExceptionIsThrown() {
+        TemplateVariant templateVariant = TestData.aTemplateVariant().build();
+        Map<String, String> templateParams = Map.of("not placeholder", "testing placeholder");
+
+        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getSubject, templateParams));
+        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getEmailBody, templateParams));
+        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getSmsBody, templateParams));
     }
 }

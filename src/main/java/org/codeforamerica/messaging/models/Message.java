@@ -18,6 +18,7 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 
 import static org.codeforamerica.messaging.models.TemplateVariant.DEFAULT_LANGUAGE;
+import static org.codeforamerica.messaging.utils.CSVReader.LANGUAGE_HEADER;
 
 @Entity
 @Data
@@ -65,8 +66,8 @@ public class Message {
     }
 
     public String getLanguage() {
-        if (this.getTemplateParams() != null && this.getTemplateParams().get("language") != null) {
-            return this.getTemplateParams().get("language");
+        if (this.getTemplateParams() != null && this.getTemplateParams().get(LANGUAGE_HEADER) != null) {
+            return this.getTemplateParams().get(LANGUAGE_HEADER);
         }
         return DEFAULT_LANGUAGE;
     }

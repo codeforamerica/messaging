@@ -20,13 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.codeforamerica.messaging.utils.CSVReader.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.times;
 
@@ -55,7 +55,7 @@ class MessageServiceTest {
     Template template;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         template = TestData.aTemplate().build();
         template = templateRepository.save(template);
         TestData.addVariantsToTemplate(template);
@@ -112,8 +112,8 @@ class MessageServiceTest {
                 .toPhone(TestData.TO_PHONE)
                 .toEmail(TestData.TO_EMAIL)
                 .templateParams(Map.of(
-                        "language", "es",
-                        "treatment", "B",
+                        LANGUAGE_HEADER, "es",
+                        TREATMENT_HEADER, "B",
                         "placeholder", "{{{placeholder}}}"))
                 .build();
         Message message = messageService.saveMessage(messageRequest, null);
@@ -127,12 +127,12 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenEnqueueingMessageBatch_thenSendMessageBatchJobRequestIsEnqueued() throws IOException {
+    void whenEnqueueingMessageBatch_thenSendMessageBatchJobRequestIsEnqueued() {
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "hello.txt",
                 MediaType.TEXT_PLAIN_VALUE,
-                "Hello, World!".getBytes()
+                "phone, email, placeholder".getBytes()
         );
 
         MessageBatchRequest messageBatchRequest = MessageBatchRequest.builder()
@@ -144,11 +144,11 @@ class MessageServiceTest {
     }
 
     @Test
-    void whenSchedulingMessageBatch_thenThatManySendMessageJobRequestsAreEnqueued() throws IOException {
+    void whenSchedulingMessageBatch_thenThatManySendMessageJobRequestsAreEnqueued() {
         String recipients = """
-                phone, email
-                1234567890,bar@example.org
-                8885551212,foo@example.com
+                phone, email, placeholder
+                1234567890,bar@example.org, placeholder
+                8885551212,foo@example.com, placeholder
                 """;
 
         MessageBatch messageBatch = MessageBatch.builder()
@@ -192,6 +192,51 @@ class MessageServiceTest {
         };
         assertThat(metricsArray).isEqualTo(new int[] {1, 0, 2, 0, 1, 1, 0, 1});
     }
+
+    @Test
+    public void whenRecipientsFileIsMissingHeader_ThenThrowException() {
+        String recipients = """
+                phone, email
+                1234567890, bar@example.org, placeholder
+                8885551212, foo@example.com, placeholder
+                """;
+
+        MessageBatch messageBatch = MessageBatch.builder()
+                .template(template)
+                .recipients(recipients.getBytes())
+                .build();
+        messageBatchRepository.save(messageBatch);
+
+        assertThrows(Exception.class, () -> messageService.scheduleMessageBatch(messageBatch.getId()));
+    }
+
+    @Test
+    public void whenRecipientInBatchHaveMissingData_ThenReportInvalidRow() {
+        String recipients = """
+                phone, email, placeholder
+                1234567890, bar@example.org
+                8885551212, foo@example.com, placeholder
+                """;
+
+        MessageBatch messageBatch = MessageBatch.builder()
+                .template(template)
+                .recipients(recipients.getBytes())
+                .build();
+        messageBatchRepository.save(messageBatch);
+
+        messageService.scheduleMessageBatch(messageBatch.getId());
+        Mockito.verify(jobRequestScheduler, times(1)).schedule(
+                (OffsetDateTime) any(),
+                isA(SendMessageJobRequest.class)
+        );
+        assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
+                .containsExactly("8885551212");
+        assertEquals(1, messageBatchRepository.findById(messageBatch.getId()).get().getRecipientErrorRows().size());
+        assertEquals("Missing template parameters: [placeholder]",
+                messageBatchRepository.findById(messageBatch.getId()).get().getRecipientErrorRows().stream()
+                        .map(row -> row.get(ERROR_HEADER)).findFirst().get());
+    }
+
 
     private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
         Message message = TestData.aMessage(originalMessageBatch.getTemplate().getTemplateVariants().stream().findFirst().get())

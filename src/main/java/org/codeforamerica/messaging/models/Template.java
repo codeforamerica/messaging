@@ -4,14 +4,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.codeforamerica.messaging.exceptions.EmptyTemplateVariantsException;
+import org.codeforamerica.messaging.exceptions.TemplateVariantExistsException;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Data
@@ -40,9 +44,9 @@ public class Template {
     @JsonIgnore
     private OffsetDateTime updateTimestamp;
 
-    public void addTemplateVariant(TemplateVariant templateVariant) throws Exception {
+    public void addTemplateVariant(TemplateVariant templateVariant) {
         if (this.templateVariants.contains(templateVariant)) {
-            throw new Exception("Template variant already exists");
+            throw new TemplateVariantExistsException("Template variant already exists");
         } else {
             this.templateVariants.add(templateVariant);
             templateVariant.setTemplate(this);
@@ -55,7 +59,7 @@ public class Template {
         templateVariant.setSubject(subject);
     }
 
-    public void mergeTemplateVariant(TemplateVariant templateVariant) throws Exception {
+    public void mergeTemplateVariant(TemplateVariant templateVariant) {
         Optional<TemplateVariant> existingTemplateVariant =
                 this.getTemplateVariant(templateVariant.getLanguage(), templateVariant.getTreatment());
         if (existingTemplateVariant.isPresent()) {
@@ -70,9 +74,10 @@ public class Template {
         }
     }
 
-    public void removeTemplateVariant(TemplateVariant templateVariant) throws Exception {
+    public void removeTemplateVariant(TemplateVariant templateVariant) {
         if (this.getTemplateVariants().size() == 1) {
-            throw new Exception("Cannot delete last variant on template - delete parent template instead");
+            throw new EmptyTemplateVariantsException(
+                    "Cannot delete last variant on template - delete parent template instead");
         }
         this.getTemplateVariants().removeIf(tv -> tv.equals(templateVariant));
     }
@@ -82,5 +87,13 @@ public class Template {
                 .filter(templateVariant -> templateVariant.getLanguage().equals(language))
                 .filter(templateVariant -> templateVariant.getTreatment().equals(treatment))
                 .findAny();
+    }
+
+    @JsonIgnore
+    public Set<String> getAllPlaceholders() {
+        return this.templateVariants.stream()
+                .map(TemplateVariant::getAllPlaceholders)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 }

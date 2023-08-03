@@ -15,7 +15,7 @@ public class SendMessageBatchJobRequestHandler implements JobRequestHandler<Send
 
     @Override
     @Job(name="SendMessageBatch %0")
-    public void run(SendMessageBatchJobRequest sendMessageBatchJobRequest) throws Exception {
+    public void run(SendMessageBatchJobRequest sendMessageBatchJobRequest) {
         messageService.scheduleMessageBatch(sendMessageBatchJobRequest.getMessageBatchId());
     }
 }

@@ -8,9 +8,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Data
@@ -33,4 +37,6 @@ public class MessageBatch {
     private OffsetDateTime updateTimestamp;
     @Transient
     MessageBatchMetrics metrics;
+    @JdbcTypeCode(SqlTypes.JSON)
+    List<Map<String, String>> recipientErrorRows;
 }
