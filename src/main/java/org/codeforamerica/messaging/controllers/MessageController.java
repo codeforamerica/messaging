@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 
@@ -41,7 +40,7 @@ public class MessageController {
 
     @PostMapping(path="/message_batches", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     @Operation(summary = "Send a message batch")
-    public ResponseEntity<MessageBatch> createMessageBatch(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) throws IOException {
+    public ResponseEntity<MessageBatch> createMessageBatch(@Valid @ModelAttribute MessageBatchRequest messageBatchRequest) {
         MessageBatch messageBatch = messageService.enqueueMessageBatch(messageBatchRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path(
@@ -53,21 +52,15 @@ public class MessageController {
 
     @GetMapping("/messages/{id}")
     @Operation(summary = "Get a message status")
-    public ResponseEntity<Optional<Message>> getMessage(@PathVariable Long id) {
+    public ResponseEntity<Message> getMessage(@PathVariable Long id) {
         Optional<Message> message = messageService.getMessage(id);
-        if (message.isPresent()) {
-            return ResponseEntity.ok(message);
-        }
-        return ResponseEntity.notFound().build();
+        return message.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping(path="/message_batches/{id}")
     @Operation(summary = "Get a message batch status")
-    public ResponseEntity<Optional<MessageBatch>> getMessageBatch(@PathVariable Long id) {
+    public ResponseEntity<MessageBatch> getMessageBatch(@PathVariable Long id) {
         Optional<MessageBatch> messageBatch = messageService.getMessageBatch(id);
-        if (messageBatch.isPresent()) {
-            return ResponseEntity.ok(messageBatch);
-        }
-        return ResponseEntity.notFound().build();
+        return messageBatch.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

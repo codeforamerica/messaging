@@ -1,6 +1,10 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.ElementNotFoundException;
+import org.codeforamerica.messaging.exceptions.EmptyTemplateVariantsException;
+import org.codeforamerica.messaging.exceptions.TemplateExistsException;
+import org.codeforamerica.messaging.exceptions.TemplateInUseException;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.models.TemplateVariant;
 import org.codeforamerica.messaging.models.TemplateVariantRequest;
@@ -9,7 +13,6 @@ import org.codeforamerica.messaging.repositories.TemplateRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,34 +32,35 @@ public class TemplateService {
         return (List<Template>) templateRepository.findAll();
     }
 
-    public Optional<Template> getTemplateByName(String name) {
-        return templateRepository.findFirstByNameIgnoreCase(name.strip());
+    public Template getTemplateByName(String name) {
+        return templateRepository.findFirstByNameIgnoreCase(name.strip()).orElseThrow(() ->
+                new ElementNotFoundException("Template not found: %s".formatted(name)));
     }
 
-    public Template createTemplate(Template template) throws Exception {
-        Optional<Template> existingTemplate = getTemplateByName(template.getName());
+    public Template createTemplate(Template template) {
+        Optional<Template> existingTemplate = templateRepository.findFirstByNameIgnoreCase(template.getName().strip());
         if (existingTemplate.isPresent()) {
-            throw new Exception("Template name is taken");
+            throw new TemplateExistsException("Template name is taken");
         }
         if (template.getTemplateVariants().isEmpty()) {
-            throw new Exception("At least one template variant is required");
+            throw new EmptyTemplateVariantsException("At least one template variant is required");
         }
         template.getTemplateVariants().forEach(templateVariant -> templateVariant.setTemplate(template));
         return templateRepository.save(template);
     }
 
-    public void deleteTemplateAndVariants(String templateName) throws Exception {
-        Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
+    public void deleteTemplateAndVariants(String templateName) {
+        Template template = getTemplateByName(templateName);
         if (template.getTemplateVariants().stream().anyMatch(this::isTemplateVariantInUse)) {
-            throw new Exception("At least one template variant is currently in use and cannot be deleted");
+            throw new TemplateInUseException("At least one template variant is currently in use and cannot be deleted");
         }
         templateRepository.delete(template);
     }
 
-    public Template modifyTemplateVariants(String templateName, Set<TemplateVariant> newTemplateVariants) throws Exception {
-        Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
+    public Template modifyTemplateVariants(String templateName, Set<TemplateVariant> newTemplateVariants) {
+        Template template = getTemplateByName(templateName);
         if (isAnyTemplateVariantInUse(template, newTemplateVariants)) {
-            throw new Exception("Cannot update a template variant that is already in use, list not updated");
+            throw new TemplateInUseException("Cannot update a template variant that is already in use, list not updated");
         }
         newTemplateVariants.forEach(templateVariant -> {
             try {
@@ -70,8 +74,8 @@ public class TemplateService {
             String templateName,
             String language,
             String treatment,
-            TemplateVariantRequest templateVariantRequest) throws Exception {
-        Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
+            TemplateVariantRequest templateVariantRequest) {
+        Template template = getTemplateByName(templateName);
         template.mergeTemplateVariant(TemplateVariant.builder()
                 .subject(templateVariantRequest.getSubject())
                 .emailBody(templateVariantRequest.getEmailBody())
@@ -82,11 +86,13 @@ public class TemplateService {
         return templateRepository.save(template);
     }
 
-    public Template deleteTemplateVariant(String templateName, String language, String treatment) throws Exception {
-        Template template = getTemplateByName(templateName).orElseThrow(NoSuchElementException::new);
-        TemplateVariant templateVariant = template.getTemplateVariant(language, treatment).orElseThrow(NoSuchElementException::new);
+    public Template deleteTemplateVariant(String templateName, String language, String treatment) {
+        Template template = getTemplateByName(templateName);
+        TemplateVariant templateVariant = template.getTemplateVariant(language, treatment).orElseThrow(() ->
+                new ElementNotFoundException("TemplateVariant not found: name=%s; language=%s; treatment=%s"
+                        .formatted(templateName, language, treatment)));
         if (isTemplateVariantInUse(templateVariant)) {
-            throw new Exception("Template variant is currently in use and cannot be deleted");
+            throw new TemplateInUseException("Template variant is currently in use and cannot be deleted");
         }
         template.removeTemplateVariant(templateVariant);
         return templateRepository.save(template);

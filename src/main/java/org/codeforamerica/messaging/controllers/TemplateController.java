@@ -14,7 +14,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -36,13 +35,13 @@ public class TemplateController {
     @GetMapping("/{name}")
     @Operation(summary = "Get a template and its variants")
     public ResponseEntity<Template> getTemplateByName(@PathVariable String name) {
-        Optional<Template> template = templateService.getTemplateByName(name);
-        return template.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        Template template = templateService.getTemplateByName(name);
+        return new ResponseEntity<>(template, HttpStatus.OK);
     }
 
     @PostMapping
     @Operation(summary = "Create a template with at least one variant")
-    public ResponseEntity<Template> createTemplate(@Valid @RequestBody Template template) throws Exception {
+    public ResponseEntity<Template> createTemplate(@Valid @RequestBody Template template) {
         Template createdTemplate = templateService.createTemplate(template);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
@@ -54,15 +53,14 @@ public class TemplateController {
 
     @DeleteMapping("/{name}")
     @Operation(summary = "Delete a template and its variants")
-    public ResponseEntity<?> deleteTemplate(@PathVariable String name) throws Exception {
+    public ResponseEntity<?> deleteTemplate(@PathVariable String name) {
         templateService.deleteTemplateAndVariants(name);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{name}")
     @Operation(summary = "Create or modify a list of template variants")
-    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<@Valid TemplateVariant> templateVariants)
-            throws Exception {
+    public ResponseEntity<Template> modifyTemplateVariants(@PathVariable String name, @RequestBody Set<@Valid TemplateVariant> templateVariants) {
         Template modifiedTemplate = templateService.modifyTemplateVariants(name, templateVariants);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
@@ -77,7 +75,7 @@ public class TemplateController {
     public ResponseEntity<Template> deleteTemplateVariant(
             @PathVariable String name,
             @PathVariable String language,
-            @PathVariable String treatment) throws Exception {
+            @PathVariable String treatment) {
         Template modifiedTemplate = templateService.deleteTemplateVariant(name, language, treatment);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")
@@ -93,7 +91,7 @@ public class TemplateController {
             @PathVariable String name,
             @PathVariable String language,
             @PathVariable String treatment,
-            @Valid @RequestBody TemplateVariantRequest templateVariantRequest) throws Exception {
+            @Valid @RequestBody TemplateVariantRequest templateVariantRequest) {
         Template modifiedTemplate = templateService.mergeTemplateVariant(name, language, treatment, templateVariantRequest);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{name}")

@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.endsWith;
@@ -62,16 +61,6 @@ public class TemplateControllerTest {
                 .thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/api/v1/templates"))
-                .andExpect(MockMvcResultMatchers.status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
-    public void whenAuthenticatedAndNoTemplatesWithMatchingName_thenNotFound() throws Exception {
-        Mockito.when(templateService.getTemplateByName(TestData.TEMPLATE_NAME))
-                .thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/v1/templates/" + TestData.TEMPLATE_NAME))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
@@ -140,7 +129,7 @@ public class TemplateControllerTest {
                 """;
 
         Mockito.when(templateService.getTemplateByName(TEMPLATE_WITH_VARIANTS.getName()))
-                .thenReturn(Optional.of(TEMPLATE_WITH_VARIANTS));
+                .thenReturn(TEMPLATE_WITH_VARIANTS);
 
         mockMvc.perform(get("/api/v1/templates/" + TEMPLATE_WITH_VARIANTS.getName()))
                 .andExpect(MockMvcResultMatchers.status().isOk())
