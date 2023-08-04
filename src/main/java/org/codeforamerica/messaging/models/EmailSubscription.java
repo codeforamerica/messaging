@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,9 +27,7 @@ public class EmailSubscription {
     @NotBlank
     @Email
     private String email;
-    @NotNull
     private boolean unsubscribed;
-    @NotBlank
     private boolean sourceInternal;
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
