@@ -199,16 +199,6 @@ class MessageServiceTest {
                 .smsStatus(smsStatus)
                 .emailStatus(emailStatus)
                 .build();
-        if (emailStatus != null) {
-            EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
-            emailMessage = emailMessageRepository.save(emailMessage);
-            message.setEmailMessage(emailMessage);
-        }
-        if (smsStatus != null) {
-            SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
-            smsMessage = smsMessageRepository.save(smsMessage);
-            message.setSmsMessage(smsMessage);
-        }
         messageRepository.save(message);
     }
 
