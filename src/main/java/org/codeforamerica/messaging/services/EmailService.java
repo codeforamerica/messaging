@@ -25,7 +25,7 @@ public class EmailService {
         this.emailSubscriptionRepository = emailSubscriptionRepository;
     }
 
-    public EmailMessage sendEmailMessage (String toEmail, String body, String subject) throws MessageSendException {
+    public EmailMessage sendEmailMessage(String toEmail, String body, String subject) throws MessageSendException {
         EmailMessage message;
         if (!unsubscribed(toEmail)) {
             message = mailgunGateway.sendMessage(toEmail, body, subject);
