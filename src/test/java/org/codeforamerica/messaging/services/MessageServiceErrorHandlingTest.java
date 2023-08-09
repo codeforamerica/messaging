@@ -60,8 +60,8 @@ public class MessageServiceErrorHandlingTest {
 
         messageService.sendMessage(message.getId());
         Message attemptedMessage = messageRepository.findById(message.getId()).get();
-        assertEquals(attemptedMessage.getSmsStatus(), "failed");
-        assertEquals(attemptedMessage.getSmsErrorMessage(), "Houston, we have a problem");
+        assertEquals("submission_failed", attemptedMessage.getSmsStatus());
+        assertEquals("Houston, we have a problem", attemptedMessage.getSmsErrorMessage());
     }
 
     @Test
@@ -72,8 +72,8 @@ public class MessageServiceErrorHandlingTest {
 
         messageService.sendMessage(message.getId());
         Message attemptedMessage = messageRepository.findById(message.getId()).get();
-        assertEquals(attemptedMessage.getEmailStatus(), "failed");
-        assertEquals(attemptedMessage.getEmailErrorMessage(), "Houston, we have a problem");
+        assertEquals("submission_failed", attemptedMessage.getEmailStatus());
+        assertEquals("Houston, we have a problem", attemptedMessage.getEmailErrorMessage());
     }
 
 }

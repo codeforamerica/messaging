@@ -112,11 +112,11 @@ public class MessageService implements MessageSourceAware {
                 String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
                 message.setSmsMessage(sentSmsMessage);
-                message.setSmsStatus("provider_accepted");
+                message.setSmsStatus("submission_succeeded");
                 messageRepository.save(message);
             } catch (Exception e) {
                 log.error("Error sending SMS", e);
-                message.setSmsStatus("failed");
+                message.setSmsStatus("submission_failed");
                 message.setSmsErrorMessage(e.getMessage());
                 messageRepository.save(message);
             }
@@ -128,7 +128,7 @@ public class MessageService implements MessageSourceAware {
                 emailBody = addUnsubscribeFooter(message, emailBody);
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
-                message.setEmailStatus("provider_accepted");
+                message.setEmailStatus("submission_succeeded");
                 messageRepository.save(message);
             } catch (UnsubscribedException e) {
                 message.setEmailStatus("unsubscribed");
@@ -136,7 +136,7 @@ public class MessageService implements MessageSourceAware {
                 messageRepository.save(message);
             } catch (Exception e) {
                 log.error("Error sending email", e);
-                message.setEmailStatus("failed");
+                message.setEmailStatus("submission_failed");
                 message.setEmailErrorMessage(e.getMessage());
                 messageRepository.save(message);
             }
