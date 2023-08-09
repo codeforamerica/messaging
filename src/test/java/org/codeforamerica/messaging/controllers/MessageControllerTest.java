@@ -6,7 +6,6 @@ import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.MessageBatch;
 import org.codeforamerica.messaging.models.MessageRequest;
 import org.codeforamerica.messaging.services.MessageService;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.endsWith;
 import static org.mockito.ArgumentMatchers.any;
@@ -40,30 +38,6 @@ public class MessageControllerTest {
     public void getMessageUnauthenticated() throws Exception {
         mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser
-    @Disabled("TODO: This should be set to api_success or similar")
-    public void whenAuthenticatedAndPhoneAndHasAssociatedSmsMessage_ThenStatusCompleted() throws Exception {
-        String expectedResponse = """
-                {
-                    id: %s,
-                    smsStatus: "completed",
-                    toPhone: "%s"
-                }
-                """.formatted(TestData.BASE_ID, TestData.TO_PHONE);
-
-        Mockito.when(messageService.getMessage(any()))
-                .thenReturn(Optional.of(TestData.aMessage(TestData.aTemplateVariant().template(TestData.aTemplate().build()).build())
-                        .id(TestData.BASE_ID)
-                        .toPhone(TestData.TO_PHONE)
-                        .smsMessage(TestData.anSmsMessage().build())
-                        .build()));
-
-        mockMvc.perform(get("/api/v1/messages/" + TestData.BASE_ID))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect((MockMvcResultMatchers.content().json(expectedResponse)));
     }
 
     @Test
