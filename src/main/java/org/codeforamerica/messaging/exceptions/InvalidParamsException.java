@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.Set;
 
 @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Error applying parameters to template")
-public class ParamsInvalidException extends RuntimeException {
+public class InvalidParamsException extends RuntimeException {
 
-    public ParamsInvalidException(Set<String> templateParamKeys, IOException e) {
+    public InvalidParamsException(Set<String> templateParamKeys, IOException e) {
         super(templateParamKeys.toString(), e);
     }
 }

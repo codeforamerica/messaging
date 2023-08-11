@@ -1,9 +1,9 @@
 package org.codeforamerica.messaging.services;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.DuplicateTemplateException;
 import org.codeforamerica.messaging.exceptions.ElementNotFoundException;
 import org.codeforamerica.messaging.exceptions.EmptyTemplateVariantsException;
-import org.codeforamerica.messaging.exceptions.TemplateExistsException;
 import org.codeforamerica.messaging.exceptions.TemplateInUseException;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.models.TemplateVariant;
@@ -40,7 +40,7 @@ public class TemplateService {
     public Template createTemplate(Template template) {
         Optional<Template> existingTemplate = templateRepository.findFirstByNameIgnoreCase(template.getName().strip());
         if (existingTemplate.isPresent()) {
-            throw new TemplateExistsException("Template name is taken");
+            throw new DuplicateTemplateException("Template name is taken");
         }
         if (template.getTemplateVariants().isEmpty()) {
             throw new EmptyTemplateVariantsException("At least one template variant is required");

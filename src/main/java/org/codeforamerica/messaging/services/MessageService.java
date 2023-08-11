@@ -68,17 +68,6 @@ public class MessageService implements MessageSourceAware {
         return scheduleMessage(messageRequest, null);
     }
 
-    public Message scheduleMessage(MessageBatch messageBatch, Map<String, String> recipient) {
-        MessageRequest messageRequest = MessageRequest.builder()
-                .toPhone(recipient.get(PHONE_HEADER))
-                .toEmail(recipient.get(EMAIL_HEADER))
-                .templateName(messageBatch.getTemplate().getName())
-                .templateParams(recipient)
-                .sendAt(messageBatch.getSendAt())
-                .build();
-        return scheduleMessage(messageRequest, messageBatch);
-    }
-
     public MessageBatch enqueueMessageBatch(MessageBatchRequest messageBatchRequest) {
         Template template = templateService.getTemplateByName(messageBatchRequest.getTemplateName());
         byte[] recipients;
@@ -93,7 +82,7 @@ public class MessageService implements MessageSourceAware {
                 .filter(templateHeader -> !csvReader.getHeaderNames().contains(templateHeader))
                 .collect(Collectors.toSet());
         if (!missingTemplatePlaceholders.isEmpty()) {
-            throw new RecipientsFileMissingHeadersException("Recipients file is missing template placeholders: %s"
+            throw new MissingCSVHeadersException("Recipients file is missing template placeholders: %s"
                     .formatted(missingTemplatePlaceholders));
         }
 
@@ -114,7 +103,7 @@ public class MessageService implements MessageSourceAware {
                 .filter(tag -> !messageRequest.getTemplateParams().containsKey(tag))
                 .collect(Collectors.toSet());
         if (!missingParams.isEmpty()) {
-            throw new ParamsMissingException(missingParams);
+            throw new MissingParamsException(missingParams);
         }
         Message message = Message.builder()
                 .templateVariant(templateVariant)
@@ -212,8 +201,16 @@ public class MessageService implements MessageSourceAware {
         log.info("Scheduling messages in batch #{}", messageBatchId);
         List<Map<String, String>> recipientErrorRows = new LinkedList<>();
         csvReader.stream().forEach(row -> {
+            MessageRequest messageRequest = MessageRequest.builder()
+                    .toPhone(row.get(PHONE_HEADER))
+                    .toEmail(row.get(EMAIL_HEADER))
+                    .templateName(messageBatch.getTemplate().getName())
+                    .templateParams(row)
+                    .sendAt(messageBatch.getSendAt())
+                    .build();
+
             try {
-                this.scheduleMessage(messageBatch, row);
+                this.scheduleMessage(messageRequest, messageBatch);
             } catch (Exception e) {
                 row.put(ERROR_HEADER, e.getMessage());
                 recipientErrorRows.add(row);
