@@ -8,9 +8,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.exceptions.InvalidParamsException;
 import org.codeforamerica.messaging.exceptions.InvalidTemplateException;
-import org.codeforamerica.messaging.exceptions.ParamsInvalidException;
-import org.codeforamerica.messaging.exceptions.ParamsMissingException;
+import org.codeforamerica.messaging.exceptions.MissingParamsException;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -71,7 +71,7 @@ public class TemplateVariant implements Messageable {
     }
 
     public String build(Function<TemplateVariant, String> templateFieldGetter, Map<String, String> templateParams) {
-        com.github.jknack.handlebars.Template handlebarsTemplate = convertStringToTemplate(templateFieldGetter.apply(this));
+        com.github.jknack.handlebars.Template handlebarsTemplate = convertStringToHandlebarsTemplate(templateFieldGetter.apply(this));
         if (handlebarsTemplate == null) {
             return null;
         }
@@ -79,16 +79,16 @@ public class TemplateVariant implements Messageable {
                 .filter(not(templateParams::containsKey))
                 .collect(Collectors.toSet());
         if (!missingParams.isEmpty()) {
-            throw new ParamsMissingException(missingParams);
+            throw new MissingParamsException(missingParams);
         }
         try {
             return handlebarsTemplate.apply(templateParams);
         } catch (IOException e) {
-            throw new ParamsInvalidException(templateParams.keySet(), e);
+            throw new InvalidParamsException(templateParams.keySet(), e);
         }
     }
 
-    com.github.jknack.handlebars.Template convertStringToTemplate(String templateString) {
+    com.github.jknack.handlebars.Template convertStringToHandlebarsTemplate(String templateString) {
         if (templateString == null) {
             return null;
         }
@@ -107,7 +107,7 @@ public class TemplateVariant implements Messageable {
     }
 
     Set<String> getPlaceholdersInTemplateVariantField(Function<TemplateVariant, String> templateFieldGetter) {
-        com.github.jknack.handlebars.Template handlebarsTemplate = convertStringToTemplate(templateFieldGetter.apply(this));
+        com.github.jknack.handlebars.Template handlebarsTemplate = convertStringToHandlebarsTemplate(templateFieldGetter.apply(this));
         return handlebarsTemplate == null ? Set.of() : getPlaceholdersInTemplateVariantField(handlebarsTemplate);
     }
 

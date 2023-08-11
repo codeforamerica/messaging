@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import org.codeforamerica.messaging.exceptions.DuplicateTemplateVariantException;
 import org.codeforamerica.messaging.exceptions.EmptyTemplateVariantsException;
-import org.codeforamerica.messaging.exceptions.TemplateVariantExistsException;
 import org.codeforamerica.messaging.validators.ValidMessageable;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -46,7 +46,7 @@ public class Template {
 
     public void addTemplateVariant(TemplateVariant templateVariant) {
         if (this.templateVariants.contains(templateVariant)) {
-            throw new TemplateVariantExistsException("Template variant already exists");
+            throw new DuplicateTemplateVariantException("Template variant already exists");
         } else {
             this.templateVariants.add(templateVariant);
             templateVariant.setTemplate(this);
