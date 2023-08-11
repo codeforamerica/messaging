@@ -157,7 +157,7 @@ class MessageServiceTest {
                 .build();
         messageBatchRepository.save(messageBatch);
 
-        messageService.scheduleMessageBatch(messageBatch.getId());
+        messageService.scheduleMessagesInBatch(messageBatch.getId());
         Mockito.verify(jobRequestScheduler, times(2)).schedule(
                 (OffsetDateTime) any(),
                 isA(SendMessageJobRequest.class)
@@ -201,13 +201,12 @@ class MessageServiceTest {
                 8885551212, foo@example.com, placeholder
                 """;
 
-        MessageBatch messageBatch = MessageBatch.builder()
-                .template(template)
-                .recipients(recipients.getBytes())
+        MessageBatchRequest messageBatchRequest = MessageBatchRequest.builder()
+                .templateName(template.getName())
+                .recipients(new MockMultipartFile("testfile", recipients.getBytes()))
                 .build();
-        messageBatchRepository.save(messageBatch);
 
-        assertThrows(Exception.class, () -> messageService.scheduleMessageBatch(messageBatch.getId()));
+        assertThrows(Exception.class, () -> messageService.enqueueMessageBatch(messageBatchRequest));
     }
 
     @Test
@@ -224,7 +223,7 @@ class MessageServiceTest {
                 .build();
         messageBatchRepository.save(messageBatch);
 
-        messageService.scheduleMessageBatch(messageBatch.getId());
+        messageService.scheduleMessagesInBatch(messageBatch.getId());
         Mockito.verify(jobRequestScheduler, times(1)).schedule(
                 (OffsetDateTime) any(),
                 isA(SendMessageJobRequest.class)

@@ -196,23 +196,20 @@ public class MessageService implements MessageSourceAware {
                                 .formatted(messageRequest.getTemplateName(), language, treatment)));
     }
 
-    public void scheduleMessageBatch(Long messageBatchId)  {
-        MessageBatch messageBatch = messageBatchRepository.findById(messageBatchId).orElseThrow(() ->
-                new RuntimeException("MessageBatch not found: %s".formatted(messageBatchId)));
+    public void scheduleMessagesInBatch(Long messageBatchId)  {
+        MessageBatch messageBatch = messageBatchRepository.findById(messageBatchId).orElseThrow(() -> {
+            log.error("Could not find batch #{} after being scheduled", messageBatchId);
+            return null;
+        });
         CSVReader csvReader;
         try {
             csvReader = new CSVReader(new InputStreamReader(new ByteArrayInputStream(messageBatch.getRecipients())));
         } catch (IOException e) {
-            throw new InvalidRecipientsFileException(e);
+            log.error("Could not read recipients file in batch #{} after being scheduled", messageBatchId, e);
+            return;
         }
 
-        Template template = messageBatch.getTemplate();
-        Set<String> missingHeaders = template.getAllPlaceholders().stream()
-                .filter(templateHeader -> !csvReader.getHeaderNames().contains(templateHeader))
-                .collect(Collectors.toSet());
-        if (!missingHeaders.isEmpty()) {
-            throw new RecipientsFileMissingHeadersException("Recipients file is missing headers: %s".formatted(missingHeaders));
-        }
+        log.info("Scheduling messages in batch #{}", messageBatchId);
         List<Map<String, String>> recipientErrorRows = new LinkedList<>();
         csvReader.stream().forEach(row -> {
             try {
