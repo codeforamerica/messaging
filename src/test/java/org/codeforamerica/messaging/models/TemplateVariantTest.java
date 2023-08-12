@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.models;
 
 import org.codeforamerica.messaging.TestData;
+import org.codeforamerica.messaging.exceptions.MissingParamsException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,8 +29,8 @@ public class TemplateVariantTest {
         TemplateVariant templateVariant = TestData.aTemplateVariant().build();
         Map<String, String> templateParams = Map.of("not placeholder", "testing placeholder");
 
-        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getSubject, templateParams));
-        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getEmailBody, templateParams));
-        assertThrows(Exception.class, () -> templateVariant.build(TemplateVariant::getSmsBody, templateParams));
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getSubject, templateParams));
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getEmailBody, templateParams));
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getSmsBody, templateParams));
     }
 }

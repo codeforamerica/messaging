@@ -1,6 +1,9 @@
 package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.TestData;
+import org.codeforamerica.messaging.exceptions.DuplicateTemplateException;
+import org.codeforamerica.messaging.exceptions.EmptyTemplateVariantsException;
+import org.codeforamerica.messaging.exceptions.TemplateInUseException;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.models.TemplateVariant;
@@ -38,7 +41,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenCreatingAValidTemplate_thenSaveTemplate() throws Exception {
+    void whenCreatingAValidTemplate_thenSaveTemplate() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
 
@@ -49,19 +52,19 @@ class TemplateServiceTest {
     @Test
     void whenCreatingATemplateWithMissingTemplateVariants_thenDoNotSaveTemplate() {
         Template template = TestData.aTemplate().build();
-        assertThrows(Exception.class, () -> templateService.createTemplate(template));
+        assertThrows(EmptyTemplateVariantsException.class, () -> templateService.createTemplate(template));
     }
 
     @Test
-    void whenCreatingATemplateWithADuplicateName_thenDoNotSaveTemplate() throws Exception {
+    void whenCreatingATemplateWithADuplicateName_thenDoNotSaveTemplate() {
         templateRepository.save(TestData.aTemplate().build());
         Template template2 = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template2);
-        assertThrows(Exception.class, () -> templateService.createTemplate(template2));
+        assertThrows(DuplicateTemplateException.class, () -> templateService.createTemplate(template2));
     }
 
     @Test
-    void whenDeletingAnUnusedTemplate_thenDoNotThrowAnException() throws Exception {
+    void whenDeletingAnUnusedTemplate_thenDoNotThrowAnException() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -71,7 +74,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenDeletingATemplateWithOneUnusedTemplateVariantAndOneUsed_thenDoNotChangeAnything() throws Exception {
+    void whenDeletingATemplateWithOneUnusedTemplateVariantAndOneUsed_thenDoNotChangeAnything() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -79,12 +82,12 @@ class TemplateServiceTest {
         Message message = TestData.aMessage(templateVariant).build();
         messageRepository.save(message);
 
-        assertThrows(Exception.class, () -> templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME));
+        assertThrows(TemplateInUseException.class, () -> templateService.deleteTemplateAndVariants(TestData.TEMPLATE_NAME));
         assertEquals(Optional.of(template), templateRepository.findFirstByNameIgnoreCase(template.getName()));
     }
 
     @Test
-    void whenAddingNonDuplicateTemplateVariants_thenAddAllTemplateVariants() throws Exception {
+    void whenAddingNonDuplicateTemplateVariants_thenAddAllTemplateVariants() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -98,7 +101,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenAddingDuplicateOfUnusedTemplateVariant_thenUpdateDuplicateTemplateVariant() throws Exception {
+    void whenAddingDuplicateOfUnusedTemplateVariant_thenUpdateDuplicateTemplateVariant() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -116,7 +119,7 @@ class TemplateServiceTest {
     }
 
     @Test
-    void whenAddingDuplicateOfUsedTemplateVariant_thenRejectTheDuplicate() throws Exception {
+    void whenAddingDuplicateOfUsedTemplateVariant_thenRejectTheDuplicate() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         template = templateRepository.save(template);
@@ -125,26 +128,26 @@ class TemplateServiceTest {
         messageRepository.save(message);
 
         Set<TemplateVariant> newTemplateVariants = Set.of(TestData.aTemplateVariant().smsBody("new body").subject(null).build());
-        assertThrows(Exception.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants));
+        assertThrows(TemplateInUseException.class, () -> templateService.modifyTemplateVariants(TestData.TEMPLATE_NAME, newTemplateVariants));
         assertEquals(Optional.of(template), templateRepository.findFirstByNameIgnoreCase(template.getName()));
     }
 
     @Test
     @Transactional
-    void whenDeletingTheLastTemplateVariant_thenDoNotDelete() throws Exception {
+    void whenDeletingTheLastTemplateVariant_thenDoNotDelete() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
 
         template = templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "es", "B");
         assertTrue(template.getTemplateVariant("es", "B").isEmpty());
-        assertThrows(Exception.class, () ->
+        assertThrows(EmptyTemplateVariantsException.class, () ->
                 templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "en", "A"));
         assertFalse(template.getTemplateVariants().isEmpty());
     }
 
     @Test
-    void whenDeletingAUsedTemplateVariant_thenDoNotDelete() throws Exception {
+    void whenDeletingAUsedTemplateVariant_thenDoNotDelete() {
         Template template = TestData.aTemplate().build();
         TestData.addVariantsToTemplate(template);
         templateRepository.save(template);
@@ -152,7 +155,7 @@ class TemplateServiceTest {
         Message message = TestData.aMessage(templateVariant).build();
         messageRepository.save(message);
 
-        assertThrows(Exception.class, () ->
+        assertThrows(TemplateInUseException.class, () ->
                 templateService.deleteTemplateVariant(TestData.TEMPLATE_NAME, "es", "B"));
         assertTrue(template.getTemplateVariant("es", "B").isPresent());
     }

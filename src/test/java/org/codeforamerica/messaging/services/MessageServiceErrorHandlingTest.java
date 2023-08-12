@@ -38,7 +38,7 @@ public class MessageServiceErrorHandlingTest {
     TemplateRepository templateRepository;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         template = TestData.aTemplate().build();
         template = templateRepository.save(template);
         TestData.addVariantsToTemplate(template);
