@@ -2,6 +2,7 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
 import org.springframework.http.HttpStatus;
@@ -34,8 +35,13 @@ public class TwilioCallbackController {
             log.error("Signature verification failed");
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
+        String rawMessageStatus = request.getParameter("MessageStatus");
+        if (ignorable(rawMessageStatus)) {
+            return ResponseEntity.ok().build();
+        }
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(request.getParameter("MessageSid"));
-        smsMessage.getMessage().setSmsStatus(request.getParameter("MessageStatus"));
+        smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
+        smsMessage.getMessage().setSmsStatus(mapTwilioStatusToMessageStatus(rawMessageStatus));
         smsMessage.setFromPhone(request.getParameter("From"));
         if (hadError(smsMessage)) {
             smsMessage.setProviderError(buildProviderError(request));
@@ -44,9 +50,13 @@ public class TwilioCallbackController {
         return ResponseEntity.ok().build();
     }
 
+    private boolean ignorable(String rawMessageStatus) {
+        return rawMessageStatus.equals("sending") || rawMessageStatus.equals("sent");
+    }
+
     private static boolean hadError(SmsMessage smsMessage) {
-        String status = smsMessage.getMessage().getSmsStatus();
-        return status.equals("failed") || status.equals("undelivered");
+        MessageStatus status = smsMessage.getMessage().getSmsStatus();
+        return status == MessageStatus.failed || status == MessageStatus.undelivered;
     }
 
     private static Map<String, String> buildProviderError(HttpServletRequest request) {
@@ -56,5 +66,16 @@ public class TwilioCallbackController {
             providerError.put("errorMessage", request.getParameter("ErrorMessage"));
         }
         return providerError;
+    }
+
+    private MessageStatus mapTwilioStatusToMessageStatus(String rawTwilioStatus) {
+        return switch (rawTwilioStatus) {
+            case "queued", "accepted" -> MessageStatus.queued;
+            case "sent" -> MessageStatus.sent;
+            case "failed" -> MessageStatus.failed;
+            case "delivered" -> MessageStatus.delivered;
+            case "undelivered" -> MessageStatus.undelivered;
+            default -> MessageStatus.unmapped;
+        };
     }
 }

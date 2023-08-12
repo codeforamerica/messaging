@@ -5,6 +5,7 @@ import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
 import org.junit.jupiter.api.Test;
@@ -21,8 +22,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -63,7 +63,7 @@ public class MailgunCallbackControllerTest {
                                     }
                                 """.formatted(TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        assertEquals("delivered", emailMessage.getMessage().getEmailStatus());
+        assertEquals(MessageStatus.delivered, emailMessage.getMessage().getEmailStatus());
     }
 
     @Test
@@ -137,6 +137,7 @@ public class MailgunCallbackControllerTest {
         assertTrue(emailSubscription.isUnsubscribed());
         assertEquals(emailSubscription.getEmail(), recipient);
         assertTrue(emailSubscription.isSourceInternal());
+        assertNotEquals(MessageStatus.unsubscribed, message.getEmailStatus());
     }
 
     @Test

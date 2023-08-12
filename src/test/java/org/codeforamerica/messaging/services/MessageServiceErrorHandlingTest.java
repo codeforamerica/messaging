@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.services;
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.Message;
+import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.Template;
 import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.repositories.TemplateRepository;
@@ -60,7 +61,7 @@ public class MessageServiceErrorHandlingTest {
 
         messageService.sendMessage(message.getId());
         Message attemptedMessage = messageRepository.findById(message.getId()).get();
-        assertEquals("submission_failed", attemptedMessage.getSmsStatus());
+        assertEquals(MessageStatus.submission_failed, attemptedMessage.getSmsStatus());
         assertEquals("Houston, we have a problem", attemptedMessage.getSmsErrorMessage());
     }
 
@@ -72,7 +73,7 @@ public class MessageServiceErrorHandlingTest {
 
         messageService.sendMessage(message.getId());
         Message attemptedMessage = messageRepository.findById(message.getId()).get();
-        assertEquals("submission_failed", attemptedMessage.getEmailStatus());
+        assertEquals(MessageStatus.submission_failed, attemptedMessage.getEmailStatus());
         assertEquals("Houston, we have a problem", attemptedMessage.getEmailErrorMessage());
     }
 
