@@ -127,11 +127,11 @@ public class MessageService implements MessageSourceAware {
                 String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
                 message.setSmsMessage(sentSmsMessage);
-                message.setSmsStatus("submission_succeeded");
+                message.setSmsStatus(MessageStatus.submission_succeeded);
                 messageRepository.save(message);
             } catch (Exception e) {
                 log.error("Error sending SMS", e);
-                message.setSmsStatus("submission_failed");
+                message.setSmsStatus(MessageStatus.submission_failed);
                 message.setSmsErrorMessage(e.getMessage());
                 messageRepository.save(message);
             }
@@ -143,15 +143,15 @@ public class MessageService implements MessageSourceAware {
                 emailBody = addUnsubscribeFooter(message, emailBody);
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
                 message.setEmailMessage(sentEmailMessage);
-                message.setEmailStatus("submission_succeeded");
+                message.setEmailStatus(MessageStatus.submission_succeeded);
                 messageRepository.save(message);
             } catch (UnsubscribedException e) {
-                message.setEmailStatus("unsubscribed");
+                message.setEmailStatus(MessageStatus.unsubscribed);
                 message.setEmailErrorMessage(e.getMessage());
                 messageRepository.save(message);
             } catch (Exception e) {
                 log.error("Error sending email", e);
-                message.setEmailStatus("submission_failed");
+                message.setEmailStatus(MessageStatus.submission_failed);
                 message.setEmailErrorMessage(e.getMessage());
                 messageRepository.save(message);
             }

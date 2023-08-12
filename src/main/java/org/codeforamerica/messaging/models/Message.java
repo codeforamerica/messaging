@@ -26,6 +26,7 @@ import static org.codeforamerica.messaging.utils.CSVReader.LANGUAGE_HEADER;
 @NoArgsConstructor
 @Builder
 public class Message {
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
@@ -40,14 +41,21 @@ public class Message {
     String toEmail;
     @ManyToOne
     MessageBatch messageBatch;
+
     @OneToOne(cascade = CascadeType.REMOVE)
     private SmsMessage smsMessage;
-    private String smsStatus;
+    private String rawSmsStatus;
+    @Enumerated(EnumType.STRING)
+    private MessageStatus smsStatus;
     private String smsErrorMessage;
+
     @OneToOne(cascade = CascadeType.REMOVE)
     private EmailMessage emailMessage;
-    private String emailStatus;
+    private String rawEmailStatus;
+    @Enumerated(EnumType.STRING)
+    private MessageStatus emailStatus;
     private String emailErrorMessage;
+
     @CreationTimestamp
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp

@@ -1,12 +1,16 @@
 package org.codeforamerica.messaging.models;
 
 public interface MessageBatchMetrics {
-    Integer getAcceptedEmailCount();
-    Integer getRejectedEmailCount();
+    Integer getQueuedEmailCount();
+    Integer getFailedEmailCount();
     Integer getDeliveredEmailCount();
     Integer getUndeliveredEmailCount();
-    Integer getAcceptedSmsCount();
-    Integer getRejectedSmsCount();
+    Integer getUnsubscribedEmailCount();
+    Integer getUnmappedEmailCount();
+    Integer getQueuedSmsCount();
+    Integer getFailedSmsCount();
     Integer getDeliveredSmsCount();
     Integer getUndeliveredSmsCount();
+    Integer getUnsubscribedSmsCount();
+    Integer getUnmappedSmsCount();
 }

@@ -175,23 +175,30 @@ class MessageServiceTest {
     public void whenMessagesInBatchHaveDifferentStatuses_ThenGetReturnsCorrectStatusCounts() {
         MessageBatch originalMessageBatch = TestData.aMessageBatch().template(template).build();
         messageBatchRepository.save(originalMessageBatch);
-        addMessage(originalMessageBatch, "delivered", "rejected");
-        addMessage(originalMessageBatch, "delivered", "undelivered");
-        addMessage(originalMessageBatch, null, "accepted");
-        addMessage(originalMessageBatch, "accepted", null);
+        addMessage(originalMessageBatch, MessageStatus.delivered, MessageStatus.delivered);
+        addMessage(originalMessageBatch, MessageStatus.delivered, MessageStatus.failed);
+        addMessage(originalMessageBatch, MessageStatus.unsubscribed, MessageStatus.delivered);
+        addMessage(originalMessageBatch, MessageStatus.delivered, MessageStatus.undelivered);
+        addMessage(originalMessageBatch, null, MessageStatus.queued);
+        addMessage(originalMessageBatch, MessageStatus.queued, null);
+        addMessage(originalMessageBatch, MessageStatus.unmapped, MessageStatus.unsubscribed);
 
         MessageBatch messageBatch = messageService.getMessageBatch(originalMessageBatch.getId()).get();
         int[] metricsArray = new int[] {
-                messageBatch.getMetrics().getAcceptedEmailCount(),
-                messageBatch.getMetrics().getRejectedEmailCount(),
+                messageBatch.getMetrics().getQueuedEmailCount(),
+                messageBatch.getMetrics().getFailedEmailCount(),
                 messageBatch.getMetrics().getDeliveredEmailCount(),
                 messageBatch.getMetrics().getUndeliveredEmailCount(),
-                messageBatch.getMetrics().getAcceptedSmsCount(),
-                messageBatch.getMetrics().getRejectedSmsCount(),
+                messageBatch.getMetrics().getUnsubscribedEmailCount(),
+                messageBatch.getMetrics().getUnmappedEmailCount(),
+                messageBatch.getMetrics().getQueuedSmsCount(),
+                messageBatch.getMetrics().getFailedSmsCount(),
                 messageBatch.getMetrics().getDeliveredSmsCount(),
                 messageBatch.getMetrics().getUndeliveredSmsCount(),
+                messageBatch.getMetrics().getUnsubscribedSmsCount(),
+                messageBatch.getMetrics().getUnmappedSmsCount(),
         };
-        assertThat(metricsArray).isEqualTo(new int[] {1, 0, 2, 0, 1, 1, 0, 1});
+        assertThat(metricsArray).isEqualTo(new int[] {1, 0, 3, 0, 1, 1, 1, 1, 2, 1, 1, 0});
     }
 
     @Test
@@ -237,7 +244,7 @@ class MessageServiceTest {
                         .map(row -> row.get(ERROR_HEADER)).findFirst().get());
     }
 
-    private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
+    private void addMessage(MessageBatch originalMessageBatch, MessageStatus emailStatus, MessageStatus smsStatus) {
         Message message = TestData.aMessage(originalMessageBatch.getTemplate().getTemplateVariants().stream().findFirst().get())
                 .messageBatch(originalMessageBatch)
                 .smsStatus(smsStatus)
@@ -245,5 +252,4 @@ class MessageServiceTest {
                 .build();
         messageRepository.save(message);
     }
-
 }

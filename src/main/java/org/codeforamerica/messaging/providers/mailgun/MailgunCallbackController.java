@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.models.EmailMessage;
 import org.codeforamerica.messaging.models.EmailSubscription;
+import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
 import org.springframework.http.HttpStatus;
@@ -41,12 +42,16 @@ public class MailgunCallbackController {
 
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(
                 requestJSON.at("/event-data/message/headers/message-id").textValue());
-        String status = requestJSON.at("/event-data/event").textValue();
+        String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
+        if (rawEmailStatus.equals("unsubscribed")) {
+            unsubscribeEmail(requestJSON);
+            return ResponseEntity.ok().build();
+        }
+        MessageStatus status = mapMailgunStatustoMessageStatus(rawEmailStatus);
+        emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
         emailMessage.getMessage().setEmailStatus(status);
         if (hadError(status)) {
             emailMessage.setProviderError(buildProviderError(requestJSON, status));
-        } else if (status.equals("unsubscribed")) {
-            unsubscribeEmail(requestJSON);
         }
 
         emailMessageRepository.save(emailMessage);
@@ -64,22 +69,32 @@ public class MailgunCallbackController {
                 .build());
     }
 
-    private static boolean hadError(String status) {
-        return status.equals("failed") || status.equals("rejected");
+    private static boolean hadError(MessageStatus status) {
+        return status == MessageStatus.failed || status == MessageStatus.undelivered;
     }
 
-    private static Map<String, String> buildProviderError(JsonNode requestJSON, String status) {
+    private static Map<String, String> buildProviderError(JsonNode requestJSON, MessageStatus status) {
         Map<String, String> providerError = new HashMap<>();
-        if (status.equals("failed")) {
+        if (status == MessageStatus.undelivered) {
             providerError.put("severity",requestJSON.at("/event-data/severity").textValue());
             providerError.put("reason",requestJSON.at("/event-data/reason").textValue());
             providerError.put("errorCode",requestJSON.at("/event-data/delivery-status/code").asText());
             providerError.put("errorMessage",requestJSON.at("/event-data/delivery-status/message").textValue());
             providerError.put("errorDescription",requestJSON.at("/event-data/delivery-status/description").textValue());
-        } else if (status.equals("rejected")) {
+        } else if (status == MessageStatus.failed) {
             providerError.put("reason",requestJSON.at("/event-data/reject/reason").textValue());
             providerError.put("errorDescription",requestJSON.at("/event-data/reject/description").textValue());
         }
         return providerError;
+    }
+
+    private MessageStatus mapMailgunStatustoMessageStatus(String rawMailgunStatus) {
+        return switch (rawMailgunStatus) {
+            case "accepted" -> MessageStatus.queued;
+            case "rejected" -> MessageStatus.failed;
+            case "delivered" -> MessageStatus.delivered;
+            case "failed" -> MessageStatus.undelivered;
+            default -> MessageStatus.unmapped;
+        };
     }
 }
