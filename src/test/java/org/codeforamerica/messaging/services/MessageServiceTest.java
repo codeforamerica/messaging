@@ -2,7 +2,7 @@ package org.codeforamerica.messaging.services;
 
 import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
-import org.codeforamerica.messaging.exceptions.MissingCSVHeadersException;
+import org.codeforamerica.messaging.exceptions.MissingHeadersException;
 import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
 import org.codeforamerica.messaging.jobs.SendMessageJobRequest;
 import org.codeforamerica.messaging.models.*;
@@ -207,7 +207,7 @@ class MessageServiceTest {
                 .recipients(new MockMultipartFile("testfile", recipients.getBytes()))
                 .build();
 
-        assertThrows(MissingCSVHeadersException.class, () -> messageService.enqueueMessageBatch(messageBatchRequest));
+        assertThrows(MissingHeadersException.class, () -> messageService.enqueueMessageBatch(messageBatchRequest));
     }
 
     @Test

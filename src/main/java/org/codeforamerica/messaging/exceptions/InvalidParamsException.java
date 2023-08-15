@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import java.io.IOException;
 import java.util.Set;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Error applying parameters to template")
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class InvalidParamsException extends RuntimeException {
 
     public InvalidParamsException(Set<String> templateParamKeys, IOException e) {
