@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.io.IOException;
 
-@ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Error reading recipients file")
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 public class InvalidRecipientsFileException extends RuntimeException {
 
     public InvalidRecipientsFileException(IOException e) {
