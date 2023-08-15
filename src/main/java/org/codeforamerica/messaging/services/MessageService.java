@@ -22,6 +22,8 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.function.Predicate.not;
+import static org.codeforamerica.messaging.exceptions.MissingRecipientInfoHeadersException.RECIPIENT_INFO_HEADERS;
 import static org.codeforamerica.messaging.utils.CSVReader.*;
 
 
@@ -78,12 +80,16 @@ public class MessageService implements MessageSourceAware {
         } catch (IOException e) {
             throw new InvalidRecipientsFileException(e);
         }
+
+        List<String> csvHeaderNames = csvReader.getHeaderNames();
+        if (RECIPIENT_INFO_HEADERS.stream().noneMatch(csvHeaderNames::contains)) {
+            throw new MissingRecipientInfoHeadersException(RECIPIENT_INFO_HEADERS);
+        }
         Set<String> missingTemplatePlaceholders = template.getAllPlaceholders().stream()
-                .filter(templateHeader -> !csvReader.getHeaderNames().contains(templateHeader))
+                .filter(not(csvHeaderNames::contains))
                 .collect(Collectors.toSet());
         if (!missingTemplatePlaceholders.isEmpty()) {
-            throw new MissingCSVHeadersException("Recipients file is missing template placeholders: %s"
-                    .formatted(missingTemplatePlaceholders));
+            throw new MissingTemplateHeadersException(missingTemplatePlaceholders);
         }
 
         MessageBatch messageBatch = MessageBatch.builder()
