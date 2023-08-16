@@ -23,8 +23,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.function.Predicate.not;
-
 @Slf4j
 @Entity
 @Data
@@ -75,12 +73,7 @@ public class TemplateVariant implements Messageable {
         if (handlebarsTemplate == null) {
             return null;
         }
-        Set<String> missingParams = getPlaceholdersInTemplateVariantField(handlebarsTemplate).stream()
-                .filter(not(templateParams::containsKey))
-                .collect(Collectors.toSet());
-        if (!missingParams.isEmpty()) {
-            throw new MissingParamsException(missingParams);
-        }
+        checkForMissingPlaceholders(getPlaceholdersInTemplateVariantField(handlebarsTemplate), templateParams);
         try {
             return handlebarsTemplate.apply(templateParams);
         } catch (IOException e) {
@@ -118,5 +111,14 @@ public class TemplateVariant implements Messageable {
         templateTags.addAll(getPlaceholdersInTemplateVariantField(TemplateVariant::getEmailBody));
         templateTags.addAll(getPlaceholdersInTemplateVariantField(TemplateVariant::getSmsBody));
         return templateTags;
+    }
+
+    public static void checkForMissingPlaceholders(Set<String> expectedPlaceholders, Map<String, String> inputPlaceholders) {
+        Set<String> missingParams = expectedPlaceholders.stream()
+            .filter(key -> !inputPlaceholders.containsKey(key) || inputPlaceholders.get(key).isBlank())
+            .collect(Collectors.toSet());
+        if (!missingParams.isEmpty()) {
+            throw new MissingParamsException(missingParams);
+        }
     }
 }

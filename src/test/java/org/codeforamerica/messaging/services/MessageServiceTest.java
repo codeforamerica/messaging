@@ -214,7 +214,7 @@ class MessageServiceTest {
     public void whenRecipientInBatchHaveMissingData_ThenReportInvalidRow() {
         String recipients = """
                 phone, email, placeholder
-                1234567890, bar@example.org
+                1234567890, bar@example.org,
                 8885551212, foo@example.com, placeholder
                 """;
 
@@ -236,7 +236,6 @@ class MessageServiceTest {
                 messageBatchRepository.findById(messageBatch.getId()).get().getRecipientErrorRows().stream()
                         .map(row -> row.get(ERROR_HEADER)).findFirst().get());
     }
-
 
     private void addMessage(MessageBatch originalMessageBatch, String emailStatus, String smsStatus) {
         Message message = TestData.aMessage(originalMessageBatch.getTemplate().getTemplateVariants().stream().findFirst().get())
