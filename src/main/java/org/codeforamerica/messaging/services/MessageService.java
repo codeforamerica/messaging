@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 import static org.codeforamerica.messaging.exceptions.MissingRecipientInfoHeadersException.RECIPIENT_INFO_HEADERS;
+import static org.codeforamerica.messaging.models.TemplateVariant.checkForMissingPlaceholders;
 import static org.codeforamerica.messaging.utils.CSVReader.*;
 
 
@@ -105,12 +106,7 @@ public class MessageService implements MessageSourceAware {
 
     public Message saveMessage(MessageRequest messageRequest, MessageBatch messageBatch) {
         TemplateVariant templateVariant = getTemplateVariant(messageRequest);
-        Set<String> missingParams = templateVariant.getAllPlaceholders().stream()
-                .filter(tag -> !messageRequest.getTemplateParams().containsKey(tag))
-                .collect(Collectors.toSet());
-        if (!missingParams.isEmpty()) {
-            throw new MissingParamsException(missingParams);
-        }
+        checkForMissingPlaceholders(templateVariant.getAllPlaceholders(), messageRequest.getTemplateParams());
         Message message = Message.builder()
                 .templateVariant(templateVariant)
                 .templateParams(messageRequest.getTemplateParams())

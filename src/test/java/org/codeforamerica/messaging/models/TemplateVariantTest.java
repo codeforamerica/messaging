@@ -24,10 +24,21 @@ public class TemplateVariantTest {
         Assertions.assertEquals("English A Body: testing placeholder",
                 templateVariant.build(TemplateVariant::getSmsBody, templateParams));
     }
+
     @Test
     void whenInputHasNoTemplateParams_thenExceptionIsThrown() {
         TemplateVariant templateVariant = TestData.aTemplateVariant().build();
         Map<String, String> templateParams = Map.of("not placeholder", "testing placeholder");
+
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getSubject, templateParams));
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getEmailBody, templateParams));
+        assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getSmsBody, templateParams));
+    }
+
+    @Test
+    void whenInputHasBlankTemplateParams_thenExceptionIsThrown() {
+        TemplateVariant templateVariant = TestData.aTemplateVariant().build();
+        Map<String, String> templateParams = Map.of("placeholder", "");
 
         assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getSubject, templateParams));
         assertThrows(MissingParamsException.class, () -> templateVariant.build(TemplateVariant::getEmailBody, templateParams));
