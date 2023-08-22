@@ -35,15 +35,12 @@ public class EmailService {
     }
 
     public EmailMessage sendEmailMessage(String toEmail, String body, String subject) throws MessageSendException {
-        EmailMessage message;
-        if (!unsubscribed(toEmail)) {
-            message = mailgunGateway.sendMessage(toEmail, body, subject);
-            message = emailMessageRepository.save(message);
-        } else {
+        if (unsubscribed(toEmail)) {
             log.error("Skipping unsubscribed email");
             throw new UnsubscribedException();
         }
-        return message;
+        EmailMessage message = mailgunGateway.sendMessage(toEmail, body, subject);
+        return emailMessageRepository.save(message);
     }
 
     private boolean unsubscribed(String toEmail) {

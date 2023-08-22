@@ -2,10 +2,14 @@ package org.codeforamerica.messaging.repositories;
 
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageBatchMetrics;
+import org.codeforamerica.messaging.models.PhoneNumber;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.List;
 
 public interface MessageRepository extends CrudRepository<Message, Long> {
     Collection<Message> findMessagesByMessageBatchId(long messageBatchId);
@@ -29,4 +33,16 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
             WHERE msg.messageBatch.id = ?1
              """)
     MessageBatchMetrics getMetrics(Long messageBatchId);
+
+    @Query("""
+           SELECT msg FROM Message msg WHERE
+            ((:toEmail IS NULL OR msg.toEmail = :toEmail) OR (:toPhone IS NULL OR msg.toPhone = :toPhone))
+            AND msg.templateVariant.template.name = :templateName
+            AND msg.updateTimestamp > :updateTimestamp
+    """)
+    List<Message> findRecipientMessagesWithSameTemplateUpdatedRecently(
+        @Param("toEmail") String toEmail,
+        @Param("toPhone") PhoneNumber toPhone,
+        @Param("templateName") String templateName,
+        @Param("updateTimestamp") OffsetDateTime updateTimestamp);
 }

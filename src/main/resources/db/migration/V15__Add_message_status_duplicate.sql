@@ -1,0 +1,1 @@
+alter type message_status add value 'duplicate' before 'submission_succeeded';

@@ -15,6 +15,10 @@ public class TestData {
     public static final String TEMPLATE_NAME = "default template name";
     public static final String TEMPLATE_SUBJECT_DEFAULT = "English A Subject: {{{placeholder}}}";
     public static final String TEMPLATE_BODY_DEFAULT = "English A Body: {{{placeholder}}}";
+    public static final String TEMPLATE_SUBJECT_EN_B = "English B Subject: {{{placeholder}}}";
+    public static final String TEMPLATE_BODY_EN_B = "English B Body: {{{placeholder}}}";
+    public static final String TEMPLATE_SUBJECT_ES_A = "Spanish A Subject: {{{placeholder}}}";
+    public static final String TEMPLATE_BODY_ES_A = "Spanish A Body: {{{placeholder}}}";
     public static final String TEMPLATE_SUBJECT_ES_B = "Spanish B Subject: {{{placeholder}}}";
     public static final String TEMPLATE_BODY_ES_B = "Spanish B Body: {{{placeholder}}}";
 

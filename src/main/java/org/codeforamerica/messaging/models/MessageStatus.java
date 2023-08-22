@@ -1,6 +1,7 @@
 package org.codeforamerica.messaging.models;
 
 public enum MessageStatus {
+    duplicate,
     submission_succeeded,
     submission_failed,
     unmapped,
@@ -13,5 +14,9 @@ public enum MessageStatus {
 
     public boolean isAfter(MessageStatus other) {
         return other == null || compareTo(other) > 0;
+    }
+
+    public boolean hadError() {
+        return this == MessageStatus.failed || this == MessageStatus.undelivered;
     }
 }
