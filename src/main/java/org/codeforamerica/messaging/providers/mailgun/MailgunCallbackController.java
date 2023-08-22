@@ -54,13 +54,9 @@ public class MailgunCallbackController {
     private void enqueueStatusUpdate(JsonNode requestJSON, String providerMessageId,
             String rawEmailStatus) {
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
-        Map<String, String> providerError = hadError(newEmailStatus) ? buildProviderError(requestJSON, newEmailStatus) : null;
+        Map<String, String> providerError = newEmailStatus.hadError() ? buildProviderError(requestJSON, newEmailStatus) : null;
         jobRequestScheduler.enqueue(
                 new EmailMessageStatusUpdateJobRequest(providerMessageId, rawEmailStatus, newEmailStatus, providerError));
-    }
-
-    private static boolean hadError(MessageStatus status) {
-        return status == MessageStatus.failed || status == MessageStatus.undelivered;
     }
 
     private static Map<String, String> buildProviderError(JsonNode requestJSON, MessageStatus status) {

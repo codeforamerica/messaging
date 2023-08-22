@@ -11,6 +11,7 @@ import org.codeforamerica.messaging.repositories.MessageRepository;
 import org.codeforamerica.messaging.utils.CSVReader;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.lang.Nullable;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.OffsetDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
@@ -39,6 +41,9 @@ public class MessageService implements MessageSourceAware {
     private final TemplateService templateService;
     private final JobRequestScheduler jobRequestScheduler;
     private MessageSource messageSource;
+
+    @Value("${message.duplicate-suppression-window-duration-in-hours}")
+    private long duplicateMessageSuppressionHours = 23;
 
     public MessageService(SmsService smsService,
             EmailService emailService,
@@ -125,43 +130,56 @@ public class MessageService implements MessageSourceAware {
         TemplateVariant templateVariant = message.getTemplateVariant();
         Map<String, String> templateParams = message.getTemplateParams();
         if (message.needToSendSms()) {
-            try {
-                String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
-                SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
-                log.info("Sending sms for message #{}, providerMessageId: {}", messageId, sentSmsMessage.getProviderMessageId());
-                message.setSmsMessage(sentSmsMessage);
-                message.setSmsStatus(MessageStatus.submission_succeeded);
+            if (duplicateSentRecently(message, Message::getToPhone)) {
+                message.setSmsStatus(MessageStatus.duplicate);
+                message.setSmsErrorMessage("Duplicate message");
                 messageRepository.save(message);
-            } catch (UnsubscribedException e) {
-                message.setSmsStatus(MessageStatus.unsubscribed);
-                message.setSmsErrorMessage(e.getMessage());
-                messageRepository.save(message);
-            } catch (Exception e) {
-                log.error("Error sending SMS", e);
-                message.setSmsStatus(MessageStatus.submission_failed);
-                message.setSmsErrorMessage(e.getMessage());
-                messageRepository.save(message);
+            } else {
+                try {
+                    String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
+                    SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
+                    log.info("Sending sms for message #{}, providerMessageId: {}", messageId,
+                        sentSmsMessage.getProviderMessageId());
+                    message.setSmsMessage(sentSmsMessage);
+                    message.setSmsStatus(MessageStatus.submission_succeeded);
+                    messageRepository.save(message);
+                } catch (UnsubscribedException e) {
+                    message.setSmsStatus(MessageStatus.unsubscribed);
+                    message.setSmsErrorMessage(e.getMessage());
+                    messageRepository.save(message);
+                } catch (Exception e) {
+                    log.error("Error sending SMS", e);
+                    message.setSmsStatus(MessageStatus.submission_failed);
+                    message.setSmsErrorMessage(e.getMessage());
+                    messageRepository.save(message);
+                }
             }
         }
         if (message.needToSendEmail()) {
-            try {
-                String subject = templateVariant.build(TemplateVariant::getSubject, templateParams);
-                String emailBody = templateVariant.build(TemplateVariant::getEmailBody, templateParams);
-                emailBody = addUnsubscribeFooter(message, emailBody);
-                EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
-                log.info("Sending email for message #{}, providerMessageId: {}", messageId, sentEmailMessage.getProviderMessageId());
-                message.setEmailMessage(sentEmailMessage);
-                message.setEmailStatus(MessageStatus.submission_succeeded);
+            if (duplicateSentRecently(message, Message::getToEmail)) {
+                message.setEmailStatus(MessageStatus.duplicate);
+                message.setEmailErrorMessage("Duplicate message");
                 messageRepository.save(message);
-            } catch (UnsubscribedException e) {
-                message.setEmailStatus(MessageStatus.unsubscribed);
-                message.setEmailErrorMessage(e.getMessage());
-                messageRepository.save(message);
-            } catch (Exception e) {
-                log.error("Error sending email", e);
-                message.setEmailStatus(MessageStatus.submission_failed);
-                message.setEmailErrorMessage(e.getMessage());
-                messageRepository.save(message);
+            } else {
+                try {
+                    String subject = templateVariant.build(TemplateVariant::getSubject, templateParams);
+                    String emailBody = templateVariant.build(TemplateVariant::getEmailBody, templateParams);
+                    emailBody = addUnsubscribeFooter(message, emailBody);
+                    EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
+                    log.info("Sending email for message #{}, providerMessageId: {}", messageId, sentEmailMessage.getProviderMessageId());
+                    message.setEmailMessage(sentEmailMessage);
+                    message.setEmailStatus(MessageStatus.submission_succeeded);
+                    messageRepository.save(message);
+                } catch (UnsubscribedException e) {
+                    message.setEmailStatus(MessageStatus.unsubscribed);
+                    message.setEmailErrorMessage(e.getMessage());
+                    messageRepository.save(message);
+                } catch (Exception e) {
+                    log.error("Error sending email", e);
+                    message.setEmailStatus(MessageStatus.submission_failed);
+                    message.setEmailErrorMessage(e.getMessage());
+                    messageRepository.save(message);
+                }
             }
         }
     }
@@ -228,5 +246,43 @@ public class MessageService implements MessageSourceAware {
         });
         messageBatch.setRecipientErrorRows(recipientErrorRows);
         messageBatchRepository.save(messageBatch);
+    }
+
+    /**
+     * Finds either a duplicate SMS or Email, depending on the results from recipientInfoGetter.
+     *
+     * @param messageToCompare An unsent message to check against before sending
+     * @param recipientInfoGetter Function that returns either an email or a phone number and determines the type of message the duplicate check should look for
+     * @return True if there was an SMS sent to a phone number, or an email sent to an email address, in the last 23 hours
+     */
+    private boolean duplicateSentRecently(Message messageToCompare, Function<Message, Object> recipientInfoGetter) {
+        Function<Message, MessageStatus> messageStatusGetter;
+        Object recipientInfo = recipientInfoGetter.apply(messageToCompare);
+        String recipientEmail = null;
+        PhoneNumber recipientPhone = null;
+        if (recipientInfo instanceof PhoneNumber) {
+            recipientPhone = messageToCompare.getToPhone();
+            messageStatusGetter = Message::getSmsStatus;
+        } else {
+            recipientEmail = messageToCompare.getToEmail();
+            messageStatusGetter = Message::getEmailStatus;
+        }
+
+        List<Message> recipientMessagesInWindow = messageRepository.findRecipientMessagesWithSameTemplateUpdatedRecently(
+            recipientEmail, recipientPhone, messageToCompare.getTemplateName(),
+            OffsetDateTime.now().minusHours(duplicateMessageSuppressionHours));
+        return recipientMessagesInWindow.stream()
+            // If there was an error sending a message then it will not be considered a duplicate
+            .filter(sentMessage -> {
+                MessageStatus messageStatus = messageStatusGetter.apply(sentMessage);
+                return messageStatus != null && !messageStatus.hadError();
+            })
+            // Duplicates can be any treatment as long as the language and all other templateParams are the same
+            .anyMatch(sentMessage -> {
+                Map<String, String> sentTemplateParams = sentMessage.getTemplateParams();
+                sentTemplateParams.remove(TREATMENT_HEADER);
+                messageToCompare.getTemplateParams().remove(TREATMENT_HEADER);
+                return sentTemplateParams.equals(messageToCompare.getTemplateParams());
+            });
     }
 }

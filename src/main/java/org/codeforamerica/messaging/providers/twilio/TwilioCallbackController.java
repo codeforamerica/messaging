@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.providers.twilio;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.jobs.SmsMessageStatusUpdateJobRequest;
+import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.PhoneNumber;
 import org.codeforamerica.messaging.services.SmsService;
@@ -53,7 +54,7 @@ public class TwilioCallbackController {
             String rawMessageStatus) {
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
         String fromPhone = request.getParameter("From");
-        Map<String, String> providerError = hadError(newSmsStatus) ? buildProviderError(request) : null;
+        Map<String, String> providerError = newSmsStatus.hadError() ? buildProviderError(request) : null;
         jobRequestScheduler.enqueue(
                 new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus,
                         PhoneNumber.valueOf(fromPhone),
@@ -84,10 +85,6 @@ public class TwilioCallbackController {
 
     private boolean ignorable(String rawMessageStatus) {
         return rawMessageStatus.equals("sending") || rawMessageStatus.equals("sent");
-    }
-
-    private static boolean hadError(MessageStatus status) {
-        return status == MessageStatus.failed || status == MessageStatus.undelivered;
     }
 
     private static Map<String, String> buildProviderError(HttpServletRequest request) {

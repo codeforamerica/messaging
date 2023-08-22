@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "message.duplicate-suppression-window-duration-in-hours",
+      "type": "java.lang.String",
+      "description": "Duplicate messages within this window will not be sent. Set to zero for testing outside of production."
+    }
+  ]
+}
