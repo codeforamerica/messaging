@@ -126,6 +126,7 @@ public class MessageService implements MessageSourceAware {
             try {
                 String smsBody = templateVariant.build(TemplateVariant::getSmsBody, templateParams);
                 SmsMessage sentSmsMessage = this.smsService.sendSmsMessage(message.getToPhone(), smsBody);
+                log.info("Sending sms for message #{}, providerMessageId: {}", messageId, sentSmsMessage.getProviderMessageId());
                 message.setSmsMessage(sentSmsMessage);
                 message.setSmsStatus(MessageStatus.submission_succeeded);
                 messageRepository.save(message);
@@ -142,6 +143,7 @@ public class MessageService implements MessageSourceAware {
                 String emailBody = templateVariant.build(TemplateVariant::getEmailBody, templateParams);
                 emailBody = addUnsubscribeFooter(message, emailBody);
                 EmailMessage sentEmailMessage = this.emailService.sendEmailMessage(message.getToEmail(), emailBody, subject);
+                log.info("Sending email for message #{}, providerMessageId: {}", messageId, sentEmailMessage.getProviderMessageId());
                 message.setEmailMessage(sentEmailMessage);
                 message.setEmailStatus(MessageStatus.submission_succeeded);
                 messageRepository.save(message);
