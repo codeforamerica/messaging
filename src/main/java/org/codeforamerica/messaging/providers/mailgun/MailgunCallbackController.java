@@ -35,26 +35,32 @@ public class MailgunCallbackController {
 
     @PostMapping(path = "/status")
     public ResponseEntity<Object> updateStatus(@RequestBody JsonNode requestJSON) {
+        String providerMessageId = requestJSON.at("/event-data/message/headers/message-id").textValue();
+
         if (!mailgunSignatureVerificationService.verifySignature(requestJSON)) {
-            log.error("Signature verification failed");
+            log.error("Signature verification failed. Provider message id: {}", providerMessageId);
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
 
-        EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(
-                requestJSON.at("/event-data/message/headers/message-id").textValue());
+        EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
         String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
         if (rawEmailStatus.equals("unsubscribed")) {
             unsubscribeEmail(requestJSON);
             return ResponseEntity.ok().build();
         }
-        MessageStatus status = mapMailgunStatustoMessageStatus(rawEmailStatus);
-        emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
-        emailMessage.getMessage().setEmailStatus(status);
-        if (hadError(status)) {
-            emailMessage.setProviderError(buildProviderError(requestJSON, status));
+        MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
+        MessageStatus oldEmailStatus = emailMessage.getMessage().getEmailStatus();
+        if (oldEmailStatus == null || newEmailStatus.compareTo(oldEmailStatus) > 0) {
+            log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newEmailStatus);
+            emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
+            emailMessage.getMessage().setEmailStatus(newEmailStatus);
+            if (hadError(newEmailStatus)) {
+                emailMessage.setProviderError(buildProviderError(requestJSON, newEmailStatus));
+            }
+            emailMessageRepository.save(emailMessage);
+        } else {
+            log.info("Ignoring earlier status {}", newEmailStatus);
         }
-
-        emailMessageRepository.save(emailMessage);
 
         return ResponseEntity.ok().build();
     }

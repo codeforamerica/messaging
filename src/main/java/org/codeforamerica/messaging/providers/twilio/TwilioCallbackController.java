@@ -31,22 +31,30 @@ public class TwilioCallbackController {
 
     @PostMapping(path = "/status", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public ResponseEntity<Object> updateStatus(HttpServletRequest request) {
+        String providerMessageId = request.getParameter("MessageSid");
         if (!twilioSignatureVerificationService.verifySignature(request)) {
-            log.error("Signature verification failed");
+            log.error("Signature verification failed. Provider message id: {}", providerMessageId);
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
         String rawMessageStatus = request.getParameter("MessageStatus");
         if (ignorable(rawMessageStatus)) {
             return ResponseEntity.ok().build();
         }
-        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(request.getParameter("MessageSid"));
-        smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
-        smsMessage.getMessage().setSmsStatus(mapTwilioStatusToMessageStatus(rawMessageStatus));
-        smsMessage.setFromPhone(request.getParameter("From"));
-        if (hadError(smsMessage)) {
-            smsMessage.setProviderError(buildProviderError(request));
+        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
+        MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
+        MessageStatus oldSmsStatus = smsMessage.getMessage().getSmsStatus();
+        if (oldSmsStatus == null || newSmsStatus.compareTo(oldSmsStatus) > 0) {
+            log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newSmsStatus);
+            smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
+            smsMessage.getMessage().setSmsStatus(newSmsStatus);
+            smsMessage.setFromPhone(request.getParameter("From"));
+            if (hadError(smsMessage)) {
+                smsMessage.setProviderError(buildProviderError(request));
+            }
+            smsMessageRepository.save(smsMessage);
+        } else {
+            log.info("Ignoring earlier status {}", newSmsStatus);
         }
-        smsMessageRepository.save(smsMessage);
         return ResponseEntity.ok().build();
     }
 
