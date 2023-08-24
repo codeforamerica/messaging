@@ -9,5 +9,9 @@ public enum MessageStatus {
     sent,
     failed,
     delivered,
-    undelivered
+    undelivered;
+
+    public boolean isAfter(MessageStatus other) {
+        return other == null || compareTo(other) > 0;
+    }
 }

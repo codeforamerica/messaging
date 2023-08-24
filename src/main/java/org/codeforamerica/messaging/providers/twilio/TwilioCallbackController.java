@@ -42,8 +42,8 @@ public class TwilioCallbackController {
         }
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
-        MessageStatus oldSmsStatus = smsMessage.getMessage().getSmsStatus();
-        if (oldSmsStatus == null || newSmsStatus.compareTo(oldSmsStatus) > 0) {
+        MessageStatus currentSmsStatus = smsMessage.getMessage().getSmsStatus();
+        if (newSmsStatus.isAfter(currentSmsStatus)) {
             log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newSmsStatus);
             smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
             smsMessage.getMessage().setSmsStatus(newSmsStatus);

@@ -49,8 +49,8 @@ public class MailgunCallbackController {
             return ResponseEntity.ok().build();
         }
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
-        MessageStatus oldEmailStatus = emailMessage.getMessage().getEmailStatus();
-        if (oldEmailStatus == null || newEmailStatus.compareTo(oldEmailStatus) > 0) {
+        MessageStatus currentEmailStatus = emailMessage.getMessage().getEmailStatus();
+        if (newEmailStatus.isAfter(currentEmailStatus)) {
             log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newEmailStatus);
             emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
             emailMessage.getMessage().setEmailStatus(newEmailStatus);
