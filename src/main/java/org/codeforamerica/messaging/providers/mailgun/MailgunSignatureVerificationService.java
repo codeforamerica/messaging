@@ -36,9 +36,16 @@ public class MailgunSignatureVerificationService {
         String token = requestJSON.at("/signature/token").textValue();
         String providedSignature = requestJSON.at("/signature/signature").textValue();
 
-        byte[] hmacSha256 = mac.doFinal((timeStamp+token).getBytes());
-        String hmacSha256InHex = String.format("%064x", new BigInteger(1, hmacSha256));
-        return hmacSha256InHex.equals(providedSignature);
+        try {
+            Mac clonedMac = (Mac) this.mac.clone(); // Clone as javax.crypto is not thread safe
+            byte[] hmacSha256 = clonedMac.doFinal((timeStamp+token).getBytes());
+            String hmacSha256InHex = String.format("%064x", new BigInteger(1, hmacSha256));
+            log.info("timeStamp: {}, token: {}, providedSignature: {}, computedSignature: {}", timeStamp, token, providedSignature, hmacSha256InHex);
+            return hmacSha256InHex.equals(providedSignature);
+        } catch (CloneNotSupportedException e) {
+            log.error("Error cloning Mac", e);
+        }
+        return false;
     }
 
 }
