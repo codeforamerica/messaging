@@ -96,6 +96,60 @@ public class TwilioCallbackControllerTest {
     }
 
     @Test
+    public void whenNewStatusIsBeforeCurrentStatus_ThenIgnore() throws Exception {
+        String newStatus = "sent";
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).smsStatus(MessageStatus.delivered).build();
+        SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
+        Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(smsMessage);
+        Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/twilio_callbacks/status")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("MessageStatus", newStatus))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertNotEquals(newStatus, message.getRawSmsStatus());
+    }
+
+    @Test
+    public void whenNewStatusIsAfterCurrentStatus_ThenUpdateStatus() throws Exception {
+        String newStatus = "delivered";
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).smsStatus(MessageStatus.sent).build();
+        SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
+        Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(smsMessage);
+        Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/twilio_callbacks/status")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("MessageStatus", newStatus))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals(newStatus, message.getRawSmsStatus());
+    }
+
+    @Test
+    public void whenNoCurrentStatus_ThenUpdateStatus() throws Exception {
+        String newStatus = "failed";
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        SmsMessage smsMessage = TestData.anSmsMessage().message(message).build();
+        Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(smsMessage);
+        Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/twilio_callbacks/status")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("MessageStatus", newStatus))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals(newStatus, message.getRawSmsStatus());
+    }
+
+    @Test
     public void whenTrustedPortAndSignatureNotVerified_ThenUnauthorized() throws Exception {
         Mockito.when(smsMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
                 .thenReturn(TestData.anSmsMessage().build());

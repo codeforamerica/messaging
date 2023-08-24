@@ -106,6 +106,101 @@ public class MailgunCallbackControllerTest {
     }
 
     @Test
+    public void whenNewStatusIsBeforeCurrentStatus_ThenIgnore() throws Exception {
+        String newStatus = "accepted";
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).emailStatus(MessageStatus.delivered).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(emailMessage);
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "%s",
+                                            "message": {
+                                              "headers": {
+                                                "message-id": "%s"
+                                              }
+                                            }
+                                        }
+                                    }
+                                """.formatted(newStatus, TestData.PROVIDER_MESSAGE_ID)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertNotEquals(MessageStatus.queued, emailMessage.getMessage().getEmailStatus());
+    }
+
+    @Test
+    public void whenNewStatusIsAfterCurrentStatus_ThenUpdateStatus() throws Exception {
+        String newStatus = "delivered";
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).emailStatus(MessageStatus.queued).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(emailMessage);
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "%s",
+                                            "message": {
+                                              "headers": {
+                                                "message-id": "%s"
+                                              }
+                                            }
+                                        }
+                                    }
+                                """.formatted(newStatus, TestData.PROVIDER_MESSAGE_ID)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals(MessageStatus.delivered, emailMessage.getMessage().getEmailStatus());
+    }
+
+    @Test
+    public void whenNoCurrentStatus_ThenUpdateStatus() throws Exception {
+        String newStatus = "failed";
+        String severity = "permanent";
+        String reason = "bounce";
+        String errorCode = "550";
+        String errorMessage = "5.1.1 The email account that you tried to reach does not exist";
+        String errorDescription = "";
+
+        Message message = TestData.aMessage(TestData.aTemplateVariant().build()).build();
+        EmailMessage emailMessage = TestData.anEmailMessage().message(message).build();
+        Mockito.when(emailMessageRepository.findFirstByProviderMessageId(TestData.PROVIDER_MESSAGE_ID))
+                .thenReturn(emailMessage);
+        Mockito.when(mailgunSignatureVerificationService.verifySignature(any())).thenReturn(true);
+
+        mockMvc.perform(post("/public/mailgun_callbacks/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {
+                                        "event-data": {
+                                            "event": "%s",
+                                            "severity": "%s",
+                                            "reason": "%s",
+                                            "message": {
+                                              "headers": {
+                                                "message-id": "%s"
+                                              }
+                                            },
+                                            "delivery-status": {
+                                                "code": "%s",
+                                                "message": "%s",
+                                                "description" : "%s"
+                                            }
+                                        }
+                                    }
+                                """.formatted(newStatus, severity, reason, TestData.PROVIDER_MESSAGE_ID, errorCode, errorMessage, errorDescription)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        assertEquals(newStatus, emailMessage.getMessage().getRawEmailStatus());
+    }
+
+
+    @Test
     public void whenUnsubscribed_ThenSavesEmailSubscription() throws Exception {
         String recipient = "unsubscriber@example.com";
 
