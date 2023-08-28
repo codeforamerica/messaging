@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.jobs.SmsMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.PhoneNumber;
+import org.codeforamerica.messaging.services.SmsService;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
@@ -23,11 +24,14 @@ import java.util.Map;
 public class TwilioCallbackController {
 
     private final TwilioSignatureVerificationService twilioSignatureVerificationService;
+    private final SmsService smsService;
     private final JobRequestScheduler jobRequestScheduler;
 
 
-    public TwilioCallbackController(TwilioSignatureVerificationService twilioSignatureVerificationService, JobRequestScheduler jobRequestScheduler) {
+    public TwilioCallbackController(TwilioSignatureVerificationService twilioSignatureVerificationService, SmsService smsService,
+            JobRequestScheduler jobRequestScheduler) {
         this.twilioSignatureVerificationService = twilioSignatureVerificationService;
+        this.smsService = smsService;
         this.jobRequestScheduler = jobRequestScheduler;
     }
 
@@ -63,10 +67,11 @@ public class TwilioCallbackController {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
         String keyword = request.getParameter("OptOutType");
+        PhoneNumber fromPhone = PhoneNumber.valueOf(request.getParameter("From"));
         if (keyword != null) {
             switch (keyword) {
-                case "START" -> subscribe();
-                case "STOP" -> unsubscribe();
+                case "START" -> smsService.subscribe(fromPhone);
+                case "STOP" -> smsService.unsubscribe(fromPhone);
                 case "HELP" -> log.info("Help sought");
                 default -> log.info("Unexpected keyword");
             }
@@ -74,14 +79,6 @@ public class TwilioCallbackController {
             log.info("Regular inbound message");
         }
         return ResponseEntity.ok().build();
-    }
-
-    private void unsubscribe() {
-        log.info("Unsubscribing");
-    }
-
-    private void subscribe() {
-        log.info("Subscribing");
     }
 
     private boolean ignorable(String rawMessageStatus) {

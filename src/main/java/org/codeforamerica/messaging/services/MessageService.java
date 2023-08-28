@@ -132,6 +132,10 @@ public class MessageService implements MessageSourceAware {
                 message.setSmsMessage(sentSmsMessage);
                 message.setSmsStatus(MessageStatus.submission_succeeded);
                 messageRepository.save(message);
+            } catch (UnsubscribedException e) {
+                message.setSmsStatus(MessageStatus.unsubscribed);
+                message.setSmsErrorMessage(e.getMessage());
+                messageRepository.save(message);
             } catch (Exception e) {
                 log.error("Error sending SMS", e);
                 message.setSmsStatus(MessageStatus.submission_failed);
