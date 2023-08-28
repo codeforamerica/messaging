@@ -48,5 +48,4 @@ class EmailServiceTest {
                 .thenReturn(EmailSubscription.builder().unsubscribed(true).build());
         assertThrowsExactly(UnsubscribedException.class, () ->  emailService.sendEmailMessage("unsubscribed@example.com", "some body", "some subject"));
     }
-
 }

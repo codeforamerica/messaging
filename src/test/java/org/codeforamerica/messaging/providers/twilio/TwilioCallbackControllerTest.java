@@ -7,6 +7,7 @@ import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.repositories.SmsMessageRepository;
+import org.codeforamerica.messaging.services.SmsService;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +40,8 @@ public class TwilioCallbackControllerTest {
     JobRequestScheduler jobRequestScheduler;
     @MockBean
     TwilioSignatureVerificationService twilioSignatureVerificationService;
+    @MockBean
+    SmsService smsService;
     @Autowired
     private MockMvc mockMvc;
 
@@ -140,4 +143,27 @@ public class TwilioCallbackControllerTest {
         assertEquals(Map.of("errorCode", "30005", "errorMessage", "Unknown destination handset"),
                 smsMessageStatusUpdateJobRequestCaptor.getValue().getProviderError());
     }
+
+    @Test
+    public void whenInboundSTART_ThenSubscribes() throws Exception {
+        Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
+        mockMvc.perform(post("/public/twilio_callbacks/inbound")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .param("From", TestData.TO_PHONE.getNumber())
+                        .param("OptOutType", "START"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        Mockito.verify(smsService).subscribe(TestData.TO_PHONE);
+    }
+
+    @Test
+    public void whenInboundSTOP_ThenUnsubscribes() throws Exception {
+        Mockito.when(twilioSignatureVerificationService.verifySignature(any())).thenReturn(true);
+        mockMvc.perform(post("/public/twilio_callbacks/inbound")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                        .param("From", TestData.TO_PHONE.getNumber())
+                        .param("OptOutType", "STOP"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+        Mockito.verify(smsService).unsubscribe(TestData.TO_PHONE);
+    }
+
 }
