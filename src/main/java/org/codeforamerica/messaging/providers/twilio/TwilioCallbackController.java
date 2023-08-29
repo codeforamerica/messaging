@@ -37,37 +37,40 @@ public class TwilioCallbackController {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
         String rawMessageStatus = request.getParameter("MessageStatus");
-        if (ignorable(rawMessageStatus)) {
-            return ResponseEntity.ok().build();
+        if (!ignorable(rawMessageStatus)) {
+            scheduleStatusUpdate(request, providerMessageId, rawMessageStatus);
         }
-        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
-        if (smsMessage == null) {
-            log.error("Could not find provider message: {}", providerMessageId);
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok().build();
+    }
+
+    private void scheduleStatusUpdate(HttpServletRequest request, String providerMessageId,
+            String rawMessageStatus) {
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
+        String fromPhone = request.getParameter("From");
+        Map<String, String> providerError = hadError(newSmsStatus) ? buildProviderError(request) : null;
+        executeStatusUpdate(providerMessageId, fromPhone, rawMessageStatus, newSmsStatus, providerError);
+    }
+
+    private void executeStatusUpdate(String providerMessageId, String fromPhone, String rawSmsStatus, MessageStatus newSmsStatus, Map<String, String> providerError) {
+        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
         MessageStatus currentSmsStatus = smsMessage.getMessage().getSmsStatus();
         if (newSmsStatus.isAfter(currentSmsStatus)) {
             log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentSmsStatus, newSmsStatus);
-            smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
+            smsMessage.getMessage().setRawSmsStatus(rawSmsStatus);
             smsMessage.getMessage().setSmsStatus(newSmsStatus);
-            smsMessage.setFromPhone(request.getParameter("From"));
-            if (hadError(smsMessage)) {
-                smsMessage.setProviderError(buildProviderError(request));
-            }
+            smsMessage.setFromPhone(fromPhone);
+            smsMessage.setProviderError(providerError);
             smsMessageRepository.save(smsMessage);
         } else {
             log.info("Ignoring earlier status {}, current status: {}", newSmsStatus, currentSmsStatus);
         }
-        return ResponseEntity.ok().build();
     }
 
     private boolean ignorable(String rawMessageStatus) {
         return rawMessageStatus.equals("sending") || rawMessageStatus.equals("sent");
     }
 
-    private static boolean hadError(SmsMessage smsMessage) {
-        MessageStatus status = smsMessage.getMessage().getSmsStatus();
+    private static boolean hadError(MessageStatus status) {
         return status == MessageStatus.failed || status == MessageStatus.undelivered;
     }
 

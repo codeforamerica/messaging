@@ -42,32 +42,34 @@ public class MailgunCallbackController {
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
 
-        EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
-        if (emailMessage == null) {
-            log.error("Could not find provider message: {}", providerMessageId);
-            return ResponseEntity.notFound().build();
-        }
-
         String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
         if (rawEmailStatus.equals("unsubscribed")) {
             unsubscribeEmail(requestJSON);
-            return ResponseEntity.ok().build();
+        } else {
+            scheduleStatusUpdate(requestJSON, providerMessageId, rawEmailStatus);
         }
+        return ResponseEntity.ok().build();
+    }
+
+    private void scheduleStatusUpdate(JsonNode requestJSON, String providerMessageId,
+            String rawEmailStatus) {
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
+        Map<String, String> providerError = hadError(newEmailStatus)? buildProviderError(requestJSON, newEmailStatus): null;
+        executeStatusUpdate(providerMessageId, rawEmailStatus, newEmailStatus, providerError);
+    }
+
+    private void executeStatusUpdate(String providerMessageId, String rawEmailStatus, MessageStatus newEmailStatus, Map<String, String> providerError) {
+        EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
         MessageStatus currentEmailStatus = emailMessage.getMessage().getEmailStatus();
         if (newEmailStatus.isAfter(currentEmailStatus)) {
             log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentEmailStatus, newEmailStatus);
             emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
             emailMessage.getMessage().setEmailStatus(newEmailStatus);
-            if (hadError(newEmailStatus)) {
-                emailMessage.setProviderError(buildProviderError(requestJSON, newEmailStatus));
-            }
+            emailMessage.setProviderError(providerError);
             emailMessageRepository.save(emailMessage);
         } else {
             log.info("Ignoring earlier status {}, current status: {}", newEmailStatus, currentEmailStatus);
         }
-
-        return ResponseEntity.ok().build();
     }
 
     private void unsubscribeEmail(JsonNode requestJSON) {
