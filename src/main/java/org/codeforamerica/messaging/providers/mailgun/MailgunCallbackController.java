@@ -43,6 +43,11 @@ public class MailgunCallbackController {
         }
 
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
+        if (emailMessage == null) {
+            log.error("Could not find provider message: {}", providerMessageId);
+            return ResponseEntity.notFound().build();
+        }
+
         String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
         if (rawEmailStatus.equals("unsubscribed")) {
             unsubscribeEmail(requestJSON);
@@ -51,7 +56,7 @@ public class MailgunCallbackController {
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
         MessageStatus currentEmailStatus = emailMessage.getMessage().getEmailStatus();
         if (newEmailStatus.isAfter(currentEmailStatus)) {
-            log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newEmailStatus);
+            log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentEmailStatus, newEmailStatus);
             emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
             emailMessage.getMessage().setEmailStatus(newEmailStatus);
             if (hadError(newEmailStatus)) {
@@ -59,7 +64,7 @@ public class MailgunCallbackController {
             }
             emailMessageRepository.save(emailMessage);
         } else {
-            log.info("Ignoring earlier status {}", newEmailStatus);
+            log.info("Ignoring earlier status {}, current status: {}", newEmailStatus, currentEmailStatus);
         }
 
         return ResponseEntity.ok().build();
