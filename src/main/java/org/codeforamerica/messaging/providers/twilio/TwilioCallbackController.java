@@ -41,10 +41,14 @@ public class TwilioCallbackController {
             return ResponseEntity.ok().build();
         }
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
+        if (smsMessage == null) {
+            log.error("Could not find provider message: {}", providerMessageId);
+            return ResponseEntity.notFound().build();
+        }
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
         MessageStatus currentSmsStatus = smsMessage.getMessage().getSmsStatus();
         if (newSmsStatus.isAfter(currentSmsStatus)) {
-            log.info("Updating status. Provider message id: {}, new status: {}", providerMessageId, newSmsStatus);
+            log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentSmsStatus, newSmsStatus);
             smsMessage.getMessage().setRawSmsStatus(rawMessageStatus);
             smsMessage.getMessage().setSmsStatus(newSmsStatus);
             smsMessage.setFromPhone(request.getParameter("From"));
@@ -53,7 +57,7 @@ public class TwilioCallbackController {
             }
             smsMessageRepository.save(smsMessage);
         } else {
-            log.info("Ignoring earlier status {}", newSmsStatus);
+            log.info("Ignoring earlier status {}, current status: {}", newSmsStatus, currentSmsStatus);
         }
         return ResponseEntity.ok().build();
     }
