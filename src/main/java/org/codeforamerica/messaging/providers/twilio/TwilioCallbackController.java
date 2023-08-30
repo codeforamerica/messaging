@@ -2,9 +2,10 @@ package org.codeforamerica.messaging.providers.twilio;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.codeforamerica.messaging.jobs.SmsMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.MessageStatus;
-import org.codeforamerica.messaging.models.SmsMessage;
-import org.codeforamerica.messaging.repositories.SmsMessageRepository;
+import org.jobrunr.jobs.JobId;
+import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +21,13 @@ import java.util.Map;
 @Slf4j
 public class TwilioCallbackController {
 
-    private final SmsMessageRepository smsMessageRepository;
     private final TwilioSignatureVerificationService twilioSignatureVerificationService;
+    private final JobRequestScheduler jobRequestScheduler;
 
-    public TwilioCallbackController(SmsMessageRepository smsMessageRepository,
-            TwilioSignatureVerificationService twilioSignatureVerificationService) {
-        this.smsMessageRepository = smsMessageRepository;
+
+    public TwilioCallbackController(TwilioSignatureVerificationService twilioSignatureVerificationService, JobRequestScheduler jobRequestScheduler) {
         this.twilioSignatureVerificationService = twilioSignatureVerificationService;
+        this.jobRequestScheduler = jobRequestScheduler;
     }
 
     @PostMapping(path = "/status", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
@@ -38,32 +39,17 @@ public class TwilioCallbackController {
         }
         String rawMessageStatus = request.getParameter("MessageStatus");
         if (!ignorable(rawMessageStatus)) {
-            scheduleStatusUpdate(request, providerMessageId, rawMessageStatus);
+            enqueueStatusUpdate(request, providerMessageId, rawMessageStatus);
         }
         return ResponseEntity.ok().build();
     }
 
-    private void scheduleStatusUpdate(HttpServletRequest request, String providerMessageId,
+    private void enqueueStatusUpdate(HttpServletRequest request, String providerMessageId,
             String rawMessageStatus) {
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
         String fromPhone = request.getParameter("From");
         Map<String, String> providerError = hadError(newSmsStatus) ? buildProviderError(request) : null;
-        executeStatusUpdate(providerMessageId, fromPhone, rawMessageStatus, newSmsStatus, providerError);
-    }
-
-    private void executeStatusUpdate(String providerMessageId, String fromPhone, String rawSmsStatus, MessageStatus newSmsStatus, Map<String, String> providerError) {
-        SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
-        MessageStatus currentSmsStatus = smsMessage.getMessage().getSmsStatus();
-        if (newSmsStatus.isAfter(currentSmsStatus)) {
-            log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentSmsStatus, newSmsStatus);
-            smsMessage.getMessage().setRawSmsStatus(rawSmsStatus);
-            smsMessage.getMessage().setSmsStatus(newSmsStatus);
-            smsMessage.setFromPhone(fromPhone);
-            smsMessage.setProviderError(providerError);
-            smsMessageRepository.save(smsMessage);
-        } else {
-            log.info("Ignoring earlier status {}, current status: {}", newSmsStatus, currentSmsStatus);
-        }
+        JobId id = jobRequestScheduler.enqueue(new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus, fromPhone, providerError));
     }
 
     private boolean ignorable(String rawMessageStatus) {

@@ -2,11 +2,12 @@ package org.codeforamerica.messaging.providers.mailgun;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
-import org.codeforamerica.messaging.models.EmailMessage;
+import org.codeforamerica.messaging.jobs.EmailMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.models.MessageStatus;
-import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
+import org.jobrunr.jobs.JobId;
+import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,16 +22,17 @@ import java.util.Map;
 @RequestMapping("/public/mailgun_callbacks")
 @Slf4j
 public class MailgunCallbackController {
-    private final EmailMessageRepository emailMessageRepository;
     private final EmailSubscriptionRepository emailSubscriptionRepository;
     private final MailgunSignatureVerificationService mailgunSignatureVerificationService;
+    private final JobRequestScheduler jobRequestScheduler;
 
-    public MailgunCallbackController(EmailMessageRepository emailMessageRepository,
-                                     EmailSubscriptionRepository emailSubscriptionRepository,
-                                     MailgunSignatureVerificationService mailgunSignatureVerificationService) {
-        this.emailMessageRepository = emailMessageRepository;
+
+    public MailgunCallbackController(EmailSubscriptionRepository emailSubscriptionRepository,
+                                     MailgunSignatureVerificationService mailgunSignatureVerificationService,
+            JobRequestScheduler jobRequestScheduler) {
         this.emailSubscriptionRepository = emailSubscriptionRepository;
         this.mailgunSignatureVerificationService = mailgunSignatureVerificationService;
+        this.jobRequestScheduler = jobRequestScheduler;
     }
 
     @PostMapping(path = "/status")
@@ -41,35 +43,20 @@ public class MailgunCallbackController {
             log.error("Signature verification failed. Provider message id: {}", providerMessageId);
             return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
         }
-
         String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
         if (rawEmailStatus.equals("unsubscribed")) {
             unsubscribeEmail(requestJSON);
         } else {
-            scheduleStatusUpdate(requestJSON, providerMessageId, rawEmailStatus);
+            enqueueStatusUpdate(requestJSON, providerMessageId, rawEmailStatus);
         }
         return ResponseEntity.ok().build();
     }
 
-    private void scheduleStatusUpdate(JsonNode requestJSON, String providerMessageId,
+    private void enqueueStatusUpdate(JsonNode requestJSON, String providerMessageId,
             String rawEmailStatus) {
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
         Map<String, String> providerError = hadError(newEmailStatus)? buildProviderError(requestJSON, newEmailStatus): null;
-        executeStatusUpdate(providerMessageId, rawEmailStatus, newEmailStatus, providerError);
-    }
-
-    private void executeStatusUpdate(String providerMessageId, String rawEmailStatus, MessageStatus newEmailStatus, Map<String, String> providerError) {
-        EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
-        MessageStatus currentEmailStatus = emailMessage.getMessage().getEmailStatus();
-        if (newEmailStatus.isAfter(currentEmailStatus)) {
-            log.info("Updating status. Provider message id: {}, current status: {}, new status: {}", providerMessageId, currentEmailStatus, newEmailStatus);
-            emailMessage.getMessage().setRawEmailStatus(rawEmailStatus);
-            emailMessage.getMessage().setEmailStatus(newEmailStatus);
-            emailMessage.setProviderError(providerError);
-            emailMessageRepository.save(emailMessage);
-        } else {
-            log.info("Ignoring earlier status {}, current status: {}", newEmailStatus, currentEmailStatus);
-        }
+        JobId id = jobRequestScheduler.enqueue(new EmailMessageStatusUpdateJobRequest(providerMessageId, rawEmailStatus, newEmailStatus, providerError));
     }
 
     private void unsubscribeEmail(JsonNode requestJSON) {
