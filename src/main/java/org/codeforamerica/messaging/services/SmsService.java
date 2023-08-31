@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.services;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.MessageStatus;
@@ -31,6 +32,7 @@ public class SmsService {
         return smsMessageRepository.save(smsMessage);
     }
 
+    @Transactional
     public void updateStatus(String providerMessageId, MessageStatus newSmsStatus, String rawStatus, String fromPhone,
             Map<String, String> providerError) {
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);

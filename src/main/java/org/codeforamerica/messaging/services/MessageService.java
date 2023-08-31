@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.services;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.exceptions.*;
 import org.codeforamerica.messaging.jobs.SendMessageBatchJobRequest;
@@ -117,6 +118,7 @@ public class MessageService implements MessageSourceAware {
         return messageRepository.save(message);
     }
 
+    @Transactional
     public void sendMessage(Long messageId) {
         log.info("Sending message #{}", messageId);
         Message message = messageRepository.findById(messageId).orElseThrow();

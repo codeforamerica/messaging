@@ -41,6 +41,8 @@ public class EmailMessage {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+    @Version
+    private Long version;
 
     @JsonIgnore
     @OneToOne(mappedBy = "emailMessage")
