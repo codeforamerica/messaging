@@ -60,6 +60,8 @@ public class Message {
     private OffsetDateTime creationTimestamp;
     @UpdateTimestamp
     private OffsetDateTime updateTimestamp;
+    @Version
+    private Long version;
 
     public String getTemplateName() {
         return templateVariant.getTemplateName();

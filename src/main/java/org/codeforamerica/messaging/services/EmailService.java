@@ -1,5 +1,6 @@
 package org.codeforamerica.messaging.services;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.exceptions.UnsubscribedException;
@@ -50,6 +51,7 @@ public class EmailService {
         return latestSubscription != null && latestSubscription.isUnsubscribed();
     }
 
+    @Transactional
     public void updateStatus(String providerMessageId, MessageStatus newEmailStatus, String rawEmailStatus, Map<String, String> providerError) {
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);
         if (emailMessage == null) {
