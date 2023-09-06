@@ -182,6 +182,9 @@ class MessageServiceTest {
         addMessage(originalMessageBatch, null, MessageStatus.queued);
         addMessage(originalMessageBatch, MessageStatus.queued, null);
         addMessage(originalMessageBatch, MessageStatus.unmapped, MessageStatus.unsubscribed);
+        addMessage(originalMessageBatch, MessageStatus.sent, MessageStatus.sent);
+        addMessage(originalMessageBatch, MessageStatus.submission_succeeded, MessageStatus.submission_failed);
+        addMessage(originalMessageBatch, MessageStatus.submission_failed, MessageStatus.queued);
 
         MessageBatch messageBatch = messageService.getMessageBatch(originalMessageBatch.getId()).get();
         int[] metricsArray = new int[] {
@@ -198,7 +201,7 @@ class MessageServiceTest {
                 messageBatch.getMetrics().getUnsubscribedSmsCount(),
                 messageBatch.getMetrics().getUnmappedSmsCount(),
         };
-        assertThat(metricsArray).isEqualTo(new int[] {1, 0, 3, 0, 1, 1, 1, 1, 2, 1, 1, 0});
+        assertThat(metricsArray).isEqualTo(new int[] {3, 1, 3, 0, 1, 1, 3, 2, 2, 1, 1, 0});
     }
 
     @Test

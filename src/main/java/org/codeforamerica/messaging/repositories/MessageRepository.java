@@ -13,18 +13,18 @@ public interface MessageRepository extends CrudRepository<Message, Long> {
 
     @Query("""
             SELECT
-             SUM(CASE emailStatus WHEN 'queued' THEN 1 ELSE 0 END) AS queuedEmailCount,
-             SUM(CASE emailStatus WHEN 'failed' THEN 1 ELSE 0 END) AS failedEmailCount,
-             SUM(CASE emailStatus WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredEmailCount,
-             SUM(CASE emailStatus WHEN 'undelivered' THEN 1 ELSE 0 END) AS undeliveredEmailCount,
-             SUM(CASE emailStatus WHEN 'unsubscribed' THEN 1 ELSE 0 END) AS unsubscribedEmailCount,
-             SUM(CASE emailStatus WHEN 'unmapped' THEN 1 ELSE 0 END) AS unmappedEmailCount,
-             SUM(CASE smsStatus WHEN 'queued' THEN 1 ELSE 0 END) AS queuedSmsCount,
-             SUM(CASE smsStatus WHEN 'failed' THEN 1 ELSE 0 END) AS failedSmsCount,
-             SUM(CASE smsStatus WHEN 'delivered' THEN 1 ELSE 0 END) AS deliveredSmsCount,
-             SUM(CASE smsStatus WHEN 'undelivered' THEN 1 ELSE 0 END) AS undeliveredSmsCount,
-             SUM(CASE smsStatus WHEN 'unsubscribed' THEN 1 ELSE 0 END) AS unsubscribedSmsCount,
-             SUM(CASE smsStatus WHEN 'unmapped' THEN 1 ELSE 0 END) AS unmappedSmsCount
+             SUM(CASE WHEN emailStatus = 'submission_succeeded' OR emailStatus = 'queued' OR emailStatus = 'sent' THEN 1 ELSE 0 END) AS queuedEmailCount,
+             SUM(CASE WHEN emailStatus = 'submission_failed' OR emailStatus = 'failed' THEN 1 ELSE 0 END) AS failedEmailCount,
+             SUM(CASE WHEN emailStatus = 'delivered' THEN 1 ELSE 0 END) AS deliveredEmailCount,
+             SUM(CASE WHEN emailStatus = 'undelivered' THEN 1 ELSE 0 END) AS undeliveredEmailCount,
+             SUM(CASE WHEN emailStatus = 'unsubscribed' THEN 1 ELSE 0 END) AS unsubscribedEmailCount,
+             SUM(CASE WHEN emailStatus = 'unmapped' THEN 1 ELSE 0 END) AS unmappedEmailCount,
+             SUM(CASE WHEN smsStatus = 'submission_succeeded' OR smsStatus = 'queued' OR smsStatus = 'sent' THEN 1 ELSE 0 END) AS queuedSmsCount,
+             SUM(CASE WHEN smsStatus = 'submission_failed' OR smsStatus = 'failed' THEN 1 ELSE 0 END) AS failedSmsCount,
+             SUM(CASE WHEN smsStatus = 'delivered' THEN 1 ELSE 0 END) AS deliveredSmsCount,
+             SUM(CASE WHEN smsStatus = 'undelivered' THEN 1 ELSE 0 END) AS undeliveredSmsCount,
+             SUM(CASE WHEN smsStatus = 'unsubscribed' THEN 1 ELSE 0 END) AS unsubscribedSmsCount,
+             SUM(CASE WHEN smsStatus = 'unmapped' THEN 1 ELSE 0 END) AS unmappedSmsCount
              FROM Message msg
             WHERE msg.messageBatch.id = ?1
              """)
