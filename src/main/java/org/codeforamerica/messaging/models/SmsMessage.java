@@ -3,12 +3,11 @@ package org.codeforamerica.messaging.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.codeforamerica.messaging.utils.RegexPatternStrings;
+import org.codeforamerica.messaging.converters.PhoneNumberConverter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -27,14 +26,12 @@ public class SmsMessage {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    @NotBlank
-    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    private String toPhone;
+    @Convert(converter = PhoneNumberConverter.class)
+    PhoneNumber toPhone;
+    @Convert(converter = PhoneNumberConverter.class)
+    PhoneNumber fromPhone;
     @NotBlank
     private String body;
-    @NotBlank
-    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    private String fromPhone;
     private String providerMessageId;
     private OffsetDateTime providerCreatedAt;
     @CreationTimestamp

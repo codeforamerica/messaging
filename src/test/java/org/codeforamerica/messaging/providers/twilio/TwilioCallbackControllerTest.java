@@ -51,7 +51,7 @@ public class TwilioCallbackControllerTest {
         mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
-                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE.getNumber())
                         .param("MessageStatus", "delivered"))
                 .andExpect(MockMvcResultMatchers.status().isUnauthorized());
     }
@@ -67,7 +67,7 @@ public class TwilioCallbackControllerTest {
         mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
-                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE.getNumber())
                         .param("MessageStatus", "delivered"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
@@ -84,7 +84,7 @@ public class TwilioCallbackControllerTest {
         mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
-                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE.getNumber())
                         .param("MessageStatus", ignoredStatus))
                 .andExpect(MockMvcResultMatchers.status().isOk());
         assertNotEquals(ignoredStatus, message.getRawSmsStatus());
@@ -102,7 +102,7 @@ public class TwilioCallbackControllerTest {
         mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
-                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE.getNumber())
                         .param("MessageStatus", newStatus))
                 .andExpect(MockMvcResultMatchers.status().isOk());
         ArgumentCaptor<SmsMessageStatusUpdateJobRequest> smsMessageStatusUpdateJobRequestCaptor = ArgumentCaptor.forClass(SmsMessageStatusUpdateJobRequest.class);
@@ -126,7 +126,7 @@ public class TwilioCallbackControllerTest {
         mockMvc.perform(post("/public/twilio_callbacks/status")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("MessageSid", TestData.PROVIDER_MESSAGE_ID)
-                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE)
+                        .param("From", TwilioGateway.DEFAULT_FROM_PHONE.getNumber())
                         .param("MessageStatus", "undelivered")
                         .param("ErrorCode", errorCode)
                         .param("ErrorMessage", errorMessage))

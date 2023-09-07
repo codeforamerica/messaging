@@ -1,15 +1,15 @@
 package org.codeforamerica.messaging.models;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import org.codeforamerica.messaging.utils.RegexPatternStrings;
+import org.codeforamerica.messaging.converters.PhoneNumberConverter;
 import org.codeforamerica.messaging.validators.ValidMessageRequest;
 
 import java.time.OffsetDateTime;
@@ -25,8 +25,8 @@ import static org.codeforamerica.messaging.utils.CSVReader.TREATMENT_HEADER;
 @Builder
 @ValidMessageRequest
 public class MessageRequest {
-    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    String toPhone;
+    @Convert(converter = PhoneNumberConverter.class)
+    PhoneNumber toPhone;
     @Email
     String toEmail;
     @NotBlank

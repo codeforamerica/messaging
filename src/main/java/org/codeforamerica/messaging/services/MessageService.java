@@ -208,7 +208,7 @@ public class MessageService implements MessageSourceAware {
         List<Map<String, String>> recipientErrorRows = new LinkedList<>();
         csvReader.stream().forEach(row -> {
             MessageRequest messageRequest = MessageRequest.builder()
-                    .toPhone(row.get(PHONE_HEADER))
+                    .toPhone(PhoneNumber.valueOf(row.get(PHONE_HEADER)))
                     .toEmail(row.get(EMAIL_HEADER))
                     .templateName(messageBatch.getTemplate().getName())
                     .templateParams(row)

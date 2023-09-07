@@ -3,6 +3,7 @@ package org.codeforamerica.messaging.providers.twilio;
 import com.twilio.Twilio;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
+import org.codeforamerica.messaging.models.PhoneNumber;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ import java.time.ZonedDateTime;
 @Slf4j
 public class TwilioGateway {
 
-    public static final String DEFAULT_FROM_PHONE = "0000000000";
+    public static final PhoneNumber DEFAULT_FROM_PHONE = PhoneNumber.valueOf("0000000000");
     @Value("${twilio.account.sid}")
     private String twilioAccountSid;
     @Value("${twilio.auth.token}")
@@ -42,7 +43,7 @@ public class TwilioGateway {
 
         return SmsMessage.builder()
                 .fromPhone(DEFAULT_FROM_PHONE)
-                .toPhone(twilioMessage.getTo())
+                .toPhone(PhoneNumber.valueOf(twilioMessage.getTo()))
                 .body(twilioMessage.getBody())
                 .providerMessageId(twilioMessage.getSid())
                 .providerCreatedAt(toOffsetDateTime(twilioMessage.getDateCreated()))

@@ -3,12 +3,11 @@ package org.codeforamerica.messaging.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.codeforamerica.messaging.utils.RegexPatternStrings;
+import org.codeforamerica.messaging.converters.PhoneNumberConverter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -35,8 +34,8 @@ public class Message {
     TemplateVariant templateVariant;
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, String> templateParams;
-    @Pattern(regexp = RegexPatternStrings.PHONE_NUMBER_REGEX)
-    String toPhone;
+    @Convert(converter = PhoneNumberConverter.class)
+    PhoneNumber toPhone;
     @Email
     String toEmail;
     @ManyToOne
