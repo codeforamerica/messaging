@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.exceptions.MessageSendException;
 import org.codeforamerica.messaging.models.MessageStatus;
+import org.codeforamerica.messaging.models.PhoneNumber;
 import org.codeforamerica.messaging.models.SmsMessage;
 import org.codeforamerica.messaging.providers.twilio.TwilioGateway;
 import org.codeforamerica.messaging.repositories.MessageRepository;
@@ -27,13 +28,13 @@ public class SmsService {
         this.messageRepository = messageRepository;
     }
 
-    public SmsMessage sendSmsMessage(String to, String body) throws MessageSendException {
-        SmsMessage smsMessage = twilioGateway.sendMessage(to, body);
+    public SmsMessage sendSmsMessage(PhoneNumber to, String body) throws MessageSendException {
+        SmsMessage smsMessage = twilioGateway.sendMessage(to.getNumber(), body);
         return smsMessageRepository.save(smsMessage);
     }
 
     @Transactional
-    public void updateStatus(String providerMessageId, MessageStatus newSmsStatus, String rawStatus, String fromPhone,
+    public void updateStatus(String providerMessageId, MessageStatus newSmsStatus, String rawStatus, PhoneNumber fromPhone,
             Map<String, String> providerError) {
         SmsMessage smsMessage = smsMessageRepository.findFirstByProviderMessageId(providerMessageId);
         if (smsMessage == null) {

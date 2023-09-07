@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class TestData {
     public static final Long BASE_ID = 1L;
-    public static final String TO_PHONE = "1234567890";
+    public static final PhoneNumber TO_PHONE = PhoneNumber.valueOf("1234567890");
     public static final String TO_EMAIL = "recipient@example.com";
     public static final String FROM_EMAIL = "sender@example.com";
     public static final String PROVIDER_MESSAGE_ID = "some-provider-message-id";

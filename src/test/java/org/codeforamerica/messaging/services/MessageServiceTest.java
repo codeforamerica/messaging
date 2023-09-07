@@ -84,7 +84,7 @@ class MessageServiceTest {
         Message message = messageService.saveMessage(TestData.aMessageRequest().toEmail(TestData.TO_EMAIL).build(), null);
 
         messageService.sendMessage(message.getId());
-        Mockito.verify(smsService, Mockito.never()).sendSmsMessage(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(smsService, Mockito.never()).sendSmsMessage(any(), Mockito.anyString());
         ArgumentCaptor<String> emailBodyCaptor = ArgumentCaptor.forClass(String.class);
         Mockito.verify(emailService).sendEmailMessage(eq(TestData.TO_EMAIL), emailBodyCaptor.capture(), eq(TestData.TEMPLATE_SUBJECT_DEFAULT));
         assertTrue(emailBodyCaptor.getValue().contains(TestData.TEMPLATE_BODY_DEFAULT));
@@ -164,7 +164,7 @@ class MessageServiceTest {
                 isA(SendMessageJobRequest.class)
         );
         assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
-                .containsExactlyInAnyOrderElementsOf(List.of("8885551212", "1234567890"));
+                .containsExactlyInAnyOrderElementsOf(List.of(PhoneNumber.valueOf("8885551212"), PhoneNumber.valueOf("1234567890")));
         assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToEmail))
                 .containsExactlyInAnyOrderElementsOf(List.of("bar@example.org", "foo@example.com"));
      }
@@ -240,7 +240,7 @@ class MessageServiceTest {
                 isA(SendMessageJobRequest.class)
         );
         assertThat(messageRepository.findMessagesByMessageBatchId(messageBatch.getId()).stream().map(Message::getToPhone))
-                .containsExactly("8885551212");
+                .containsExactly(PhoneNumber.valueOf("8885551212"));
         assertEquals(1, messageBatchRepository.findById(messageBatch.getId()).get().getRecipientErrorRows().size());
         assertEquals("Missing template parameters: [placeholder]",
                 messageBatchRepository.findById(messageBatch.getId()).get().getRecipientErrorRows().stream()

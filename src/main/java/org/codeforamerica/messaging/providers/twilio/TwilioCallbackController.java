@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.jobs.SmsMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.MessageStatus;
+import org.codeforamerica.messaging.models.PhoneNumber;
 import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
@@ -49,7 +50,38 @@ public class TwilioCallbackController {
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
         String fromPhone = request.getParameter("From");
         Map<String, String> providerError = hadError(newSmsStatus) ? buildProviderError(request) : null;
-        JobId id = jobRequestScheduler.enqueue(new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus, fromPhone, providerError));
+        JobId id = jobRequestScheduler.enqueue(
+                new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus, PhoneNumber.valueOf(fromPhone),
+                        providerError));
+    }
+
+    @PostMapping(path = "/inbound", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+    public ResponseEntity<Object> handleInbound(HttpServletRequest request) {
+        String providerMessageId = request.getParameter("MessageSid");
+        if (!twilioSignatureVerificationService.verifySignature(request)) {
+            log.error("Signature verification failed. Provider message id: {}", providerMessageId);
+            return new ResponseEntity<>("Unauthorized", HttpStatus.UNAUTHORIZED);
+        }
+        String keyword = request.getParameter("OptOutType");
+        if (keyword != null) {
+            switch (keyword) {
+                case "START" -> subscribe();
+                case "STOP" -> unsubscribe();
+                case "HELP" -> log.info("Help sought");
+                default -> log.info("Unexpected keyword");
+            }
+        } else {
+            log.info("Regular inbound message");
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    private void unsubscribe() {
+        log.info("Unsubscribing");
+    }
+
+    private void subscribe() {
+        log.info("Subscribing");
     }
 
     private boolean ignorable(String rawMessageStatus) {

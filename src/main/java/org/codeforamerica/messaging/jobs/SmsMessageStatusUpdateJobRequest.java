@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.codeforamerica.messaging.models.MessageStatus;
+import org.codeforamerica.messaging.models.PhoneNumber;
 import org.jobrunr.jobs.lambdas.JobRequest;
 
 import java.util.Map;
@@ -21,7 +22,7 @@ public class SmsMessageStatusUpdateJobRequest implements JobRequest {
     private MessageStatus messageStatus;
 
     @Getter
-    private String fromPhone;
+    private PhoneNumber fromPhone;
 
     @Getter
     private Map<String, String> providerError;
