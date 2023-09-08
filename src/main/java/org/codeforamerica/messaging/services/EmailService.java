@@ -51,6 +51,15 @@ public class EmailService {
         return latestSubscription != null && latestSubscription.isUnsubscribed();
     }
 
+    public void unsubscribe(String unsubscribedEmail) {
+        log.info("Unsubscribing");
+        emailSubscriptionRepository.save(EmailSubscription.builder()
+                .email(unsubscribedEmail)
+                .sourceInternal(true)
+                .unsubscribed(true)
+                .build());
+    }
+
     @Transactional
     public void updateStatus(String providerMessageId, MessageStatus newEmailStatus, String rawEmailStatus, Map<String, String> providerError) {
         EmailMessage emailMessage = emailMessageRepository.findFirstByProviderMessageId(providerMessageId);

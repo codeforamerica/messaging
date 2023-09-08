@@ -3,10 +3,8 @@ package org.codeforamerica.messaging.providers.mailgun;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.codeforamerica.messaging.jobs.EmailMessageStatusUpdateJobRequest;
-import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.models.MessageStatus;
-import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
-import org.jobrunr.jobs.JobId;
+import org.codeforamerica.messaging.services.EmailService;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,15 +20,15 @@ import java.util.Map;
 @RequestMapping("/public/mailgun_callbacks")
 @Slf4j
 public class MailgunCallbackController {
-    private final EmailSubscriptionRepository emailSubscriptionRepository;
+    private final EmailService emailService;
     private final MailgunSignatureVerificationService mailgunSignatureVerificationService;
     private final JobRequestScheduler jobRequestScheduler;
 
 
-    public MailgunCallbackController(EmailSubscriptionRepository emailSubscriptionRepository,
-                                     MailgunSignatureVerificationService mailgunSignatureVerificationService,
+    public MailgunCallbackController(EmailService emailService,
+            MailgunSignatureVerificationService mailgunSignatureVerificationService,
             JobRequestScheduler jobRequestScheduler) {
-        this.emailSubscriptionRepository = emailSubscriptionRepository;
+        this.emailService = emailService;
         this.mailgunSignatureVerificationService = mailgunSignatureVerificationService;
         this.jobRequestScheduler = jobRequestScheduler;
     }
@@ -45,7 +43,8 @@ public class MailgunCallbackController {
         }
         String rawEmailStatus = requestJSON.at("/event-data/event").textValue();
         if (rawEmailStatus.equals("unsubscribed")) {
-            unsubscribeEmail(requestJSON);
+            String unsubscribedEmail = requestJSON.at("/event-data/recipient").textValue();
+            emailService.unsubscribe(unsubscribedEmail);
         } else {
             enqueueStatusUpdate(requestJSON, providerMessageId, rawEmailStatus);
         }
@@ -55,18 +54,9 @@ public class MailgunCallbackController {
     private void enqueueStatusUpdate(JsonNode requestJSON, String providerMessageId,
             String rawEmailStatus) {
         MessageStatus newEmailStatus = mapMailgunStatustoMessageStatus(rawEmailStatus);
-        Map<String, String> providerError = hadError(newEmailStatus)? buildProviderError(requestJSON, newEmailStatus): null;
-        JobId id = jobRequestScheduler.enqueue(new EmailMessageStatusUpdateJobRequest(providerMessageId, rawEmailStatus, newEmailStatus, providerError));
-    }
-
-    private void unsubscribeEmail(JsonNode requestJSON) {
-        String unsubscribedEmail = requestJSON.at("/event-data/recipient").textValue();
-        log.info("Unsubscribing");
-        emailSubscriptionRepository.save(EmailSubscription.builder()
-                .email(unsubscribedEmail)
-                .sourceInternal(true)
-                .unsubscribed(true)
-                .build());
+        Map<String, String> providerError = hadError(newEmailStatus) ? buildProviderError(requestJSON, newEmailStatus) : null;
+        jobRequestScheduler.enqueue(
+                new EmailMessageStatusUpdateJobRequest(providerMessageId, rawEmailStatus, newEmailStatus, providerError));
     }
 
     private static boolean hadError(MessageStatus status) {

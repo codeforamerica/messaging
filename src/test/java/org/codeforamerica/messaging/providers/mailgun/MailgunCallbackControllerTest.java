@@ -4,11 +4,11 @@ import org.codeforamerica.messaging.TestData;
 import org.codeforamerica.messaging.config.SecurityConfiguration;
 import org.codeforamerica.messaging.jobs.EmailMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.EmailMessage;
-import org.codeforamerica.messaging.models.EmailSubscription;
 import org.codeforamerica.messaging.models.Message;
 import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.repositories.EmailMessageRepository;
 import org.codeforamerica.messaging.repositories.EmailSubscriptionRepository;
+import org.codeforamerica.messaging.services.EmailService;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -24,7 +24,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
@@ -41,6 +42,8 @@ public class MailgunCallbackControllerTest {
     EmailSubscriptionRepository emailSubscriptionRepository;
     @MockBean
     JobRequestScheduler jobRequestScheduler;
+    @MockBean
+    EmailService emailService;
     @Autowired
     private MockMvc mockMvc;
 
@@ -197,12 +200,6 @@ public class MailgunCallbackControllerTest {
                                     }
                                 """.formatted(recipient, TestData.PROVIDER_MESSAGE_ID)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        ArgumentCaptor<EmailSubscription> emailSubscriptionCaptor = ArgumentCaptor.forClass(EmailSubscription.class);
-        Mockito.verify(emailSubscriptionRepository).save(emailSubscriptionCaptor.capture());
-        EmailSubscription emailSubscription = emailSubscriptionCaptor.getValue();
-        assertTrue(emailSubscription.isUnsubscribed());
-        assertEquals(emailSubscription.getEmail(), recipient);
-        assertTrue(emailSubscription.isSourceInternal());
-        assertNotEquals(MessageStatus.unsubscribed, message.getEmailStatus());
+        Mockito.verify(emailService).unsubscribe(recipient);
     }
 }
