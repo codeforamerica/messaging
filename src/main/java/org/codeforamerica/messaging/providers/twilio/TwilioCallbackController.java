@@ -6,7 +6,6 @@ import org.codeforamerica.messaging.jobs.SmsMessageStatusUpdateJobRequest;
 import org.codeforamerica.messaging.models.MessageStatus;
 import org.codeforamerica.messaging.models.PhoneNumber;
 import org.codeforamerica.messaging.services.SmsService;
-import org.jobrunr.jobs.JobId;
 import org.jobrunr.scheduling.JobRequestScheduler;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,12 +22,13 @@ import java.util.Map;
 @Slf4j
 public class TwilioCallbackController {
 
-    private final TwilioSignatureVerificationService twilioSignatureVerificationService;
     private final SmsService smsService;
+    private final TwilioSignatureVerificationService twilioSignatureVerificationService;
     private final JobRequestScheduler jobRequestScheduler;
 
 
-    public TwilioCallbackController(TwilioSignatureVerificationService twilioSignatureVerificationService, SmsService smsService,
+    public TwilioCallbackController(SmsService smsService,
+            TwilioSignatureVerificationService twilioSignatureVerificationService,
             JobRequestScheduler jobRequestScheduler) {
         this.twilioSignatureVerificationService = twilioSignatureVerificationService;
         this.smsService = smsService;
@@ -54,8 +54,9 @@ public class TwilioCallbackController {
         MessageStatus newSmsStatus = mapTwilioStatusToMessageStatus(rawMessageStatus);
         String fromPhone = request.getParameter("From");
         Map<String, String> providerError = hadError(newSmsStatus) ? buildProviderError(request) : null;
-        JobId id = jobRequestScheduler.enqueue(
-                new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus, PhoneNumber.valueOf(fromPhone),
+        jobRequestScheduler.enqueue(
+                new SmsMessageStatusUpdateJobRequest(providerMessageId, rawMessageStatus, newSmsStatus,
+                        PhoneNumber.valueOf(fromPhone),
                         providerError));
     }
 
