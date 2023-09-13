@@ -47,16 +47,22 @@ reach out.
         * Post requests to the `templates` endpoint, as described in the Swagger/OpenAPI docs, to create templates
     * Then post an individual message to `messages` or a batch to `message_batches` using a csv
         * Consult the Swagger/OpenAPI docs to learn how to structure your requests
-7. Configure callback URLs to see message statuses
-    * See [ngrok](https://ngrok.com/) for a tool that will allow you to forward your localhost instance
-        * Ngrok url can be set as the callback url with messaging providers to see message statuses
+7. Configure messaging providers for status tracking, subscriptions and inbound messages
+    * See [ngrok](https://ngrok.com/) for a tool that will allow you to expose your local instance to the internet
+        * Ngrok url can be set as the callback url with messaging providers
         * Other users can test the API using your instance with the ngrok url
     * Twilio
-        * Integration > Callback URL: `<your ngrok address>/public/twilio_callbacks/status`
-        * ![](readme_img3.png)
+        * Integration > Callback URL: `<your ngrok address>/public/twilio_callbacks/status`  
+          ![Configuring callbacks in Twilio](configure_twilio_callbacks.png "Configuring callbacks in Twilio" )
+        * Integration > Inbound URL: `<your ngrok address>/public/twilio_callbacks/inbound`  
+          ![Configuring inbound messages in Twilio](configure_twilio_inbound.png "Configuring inbound messages in Twilio")
+        * Advanced Opt-Out Management: You should configure the keywords to be respected 
+          ![Configuring Advanced Opt-Out Management in Twilio](configure_twilio_advanced_optout.png "Configuring Advanced Opt-Out in Twilio")
     * Mailgun
-        * Webhooks > Test Webhook: `<your ngrok address>/public/mailgun_callbacks/status`
-        * ![](readme_img4.png)
+        * Webhooks > Webhooks > Add webhook: `<your ngrok address>/public/mailgun_callbacks/status`
+          ![](configure_mailgun_callbacks.png)
+        * You should add webhooks for the following event types that we are interested in tracking: `accepted`, `delivered`, `permanent_fail`, `temporary_fail`, and `unsubscribed`.
+      
 
 ## Help! I'm getting a 'flyway'/'dataSource' error!
 `Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'flyway' defined in class path resource [org/springframework/boot/autoconfigure/flyway/FlywayAutoConfiguration$FlywayConfiguration.class]: Failed to instantiate [org.flywaydb.core.Flyway]: Factory method 'flyway' threw exception with message: Error creating bean with name 'dataSource' defined in class path resource [org/springframework/boot/autoconfigure/jdbc/DataSourceConfiguration$Hikari.class]: Failed to instantiate [com.zaxxer.hikari.HikariDataSource]: Factory method 'dataSource' threw exception with message: Failed to determine a suitable driver class`
