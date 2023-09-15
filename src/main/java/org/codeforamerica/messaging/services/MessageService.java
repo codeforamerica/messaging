@@ -43,7 +43,7 @@ public class MessageService implements MessageSourceAware {
     private MessageSource messageSource;
 
     @Value("${message.duplicate-suppression-window-duration-in-hours}")
-    private long duplicateMessageSuppressionHours = 23;
+    private long duplicateMessageSuppressionHours;
 
     public MessageService(SmsService smsService,
             EmailService emailService,
