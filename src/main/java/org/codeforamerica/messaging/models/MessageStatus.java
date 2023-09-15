@@ -17,6 +17,9 @@ public enum MessageStatus {
     }
 
     public boolean hadError() {
-        return this == MessageStatus.failed || this == MessageStatus.undelivered;
+        return this == MessageStatus.duplicate ||
+            this == MessageStatus.submission_failed ||
+            this == MessageStatus.failed ||
+            this == MessageStatus.undelivered;
     }
 }
