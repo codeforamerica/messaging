@@ -23,10 +23,10 @@ We will listen on a separate port for callbacks and docs. This will not be secur
 The specific port can be chosen using the configuration variable `server.trustedPort`. The callbacks and docs will be
 made available under the path `/public/`.
 
-| Port | Use | Security | Path |
-|-|-|-|-|
-| 8080 | Messaging API | IP Filtering & BasicAuth shared password | https://app-54372.on-aptible.com |
-| [8086](/src/main/resources/application.properties) | Messaging Provider Callbacks & API Documentation | Public w/ Provider Signature varification | https://staging.messaging.cfa-platforms.org/public |
+| Port Use | Security |
+|-|-|
+| Messaging API | IP Filtering & BasicAuth shared password |
+| Messaging Provider Callbacks & API Documentation | Public w/ Provider Signature varification | 
 
 
 ## Consequences
